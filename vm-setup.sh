@@ -8,10 +8,6 @@ else
 fi
 echo
 
-# Add Sublime key
-wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add - 2>&1 > /dev/null
-echo "deb https://download.sublimetext.com/ sudo apt/stable/" | sudo tee /etc/sudo apt/sources.list.d/sublime-text.list 2>&1 > /dev/null
-
 echo "Updating..."
 # General updates
 sudo apt-get update -y
@@ -60,6 +56,12 @@ dialog --keep-tite --title "Sublime Text"  --yesno "Do you want to install Subli
 if [ $? -ne 0 ]; then
     exit 0
 fi
+
+# Add Sublime key
+wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add - 2>&1 > /dev/null
+echo "deb https://download.sublimetext.com/ sudo apt/stable/" | sudo tee /etc/sudo apt/sources.list.d/sublime-text.list 2>&1 > /dev/null
+
+sudo apt-get update -y
 
 echo "Installing..."
 echo "Sublime Editor" | figlet -f mini
