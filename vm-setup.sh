@@ -28,7 +28,7 @@ sudo apt-get install -y git 2>&1 > /dev/null
 echo "Installing..."
 echo Git Submit | figlet -f mini
 mkdir -p $HOME/.local/bin
-wget -qO - http://www.cs.stonybrook.edu/~cse320/resources/git-submit | cat $HOME/.local/bin/git-submit
+wget -q -O $HOME/.local/bin/git-submit http://www.cs.stonybrook.edu/~cse320/resources/git-submit 
 chmod +x $HOME/.local/bin/git-submit
 
 echo "Installing..."
@@ -59,7 +59,7 @@ fi
 
 # Add Sublime key
 wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add - 2>&1 > /dev/null
-echo "deb https://download.sublimetext.com/ sudo apt/stable/" | sudo tee /etc/sudo apt/sources.list.d/sublime-text.list 2>&1 > /dev/null
+echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list 2>&1 > /dev/null
 
 sudo apt-get update -y
 
