@@ -1,11 +1,9 @@
 # CSE 320 Fall 17 Course Tools
 
 
-Run the script to install the 320 course tools and packages. 
+Run the script to install the 320 course tools and packages.
 ```
 $ bash vm-setup.sh
 ```
 
-The script will ask for sudo privileges to install packages. 
-
-
+The script will ask for sudo privileges to install packages.
