@@ -18,11 +18,11 @@ sudo apt-get autoremove -y 2>&1 > /dev/null
 sudo apt-get install -y figlet terminator htop dialog wget 2>&1 > /dev/null
 
 echo "Installing..."
-echo vm-tools | figlet -f mini
+echo "vm-tools" | figlet -f mini
 sudo apt-get install -y open-vm-tools-desktop 2>&1 > /dev/null
 
 echo "Installing..."
-echo Git | figlet -f mini
+echo "Git" | figlet -f mini
 sudo apt-get install -y git 2>&1 > /dev/null
 
 echo "Installing..."
@@ -33,24 +33,30 @@ wget -q -O $HOME/.local/bin/git-submit http://www.cs.stonybrook.edu/~cse320/reso
 chmod +x $HOME/.local/bin/git-submit
 
 echo "Installing..."
-echo Readline | figlet -f mini
+echo "Readline" | figlet -f mini
 sudo apt-get install -y libreadline6-dev libreadline6-dbg 2>&1 > /dev/null
 
 echo "Installing..."
-echo Clang | figlet -f mini
+echo "Clang" | figlet -f mini
 sudo apt-get install -y clang 2>&1 > /dev/null
 
 echo "Installing..."
-echo GDB | figlet -f mini
+echo "GDB" | figlet -f mini
 sudo apt-get install -y gdb cgdb 2>&1 > /dev/null
 
 echo "Installing..."
-echo Valgrind | figlet -f mini
+echo "Valgrind" | figlet -f mini
 sudo apt-get install -y valgrind 2>&1 > /dev/null
 
 echo "Installing..."
-echo GCC and tools | figlet -f mini
+echo "GCC and tools" | figlet -f mini
 sudo apt-get install -y gcc make binutils 2>&1 > /dev/null
+
+echo "Installing..."
+echo "Criterion" | figlet -f mini
+sudo add-apt-repository ppa:snaipewastaken/ppa
+sudo apt-get update
+sudo apt-get install criterion-dev
 
 dialog --keep-tite --title "Sublime Text"  --yesno "Do you want to install Sublime with plugins?" 5 50
 
@@ -82,7 +88,8 @@ if [ $? -eq 0 ]; then
     echo "{\"color_scheme\":\"Packages\/User\/SublimeLinter\/Monokai (SL).tmTheme\",\"ignored_packages\":[\"Vintage\"],\"hot_exit\":false,\"save_on_focus_lost\":true,\"translate_tabs_to_spaces\":true}" > "$HOME/.config/sublime-text-3/Packages/User/Preferences.sublime-settings"
 
 fi
-echo "------------"
-echo "------------"
-echo "If you cannot execute git submit add the following to your ~/.bashrc or other relevant terminal config"
+echo "-----------------------------"
+echo "!ATTN!" | figlet
+echo "-----------------------------"
+echo -e "If you \e[31;1mcannot\e[0m execute git submit add the following to your ~/.bashrc or other relevant terminal config"
 echo "export PATH=\$PATH:$HOME/.local/bin"
