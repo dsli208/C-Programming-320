@@ -34,4 +34,4 @@ materials, I will obtain written permission from the Professor(s), in advance of
 my submission. Such permission is best requested and obtained by E-mail to
 cse320@cs.stonybrook.edu
 ================================================================================
-Signed:
+Signed: David S. Li
