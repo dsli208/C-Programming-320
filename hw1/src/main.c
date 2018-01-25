@@ -12,7 +12,7 @@
 #error "Do not #include <ctype.h>. You will get a ZERO."
 #endif
 
-#include "hw1.h"
+#include "hw1.h" // includes global_options
 #include "debug.h"
 
 int main(int argc, char **argv)
@@ -20,10 +20,17 @@ int main(int argc, char **argv)
     if(!validargs(argc, argv))
         USAGE(*argv, EXIT_FAILURE);
     debug("Options: 0x%X", global_options);
-    if(global_options & 0x1) {
+
+    // Structure of how the main function works?
+    // 
+    if(global_options & 0x1) { // -h
         USAGE(*argv, EXIT_SUCCESS);
     }
-
+    else if (global_options | 0x10) { // -d
+         
+    }
+    else if (global_options & 0x00) { // -a
+    }
     return EXIT_SUCCESS;
 }
 

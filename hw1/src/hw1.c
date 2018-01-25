@@ -17,6 +17,30 @@
  * to other source files (except for main.c) as you wish.
  */
 
+int strcompare(char *a, char *b) { // checking for string/argument equality
+    char c1 = *a;
+    char c2 = *b;
+    while (c1 != '\0' && c2 != '\0') {
+        if (c1 != c2) {
+            return 0;
+        }
+        a++; b++; // increment pointers
+        c1 = *a; c2 = *b; // update c1 and c2
+    }
+    return 1;
+}
+
+int strlen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
+    int len = 0;
+    char c = *s;
+    while (c != '\0') {
+        len++;
+        s++;
+        c = *s;
+    }
+    return len;
+}
+
 /**
  * @brief Validates command line arguments passed to the program.
  * @details This function will validate all the arguments passed to the
@@ -35,6 +59,34 @@
  */
 int validargs(int argc, char **argv)
 {
+    int contains_h = 0;
+    int contains_a = 0; // if -a, 1, else 0    
+    if (argc > 6) {
+        return 0;
+    }
+    // Iterate through the char**
+    // Look for -h
+    if (strcompare(*argv, "-h")) {
+        contains_h = 1;
+        argv++;
+    }
+    // Next argument should be either -a|-d
+    if (strcompare(*argv, "-a")) {
+        contains_a = 1;
+        argv++;
+    }    
+    else if (strcompare(*argv, "-d")) {
+        contains_a = 0;
+        argv++;
+    }
+    else {
+        return 0; // error if anything else than -a|-d
+    }
+
+    // Now -b, or -e arguments, can be in any order
+    while (argv != NULL) {
+        
+    }
     return 0;
 }
 
