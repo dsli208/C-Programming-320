@@ -17,6 +17,18 @@
  * to other source files (except for main.c) as you wish.
  */
 
+int hexvalidate(char *s) {
+    char c = *s;
+    while (c != '\0') {
+        if ((c < 'A'|| c > 'F') && (c < 'a' || c > 'f') && (c < '0' || c > '9')) {
+            return 0;
+        }
+        s++;
+        c = *s;
+    }
+    return 1;
+}
+
 int strcompare(char *a, char *b) { // checking for string/argument equality
     char c1 = *a;
     char c2 = *b;
@@ -84,10 +96,40 @@ int validargs(int argc, char **argv)
     }
 
     // Now -b, or -e arguments, can be in any order
+    int contains_b = 0;
+    int contains_e = 0;
     while (argv != NULL) {
-        
+        if (strcompare(*argv, "-b") && contains_b == 0) {
+            contains_b = 1;
+            argv++;
+            if (*argv == NULL || **argv == '-') {
+                return 0;
+            }
+            if (strlen(*argv) >= 8) {
+                return 0;
+            }
+            if (hexvalidate(*argv) == 0) {
+                return 0;
+            }
+            // FIGURE OUT HOW TO CHECK THE LEAST 12 SIGNIFICANT BITS ARE ALL '0'
+
+            argv++;
+            
+        }
+        else if (strcompare(*argv, "-e") && contains_e == 0) {
+            contains_e = 1;
+            argv++;
+            if (!(strcompare(*argv, "b") || strcompare(*argv, "l"))) {
+                return 0;
+            }
+            argv++;
+        }
+        // CHECK TO SEE IF THIS IS RIGHT
+        else {
+            return 0;
+        }
     }
-    return 0;
+    return 0; // MAKE SURE EVERYTHING IS RIGHT FIRST
 }
 
 /**
