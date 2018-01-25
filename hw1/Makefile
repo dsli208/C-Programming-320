@@ -25,7 +25,7 @@ LIBS :=
 CFLAGS += $(STD)
 
 EXEC := hw1
-#TEST_EXEC := $(EXEC)_tests
+TEST_EXEC := $(EXEC)_tests
 
 
 .PHONY: clean all
@@ -41,8 +41,8 @@ setup:
 $(EXEC): $(ALL_OBJF)
 	$(CC) $^ -o $(BIND)/$@
 
-#$(TEST_EXEC): $(FUNC_FILES)
-#	$(CC) $(CFLAGS) $(INC) $(FUNC_FILES) $(TEST_SRC) $(TEST_LIB) -o $(BIND)/$(TEST_EXEC)
+$(TEST_EXEC): $(FUNC_FILES)
+	$(CC) $(CFLAGS) $(INC) $(FUNC_FILES) $(TEST_SRC) $(TEST_LIB) -o $(BIND)/$(TEST_EXEC)
 
 $(BLDD)/%.o: $(SRCD)/%.c
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
