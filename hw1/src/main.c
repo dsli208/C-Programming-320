@@ -16,9 +16,10 @@
 #include "debug.h"
 
 int main(int argc, char **argv)
-{
-    if(!validargs(argc, argv))
+{   
+    if(!validargs(argc, argv)) {
         USAGE(*argv, EXIT_FAILURE);
+    }
     debug("Options: 0x%X", global_options);
 
     // Structure of how the main function works?

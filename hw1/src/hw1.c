@@ -42,7 +42,7 @@ int strcompare(char *a, char *b) { // checking for string/argument equality
     return 1;
 }
 
-int strlen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
+int slen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
     int len = 0;
     char c = *s;
     while (c != '\0') {
@@ -70,25 +70,30 @@ int strlen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
  * the selected options.
  */
 int validargs(int argc, char **argv)
-{
-    int contains_h = 0;
-    int contains_a = 0; // if -a, 1, else 0    
-    if (argc > 6) {
+{   
+    // assume bin/hw1 is the first argument, so there is one more argument
+    
+    if (argc > 7) {
         return 0;
     }
+
+    // Make sure we're incremented to the SECOND argument    
+    argv++;    
+
     // Iterate through the char**
     // Look for -h
     if (strcompare(*argv, "-h")) {
-        contains_h = 1;
         argv++;
+        if (*argv == NULL) {
+            printf("Success?");
+            return 1;
+        }
     }
     // Next argument should be either -a|-d
     if (strcompare(*argv, "-a")) {
-        contains_a = 1;
         argv++;
     }    
     else if (strcompare(*argv, "-d")) {
-        contains_a = 0;
         argv++;
     }
     else {
@@ -98,14 +103,14 @@ int validargs(int argc, char **argv)
     // Now -b, or -e arguments, can be in any order
     int contains_b = 0;
     int contains_e = 0;
-    while (argv != NULL) {
+    while (*argv != NULL) {
         if (strcompare(*argv, "-b") && contains_b == 0) {
             contains_b = 1;
             argv++;
             if (*argv == NULL || **argv == '-') {
                 return 0;
             }
-            if (strlen(*argv) >= 8) {
+            if (slen(*argv) > 8) {
                 return 0;
             }
             if (hexvalidate(*argv) == 0) {
@@ -129,7 +134,7 @@ int validargs(int argc, char **argv)
             return 0;
         }
     }
-    return 0; // MAKE SURE EVERYTHING IS RIGHT FIRST
+    return 1; // MAKE SURE EVERYTHING IS RIGHT FIRST
 }
 
 /**
