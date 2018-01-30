@@ -84,12 +84,11 @@ int validargs(int argc, char **argv)
     // Look for -h
     if (strcompare(*argv, "-h")) {
         argv++;
-        if (*argv == NULL) {
-            printf("Success?");
-            return 1;
-        }
+        global_options += 1;
+        return 1;
     }
     // Next argument should be either -a|-d
+    int assembleDisassemble = 0; // 0 if -a, 1 if -d
     if (strcompare(*argv, "-a")) {
         argv++;
     }    
@@ -103,6 +102,7 @@ int validargs(int argc, char **argv)
     // Now -b, or -e arguments, can be in any order
     int contains_b = 0;
     int contains_e = 0;
+    int ebbit = 0;
     while (*argv != NULL) {
         if (strcompare(*argv, "-b") && contains_b == 0) {
             contains_b = 1;
@@ -117,16 +117,24 @@ int validargs(int argc, char **argv)
                 return 0;
             }
             // FIGURE OUT HOW TO CHECK THE LEAST 12 SIGNIFICANT BITS ARE ALL '0'
-
+            
             argv++;
             
         }
         else if (strcompare(*argv, "-e") && contains_e == 0) {
             contains_e = 1;
             argv++;
-            if (!(strcompare(*argv, "b") || strcompare(*argv, "l"))) {
+
+            if (strcompare(*argv, "b")) {
+                ebbit = 1;
+            }
+            else if (strcompare(*argv, "l")) {
+            }
+            //if (!(strcompare(*argv, "b") || strcompare(*argv, "l")))
+            else {
                 return 0;
             }
+
             argv++;
         }
         // CHECK TO SEE IF THIS IS RIGHT
@@ -134,6 +142,32 @@ int validargs(int argc, char **argv)
             return 0;
         }
     }
+    
+    // Constructing global_options
+    // Third least significant bit, -e b
+    global_options = global_options << 29;
+    if (contains_e && ebbit) {
+        
+        global_options += 1;
+    }
+
+    // Second least significant bit
+    global_options = global_options << 1;
+    if (assembleDisassemble) {
+        global_options += 1;
+    }
+
+    global_options = global_options << 1;
+
+    // should -h provision go here?
+
+    // if -b is specified ...
+    unsigned int base_addr = global_options;
+    if (contains_b) {
+        base_addr &= 0x000;
+    }
+
+    
     return 1; // MAKE SURE EVERYTHING IS RIGHT FIRST
 }
 
@@ -154,6 +188,38 @@ int validargs(int argc, char **argv)
  * binary code for the instruction.
  */
 int encode(Instruction *ip, unsigned int addr) {
+    Instruction i = *ip;
+    Instr_info i_info = *(i.info);
+    if (i_info.type == NTYP) {
+        return 0;
+    }
+
+    unsigned int val = 0;
+
+    if (i_info.type == RTYP) {
+        // Instruction format can be unsigned int, will be stored in 2's complement binary
+
+        // Add opcode, then shift left by 5 bits
+
+        // Add rs, rt, and rd, then shift left by 5 bits each time
+
+        // Add shamt, then shift by 6
+
+        // Add function
+        
+
+        
+    }
+    else if (i_info.type == ITYP) {
+        // Add opcode, shift left by 5 and add rs
+
+        // After adding rs, shift left by 5 and add rt
+
+        // Shift left 16 and add the immediate value
+    }
+    else { // JTYP
+        // add opcode, then shift by 26 and add address
+    }
     return 0;
 }
 

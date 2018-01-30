@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     if(global_options & 0x1) { // -h
         USAGE(*argv, EXIT_SUCCESS);
     }
-    else if (global_options | 0x10) { // -d
+    if (global_options | 0x10) { // -d
          
     }
     else if (global_options & 0x00) { // -a
