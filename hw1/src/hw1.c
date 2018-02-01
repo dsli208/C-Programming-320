@@ -329,6 +329,18 @@ int encode(Instruction *ip, unsigned int addr) {
  * decoded information about the instruction.
  */
 int decode(Instruction *ip, unsigned int addr) {
+    // Before we do anything, first get the value field.
+    unsigned int val = ip -> value;
+
+    // Determine the type of instruction
+    unsigned int opcodeVal = val >>= 26;
+    Opcode opcode = opcodeTable[opcodeVal];
     
+    // Determine if the opcode is SPECIAL or BCOND
+    if (opcode == SPECIAL) {
+    }
+    else if (opcode == BCOND) {
+        
+    }
     return 0;
 }
