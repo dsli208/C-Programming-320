@@ -189,7 +189,7 @@ int validargs(int argc, char **argv)
  */
 int encode(Instruction *ip, unsigned int addr) {
     Instruction i = *ip;
-    Instr_info i_info = *(i.info);
+    Instr_info i_info = *(i.info); // opcode, type, srcs[3], format
     if (i_info.type == NTYP) {
         return 0;
     }
@@ -200,27 +200,114 @@ int encode(Instruction *ip, unsigned int addr) {
         // Instruction format can be unsigned int, will be stored in 2's complement binary
 
         // Add opcode, then shift left by 5 bits
-
+        val += i_info.opcode;
+        val <<= 5;
         // Add rs, rt, and rd, then shift left by 5 bits each time
 
-        // Add shamt, then shift by 6
+        // Find RS in srcs[3] array
+        int n = 0;
+        for (n = 0; n <= 3; n++) {
+            if (i_info.srcs[n] == RS) {
+                break;
+            }
+            // Error case?
+            if (n == 3) {
+                return 0;
+            }
+        }
+                
+        val += i.args[n];
+        val <<= 5;
+
+        // Find RT in srcs[3] array
+        for (n = 0; n <= 3; n++) {
+            if (i_info.srcs[n] == RT) {
+                break;
+            }
+            if (n == 3) {
+                return 0;
+            }
+        }
+
+        val += i.args[n];
+        val <<= 5;
+
+        // Find RD in srcs[3] array
+        for (n = 0; n <= 3; n++) {
+            if (i_info.srcs[n] == RD) {
+                break;
+            }
+            if (n == 3) {
+                return 0;
+            }
+        }
+
+        val += i.args[n];
+        val <<= 5;
+
+        // Add shamt, then shift by 6 
+        // is the shamt instruction.extra or of type EXTRA in srcs?
+        val += i.extra;
 
         // Add function
+        // Get it from specialTable, since it's bits 5:0 --> should it be int or UNSIGNED int?
+        int func = 0;
+        for (int x = 0; x < 5; x++) {
+            func += specialTable[x];
+            if (x < 4)
+                func <<= 1;
+        }
+        val += func;
         
-
-        
+        // Finally, set the value
+        i.value = val;
     }
     else if (i_info.type == ITYP) {
         // Add opcode, shift left by 5 and add rs
+        val += i_info.opcode;
+        val <<= 5;
+
+        // Find RS in srcs[3] array
+        int n = 0;
+        for (n = 0; n <= 3; n++) {
+            if (i_info.srcs[n] == RS) {
+                break;
+            }
+            // Error case?
+            if (n == 3) {
+                return 0;
+            }
+        }
+        val <<= 5;
 
         // After adding rs, shift left by 5 and add rt
+        // Find RT in srcs[3] array
+        for (n = 0; n <= 3; n++) {
+            if (i_info.srcs[n] == RT) {
+                break;
+            }
+            if (n == 3) {
+                return 0;
+            }
+        }
+        val <<= 16;
 
         // Shift left 16 and add the immediate value
+        val += i.extra;
+
+        // Set val
+        i.value = val;
     }
     else { // JTYP
         // add opcode, then shift by 26 and add address
+        val += i_info.opcode;
+        val <<= 26;
+        val += addr;
+
+        // Set val
+        i.value = val;
     }
-    return 0;
+    return 1;
 }
 
 /**
@@ -242,5 +329,6 @@ int encode(Instruction *ip, unsigned int addr) {
  * decoded information about the instruction.
  */
 int decode(Instruction *ip, unsigned int addr) {
+    
     return 0;
 }
