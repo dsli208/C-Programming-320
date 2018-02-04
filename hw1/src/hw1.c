@@ -70,15 +70,15 @@ int slen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
  * the selected options.
  */
 int validargs(int argc, char **argv)
-{   
+{
     // assume bin/hw1 is the first argument, so there is one more argument
-    
+
     if (argc > 7) {
         return 0;
     }
 
-    // Make sure we're incremented to the SECOND argument    
-    argv++;    
+    // Make sure we're incremented to the SECOND argument
+    argv++;
 
     // Iterate through the char**
     // Look for -h
@@ -91,7 +91,7 @@ int validargs(int argc, char **argv)
     int assembleDisassemble = 0; // 0 if -a, 1 if -d
     if (strcompare(*argv, "-a")) {
         argv++;
-    }    
+    }
     else if (strcompare(*argv, "-d")) {
         argv++;
     }
@@ -117,9 +117,9 @@ int validargs(int argc, char **argv)
                 return 0;
             }
             // FIGURE OUT HOW TO CHECK THE LEAST 12 SIGNIFICANT BITS ARE ALL '0'
-            
+
             argv++;
-            
+
         }
         else if (strcompare(*argv, "-e") && contains_e == 0) {
             contains_e = 1;
@@ -142,12 +142,12 @@ int validargs(int argc, char **argv)
             return 0;
         }
     }
-    
+
     // Constructing global_options
     // Third least significant bit, -e b
     global_options = global_options << 29;
     if (contains_e && ebbit) {
-        
+
         global_options += 1;
     }
 
@@ -167,7 +167,7 @@ int validargs(int argc, char **argv)
         base_addr &= 0x000;
     }
 
-    
+
     return 1; // MAKE SURE EVERYTHING IS RIGHT FIRST
 }
 
@@ -190,118 +190,76 @@ int validargs(int argc, char **argv)
 int encode(Instruction *ip, unsigned int addr) {
     Instruction i = *ip;
     Instr_info i_info = *(i.info); // opcode, type, srcs[3], format
-    if (i_info.type == NTYP) {
-        return 0;
-    }
 
     unsigned int val = 0;
+    Opcode op = i_info.opcode;
+
+    // Add opcode, then shift left by 5 bits
+    val += op;
+    val <<= 26;
 
     if (i_info.type == RTYP) {
         // Instruction format can be unsigned int, will be stored in 2's complement binary
 
-        // Add opcode, then shift left by 5 bits
-        val += i_info.opcode;
-        val <<= 5;
-        // Add rs, rt, and rd, then shift left by 5 bits each time
+        // First, find the opcode and go into the table
+        // Add rs, rt, and rd, shifting accordingly each time - NOT DONE
 
-        // Find RS in srcs[3] array
         int n = 0;
-        for (n = 0; n <= 3; n++) {
+        for (; n < 3; n++) {
             if (i_info.srcs[n] == RS) {
-                break;
+                int rs_reg = i.args[n];
+                rs_reg <<= 21;
+                val += rs_reg;
             }
-            // Error case?
-            if (n == 3) {
-                return 0;
+            else if (i_info.srcs[n] == RT) {
+                int rt_reg = i.args[n];
+                rt_reg <<= 16;
+                val += rt_reg;
             }
+            else if (i_info.srcs[n] == RD) {
+                int rd_reg = i.args[n];
+                rd_reg <<= 11;
+                val += rd_reg;
+            }
+            // ELSE?
         }
-                
-        val += i.args[n];
-        val <<= 5;
-
-        // Find RT in srcs[3] array
-        for (n = 0; n <= 3; n++) {
-            if (i_info.srcs[n] == RT) {
-                break;
-            }
-            if (n == 3) {
-                return 0;
-            }
-        }
-
-        val += i.args[n];
-        val <<= 5;
-
-        // Find RD in srcs[3] array
-        for (n = 0; n <= 3; n++) {
-            if (i_info.srcs[n] == RD) {
-                break;
-            }
-            if (n == 3) {
-                return 0;
-            }
-        }
-
-        val += i.args[n];
-        val <<= 5;
-
-        // Add shamt, then shift by 6 
+        // Add shamt, then shift by 6
         // is the shamt instruction.extra or of type EXTRA in srcs?
-        val += i.extra;
+        int extra = i.extra;
+        extra <<= 6;
+        val += extra;
 
         // Add function
-        // Get it from specialTable, since it's bits 5:0 --> should it be int or UNSIGNED int?
-        int func = 0;
-        for (int x = 0; x < 5; x++) {
-            func += specialTable[x];
-            if (x < 4)
-                func <<= 1;
-        }
-        val += func;
-        
+        // ????
+
         // Finally, set the value
         i.value = val;
     }
     else if (i_info.type == ITYP) {
-        // Add opcode, shift left by 5 and add rs
-        val += i_info.opcode;
-        val <<= 5;
 
-        // Find RS in srcs[3] array
         int n = 0;
-        for (n = 0; n <= 3; n++) {
+        for (; n <= 3; n++) {
             if (i_info.srcs[n] == RS) {
-                break;
+                int rs_reg = i.args[n];
+                rs_reg <<= 21;
+                val += rs_reg;
             }
-            // Error case?
-            if (n == 3) {
-                return 0;
+            else if (i_info.srcs[n] == RT) {
+                int rt_reg = i.args[n];
+                rt_reg <<= 16;
+                val += rt_reg;
             }
-        }
-        val <<= 5;
-
-        // After adding rs, shift left by 5 and add rt
-        // Find RT in srcs[3] array
-        for (n = 0; n <= 3; n++) {
-            if (i_info.srcs[n] == RT) {
-                break;
-            }
-            if (n == 3) {
-                return 0;
+            else if (i_info.srcs[n] == EXTRA) { // immediate value
+                int extra_value = i.extra;
+                val += i.extra;
             }
         }
-        val <<= 16;
-
-        // Shift left 16 and add the immediate value
-        val += i.extra;
 
         // Set val
         i.value = val;
     }
     else { // JTYP
-        // add opcode, then shift by 26 and add address
-        val += i_info.opcode;
-        val <<= 26;
+        // add address
         val += addr;
 
         // Set val
@@ -335,12 +293,43 @@ int decode(Instruction *ip, unsigned int addr) {
     // Determine the type of instruction
     unsigned int opcodeVal = val >>= 26;
     Opcode opcode = opcodeTable[opcodeVal];
-    
+
     // Determine if the opcode is SPECIAL or BCOND
     if (opcode == SPECIAL) {
+        int specialTableIndex = val & 0x1f;
+        opcode = specialTable[specialTableIndex];
     }
     else if (opcode == BCOND) {
-        
+        int bcondValue = val & 0x1f0000;
+        bcondValue >>= 16;
+
+        if (bcondValue == 0) {
+            opcode = OP_BLTZ;
+        }
+        else if (bcondValue == 1) {
+            opcode = OP_BGEZ;
+        }
+        else if (bcondValue == 16) {
+            opcode = OP_BLTZAL;
+        }
+        else if (bcondValue == 17) {
+            opcode = OP_BGEZAL;
+        }
+        else {
+            return 0;
+        }
     }
-    return 0;
+
+    Instr_info instruction_info = instrTable[opcode];
+    Instr_info info;
+    info = *(ip -> info);
+
+    info.opcode = opcode;
+    info.type = instruction_info.type;
+    for (int i = 0; i < 3; i++) {
+        info.srcs[i] = instruction_info.srcs[i];
+    }
+
+
+    return 1;
 }
