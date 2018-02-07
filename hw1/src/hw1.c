@@ -16,6 +16,11 @@
  * You may modify this file and/or move the functions contained here
  * to other source files (except for main.c) as you wish.
  */
+// ABCD --> ??
+// Endianness - convert
+unsigned int convertEndian(unsigned int value) {
+
+}
 
 int hexvalidate(char *s) {
     char c = *s;
@@ -148,13 +153,13 @@ int validargs(int argc, char **argv)
     global_options = global_options << 29;
     if (contains_e && ebbit) {
 
-        global_options += 1;
+        global_options |= 1;
     }
 
     // Second least significant bit
     global_options = global_options << 1;
     if (assembleDisassemble) {
-        global_options += 1;
+        global_options |= 1;
     }
 
     global_options = global_options << 1;
@@ -298,6 +303,8 @@ int decode(Instruction *ip, unsigned int addr) {
     if (opcode == SPECIAL) {
         int specialTableIndex = val & 0x1f;
         opcode = specialTable[specialTableIndex];
+        if (opcode == ILLEGL)
+            return 0;
     }
     else if (opcode == BCOND) {
         int bcondValue = val & 0x1f0000;
@@ -319,6 +326,8 @@ int decode(Instruction *ip, unsigned int addr) {
             return 0;
         }
     }
+    else if (opcode == ILLEGL)
+        return 0;
 
     Instr_info instruction_info = instrTable[opcode];
     Instr_info info;
@@ -329,6 +338,7 @@ int decode(Instruction *ip, unsigned int addr) {
     for (int i = 0; i < 3; i++) {
         info.srcs[i] = instruction_info.srcs[i];
     }
+    (void)info;
 
 
     return 1;

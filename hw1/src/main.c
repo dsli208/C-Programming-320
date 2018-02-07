@@ -16,7 +16,11 @@
 #include "debug.h"
 
 int main(int argc, char **argv)
-{   
+{
+    Instr_info inin;
+    Instruction i = {0x7, &inin, {}, 0x0, {}};
+
+
     if(!validargs(argc, argv)) {
         //printf("%d\n", global_options);
         USAGE(*argv, EXIT_FAILURE);
@@ -24,15 +28,36 @@ int main(int argc, char **argv)
     debug("Options: 0x%X", global_options);
 
     // Structure of how the main function works?
-    // 
+
     if(global_options & 0x1) { // -h
         USAGE(*argv, EXIT_SUCCESS);
     }
     if (global_options | 0x10) { // -d
-         
+        unsigned int value = 0x10aeff;
+        //int decodeVal = decode(&i, value);
+        //printf("%d\n", decodeVal);
+        fgets(instr, 120, stdin); // size == 120?
+        char *instr = "hello 1";//NULL;
+        char* instr_type = NULL;
+        int rs = 0, rt = 0, rd = 0;
+        int *rsp = &rs, *rtp = &rt, *rdp = &rd;
+        sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
+        while (instr != EOF) {
+            encode();
+        }
     }
     else if (global_options & 0x00) { // -a
+        unsigned int value = 0x10aeff;
+        int encodeVal = encode(&i, value);
+        char *instr = "";//NULL;
+        fgets(instr, 120, stdin); // size == 120?
+        char* instr_type = NULL;
+        int rs = 0, rt = 0, rd = 0;
+        int *rsp = &rs, *rtp = &rt, *rdp = &rd;
+        sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
     }
+
+
     return EXIT_SUCCESS;
 }
 
@@ -40,3 +65,5 @@ int main(int argc, char **argv)
  * Just a reminder: All non-main functions should
  * be in another file not named main.c
  */
+
+// BE --> LE and vice-versa
