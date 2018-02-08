@@ -33,7 +33,7 @@ int main(int argc, char **argv)
         USAGE(*argv, EXIT_SUCCESS);
     }
     if (global_options | 0x10) { // -d
-        unsigned int value = 0x10aeff;
+        //unsigned int value = 0x10aeff;
         //int decodeVal = decode(&i, value);
         //printf("%d\n", decodeVal);
         char *instr = "hello 1";//NULL;
@@ -47,8 +47,8 @@ int main(int argc, char **argv)
         }
     }
     else if (global_options & 0x00) { // -a
-        unsigned int value = 0x10aeff;
-        int encodeVal = encode(&i, value);
+        //unsigned int value = 0x10aeff;
+        //int encodeVal = encode(&i, value);
         char *instr = "";//NULL;
         char* instr_type = NULL;
         fgets(instr, 120, stdin); // size == 120?

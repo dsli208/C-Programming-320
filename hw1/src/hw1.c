@@ -25,22 +25,36 @@ unsigned int convertEndian(unsigned int value) {
     int valZero = 0;
     int bits = 32;
 
-    int upperBitIndex = bits - 8;
-    int lowerBitIndex = bits - 16;
+    int upperBitIndex = bits - 8; // 28, 20
+    int lowerBitIndex = bits - 16; // 24, 16
 
-    while (bits > 0) {
+    int newUpperBitIndex = 4; // 4, 12
+    int newLowerBitIndex = 0; // 0, 8
+
+
+
+    while (bits > 0 && newUpperBitIndex <= 32) {
+        // "Extract" values
         int upperAnd = endianOrConv << upperBitIndex;
         int lowerAnd = endianOrConv << lowerBitIndex;
 
-        // Extract the new values
+        // AND to get your intitial values
         int newLower = value & upperAnd;
         int newUpper = value & lowerAnd;
 
-        // Swap
-        value |= newLower >> 8;
-        value |= newUpper << 8;
+        // Shift the new values according to where they are supposed to go in the big endian value
+        newLower >>= lowerBitIndex - newLowerBitIndex;
+        newUpper >>= upperBitIndex - newUpperBitIndex;
 
-        bits -= 16;
+        // OR your new values in
+        newVal |= newUpper;
+        newVal |= newLower;
+
+        // Change values for the next iteration
+        newUpperBitIndex += 8;
+        newLowerBitIndex += 8;
+        upperBitIndex -= 8;
+        lowerBitIndex -= 8;
     }
     return newVal;
 }
@@ -361,6 +375,7 @@ int decode(Instruction *ip, unsigned int addr) {
     for (int i = 0; i < 3; i++) {
         info.srcs[i] = instruction_info.srcs[i];
     }
+    info.format = instruction_info.format;
     (void)info;
 
 
