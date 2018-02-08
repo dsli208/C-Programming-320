@@ -1,5 +1,7 @@
 #include "hw1.h"
 
+#define endianOrConv 0xFF
+
 #ifdef _STRING_H
 #error "Do not #include <string.h>. You will get a ZERO."
 #endif
@@ -19,7 +21,28 @@
 // ABCD --> ??
 // Endianness - convert
 unsigned int convertEndian(unsigned int value) {
+    unsigned int newVal = 0;
+    int valZero = 0;
+    int bits = 32;
 
+    int upperBitIndex = bits - 8;
+    int lowerBitIndex = bits - 16;
+
+    while (bits > 0) {
+        int upperAnd = endianOrConv << upperBitIndex;
+        int lowerAnd = endianOrConv << lowerBitIndex;
+
+        // Extract the new values
+        int newLower = value & upperAnd;
+        int newUpper = value & lowerAnd;
+
+        // Swap
+        value |= newLower >> 8;
+        value |= newUpper << 8;
+
+        bits -= 16;
+    }
+    return newVal;
 }
 
 int hexvalidate(char *s) {
@@ -167,7 +190,7 @@ int validargs(int argc, char **argv)
     // should -h provision go here?
 
     // if -b is specified ...
-    unsigned int base_addr = global_options;
+    base_addr = global_options;
     if (contains_b) {
         base_addr &= 0x000;
     }

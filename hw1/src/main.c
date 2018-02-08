@@ -36,25 +36,28 @@ int main(int argc, char **argv)
         unsigned int value = 0x10aeff;
         //int decodeVal = decode(&i, value);
         //printf("%d\n", decodeVal);
-        fgets(instr, 120, stdin); // size == 120?
         char *instr = "hello 1";//NULL;
         char* instr_type = NULL;
+        fgets(instr, 120, stdin); // size == 120?
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
         sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
-        while (instr != EOF) {
-            encode();
+        while (instr != NULL) {
+            decode(&i, base_addr);
         }
     }
     else if (global_options & 0x00) { // -a
         unsigned int value = 0x10aeff;
         int encodeVal = encode(&i, value);
         char *instr = "";//NULL;
-        fgets(instr, 120, stdin); // size == 120?
         char* instr_type = NULL;
+        fgets(instr, 120, stdin); // size == 120?
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
         sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
+        while (instr != NULL) {
+            encode(&i, base_addr);
+        }
     }
 
 

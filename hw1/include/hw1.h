@@ -5,3 +5,6 @@
 #include "instruction.h"
 
 #endif
+
+/* Base address variable to be set as part of validargs */
+unsigned int base_addr;
