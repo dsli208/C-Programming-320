@@ -237,7 +237,7 @@ int encode(Instruction *ip, unsigned int addr) {
     Opcode op = i_info.opcode;
 
     // Add opcode, then shift left by 5 bits
-    val += op;
+    val |= op;
     val <<= 26;
 
     if (i_info.type == RTYP) {
@@ -251,17 +251,17 @@ int encode(Instruction *ip, unsigned int addr) {
             if (i_info.srcs[n] == RS) {
                 int rs_reg = i.args[n];
                 rs_reg <<= 21;
-                val += rs_reg;
+                val |= rs_reg;
             }
             else if (i_info.srcs[n] == RT) {
                 int rt_reg = i.args[n];
                 rt_reg <<= 16;
-                val += rt_reg;
+                val |= rt_reg;
             }
             else if (i_info.srcs[n] == RD) {
                 int rd_reg = i.args[n];
                 rd_reg <<= 11;
-                val += rd_reg;
+                val |= rd_reg;
             }
             // ELSE?
         }
@@ -269,7 +269,7 @@ int encode(Instruction *ip, unsigned int addr) {
         // is the shamt instruction.extra or of type EXTRA in srcs?
         int extra = i.extra;
         extra <<= 6;
-        val += extra;
+        val |= extra;
 
         // Add function
         // ????
@@ -284,16 +284,16 @@ int encode(Instruction *ip, unsigned int addr) {
             if (i_info.srcs[n] == RS) {
                 int rs_reg = i.args[n];
                 rs_reg <<= 21;
-                val += rs_reg;
+                val |= rs_reg;
             }
             else if (i_info.srcs[n] == RT) {
                 int rt_reg = i.args[n];
                 rt_reg <<= 16;
-                val += rt_reg;
+                val |= rt_reg;
             }
             else if (i_info.srcs[n] == EXTRA) { // immediate value
                 int extra_value = i.extra;
-                val += i.extra;
+                val |= i.extra;
             }
         }
 
