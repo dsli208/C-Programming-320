@@ -18,6 +18,21 @@
  * You may modify this file and/or move the functions contained here
  * to other source files (except for main.c) as you wish.
  */
+
+int setExtra(int value, Type type, Opcode opcode) {
+    // Determine the type and OPCODE first
+    int extra = 0;
+    if (opcode == OP_BREAK) {
+        extra = value & 0x03FFFFC0;
+    }
+    else if (type == RTYP) {
+        extra = value & 0x000007C0;
+    }
+    else if (type == ITYP) {
+        extra = value & 0x0000FFFF;
+    }
+    return extra;
+}
 // ABCD --> ??
 // Endianness - convert
 unsigned int convertEndian(unsigned int value) {
@@ -30,8 +45,6 @@ unsigned int convertEndian(unsigned int value) {
 
     int newUpperBitIndex = 4; // 4, 12
     int newLowerBitIndex = 0; // 0, 8
-
-
 
     while (bits > 0 && newUpperBitIndex <= 32) {
         // "Extract" values
@@ -142,9 +155,9 @@ int validargs(int argc, char **argv)
     }
 
     // Now -b, or -e arguments, can be in any order
-    int contains_b = 0;
-    int contains_e = 0;
-    int ebbit = 0;
+    contains_b = 0;
+    contains_e = 0;
+    ebbit = 0;
     while (*argv != NULL) {
         if (strcompare(*argv, "-b") && contains_b == 0) {
             contains_b = 1;
@@ -307,6 +320,11 @@ int encode(Instruction *ip, unsigned int addr) {
         // Set val
         i.value = val;
     }
+
+    // If big endian conversion is required, do it here
+    if (contains_e && ebbit == 1) {
+        addr = convertEndian(addr);
+    }
     return 1;
 }
 
@@ -329,6 +347,8 @@ int encode(Instruction *ip, unsigned int addr) {
  * decoded information about the instruction.
  */
 int decode(Instruction *ip, unsigned int addr) {
+
+    addr = convertEndian(addr);
     // Before we do anything, first get the value field.
     unsigned int val = ip -> value;
 
@@ -376,6 +396,9 @@ int decode(Instruction *ip, unsigned int addr) {
         info.srcs[i] = instruction_info.srcs[i];
     }
     info.format = instruction_info.format;
+
+    // Setting the EXTRA value
+    ip -> extra = setExtra(val, info.type, opcode);
     (void)info;
 
 

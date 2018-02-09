@@ -38,12 +38,15 @@ int main(int argc, char **argv)
         //printf("%d\n", decodeVal);
         char instr[120];//NULL;
         char instr_type[10];
-        fgets(instr, 120, stdin); // size == 120?
+
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
-        sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
-        while (instr != NULL) {
+
+        while (instr != NULL || *instr == EOF) {
+            fgets(instr, 120, stdin); // size == 120?
+            sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
             decode(&i, base_addr);
+            base_addr += 4;
         }
     }
     else if (global_options & 0x00) { // -a
@@ -51,12 +54,15 @@ int main(int argc, char **argv)
         //int encodeVal = encode(&i, value);
         char instr[120];//NULL;
         char instr_type[10];
-        fgets(instr, 120, stdin); // size == 120?
+
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
-        sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
-        while (instr != NULL) {
+
+        while (instr != NULL || *instr == EOF) {
+            fgets(instr, 120, stdin); // size == 120?
+            sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
             encode(&i, base_addr);
+            base_addr += 4;
         }
     }
 
