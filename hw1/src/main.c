@@ -36,33 +36,44 @@ int main(int argc, char **argv)
         //unsigned int value = 0x10aeff;
         //int decodeVal = decode(&i, value);
         //printf("%d\n", decodeVal);
-        char instr[120];//NULL;
-        char instr_type[10];
-
-        int rs = 0, rt = 0, rd = 0;
-        int *rsp = &rs, *rtp = &rt, *rdp = &rd;
-
-        while (instr != NULL || *instr == EOF) {
-            fgets(instr, 120, stdin); // size == 120?
-            sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
-            decode(&i, base_addr);
-            base_addr += 4;
+        int valShift = 0;
+        int val = 0;
+        char c;
+        while ((c = getchar()) != EOF && valShift < 32) {
+            val |= c;
+            valShift += 8;
+            val <<= 8;
         }
+        i.value = val;
+        decode(&i, base_addr);
     }
     else if (global_options & 0x00) { // -a
         //unsigned int value = 0x10aeff;
         //int encodeVal = encode(&i, value);
         char instr[120];//NULL;
         char instr_type[10];
+        char c;
 
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
 
-        while (instr != NULL || *instr == EOF) {
+        while ((c = getchar()) != EOF)  {
             fgets(instr, 120, stdin); // size == 120?
             sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
             encode(&i, base_addr);
+            //instr.value
+
             base_addr += 4;
+        }
+
+        int valShift = 0;
+        int val = i.value;
+        while (valShift < 32) {
+            // val = 0x00000000 format
+            int lowestTwoValBits = val & 0xFF;
+            putchar(lowestTwoValBits);
+            valShift += 8;
+            val >>= 8;
         }
     }
 

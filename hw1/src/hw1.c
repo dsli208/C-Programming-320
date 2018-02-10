@@ -18,6 +18,56 @@
  * You may modify this file and/or move the functions contained here
  * to other source files (except for main.c) as you wish.
  */
+int validateBaseAddr(unsigned int baseAddr) {
+    unsigned int leastTwelveBits = baseAddr & 0x000;
+    if (leastTwelveBits == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+unsigned int strToIntAddr(char * initAddr) {
+    // Check for "hex number" --> "0x"
+    if (*initAddr == '0' && *(initAddr + 1) == 'x') {
+        initAddr += 2;
+    }
+
+    char *p = initAddr;
+    int shiftAmt = 0;
+
+    unsigned int addr = 0;
+
+    while (*p != '\0' && shiftAmt < 32) {
+        char currentChar = *p;
+        int orValue = 0;
+        if ((currentChar >= 'A' && currentChar <= 'F') && (currentChar >= 'a' && currentChar <= 'f')) {
+            switch (currentChar) {
+                case 'a':
+                case 'A': orValue = 10; break;
+                case 'b':
+                case 'B': orValue = 11; break;
+                case 'c':
+                case 'C': orValue = 12; break;
+                case 'd':
+                case 'D': orValue = 13; break;
+                case 'e':
+                case 'E': orValue = 14; break;
+                case 'f':
+                case 'F': orValue = 15; break;
+            }
+        }
+        else {
+            orValue = currentChar - 48;
+        }
+
+        addr |= orValue;
+        addr <<= 4;
+        p++;
+    }
+
+    return addr;
+}
+
 
 int setExtra(int value, Type type, Opcode opcode) {
     // Determine the type and OPCODE first
@@ -136,10 +186,10 @@ int validargs(int argc, char **argv)
     argv++;
 
     // Iterate through the char**
-    // Look for -h
+    // Look for -h -- if it is found, global_options is 0xXXXXXXXX1 --> X's represent don't cares
     if (strcompare(*argv, "-h")) {
         argv++;
-        global_options += 1;
+        global_options |= 0x1;
         return 1;
     }
     // Next argument should be either -a|-d
@@ -161,7 +211,7 @@ int validargs(int argc, char **argv)
     while (*argv != NULL) {
         if (strcompare(*argv, "-b") && contains_b == 0) {
             contains_b = 1;
-            argv++;
+            argv++; // Increment to base address, in CHAR* FORM
             if (*argv == NULL || **argv == '-') {
                 return 0;
             }
@@ -172,7 +222,10 @@ int validargs(int argc, char **argv)
                 return 0;
             }
             // FIGURE OUT HOW TO CHECK THE LEAST 12 SIGNIFICANT BITS ARE ALL '0'
-
+            base_addr = strToIntAddr(*argv);
+            if (validateBaseAddr(base_addr) == 0) {
+                return 0;
+            }
             argv++;
 
         }
@@ -197,6 +250,8 @@ int validargs(int argc, char **argv)
             return 0;
         }
     }
+    // Before we OR anything in global_options, get the VALIDATED base address
+    global_options = base_addr;
 
     // Constructing global_options
     // Third least significant bit, -e b
@@ -258,7 +313,7 @@ int encode(Instruction *ip, unsigned int addr) {
 
         // First, find the opcode and go into the table
         // Add rs, rt, and rd, shifting accordingly each time - NOT DONE
-
+        // Can we construct the "register" part of the value simply using regs[3]
         int n = 0;
         for (; n < 3; n++) {
             if (i_info.srcs[n] == RS) {
@@ -399,6 +454,8 @@ int decode(Instruction *ip, unsigned int addr) {
 
     // Setting the EXTRA value
     ip -> extra = setExtra(val, info.type, opcode);
+
+    // Set registers
     (void)info;
 
 
