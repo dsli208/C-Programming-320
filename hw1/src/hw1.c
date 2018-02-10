@@ -26,7 +26,7 @@ int validateBaseAddr(unsigned int baseAddr) {
     return 0;
 }
 
-unsigned int strToIntAddr(char * initAddr) {
+unsigned int strToIntAddr(char *initAddr) {
     // Check for "hex number" --> "0x"
     if (*initAddr == '0' && *(initAddr + 1) == 'x') {
         initAddr += 2;
@@ -37,10 +37,11 @@ unsigned int strToIntAddr(char * initAddr) {
 
     unsigned int addr = 0;
 
-    while (*p != '\0' && shiftAmt < 32) {
+
+    while (*p != '\0' && shiftAmt < 28) {
         char currentChar = *p;
         int orValue = 0;
-        if ((currentChar >= 'A' && currentChar <= 'F') && (currentChar >= 'a' && currentChar <= 'f')) {
+        if ((currentChar >= 'A' && currentChar <= 'F') || (currentChar >= 'a' && currentChar <= 'f')) {
             switch (currentChar) {
                 case 'a':
                 case 'A': orValue = 10; break;
@@ -60,6 +61,7 @@ unsigned int strToIntAddr(char * initAddr) {
             orValue = currentChar - 48;
         }
 
+        shiftAmt += 4;
         addr |= orValue;
         addr <<= 4;
         p++;
@@ -123,6 +125,14 @@ unsigned int convertEndian(unsigned int value) {
 }
 
 int hexvalidate(char *s) {
+    // Check for the "0x"
+    if (*s == 'x') {
+        s++;
+    }
+    else if (*(s + 1) == 'x') {
+        s += 2;
+    }
+
     char c = *s;
     while (c != '\0') {
         if ((c < 'A'|| c > 'F') && (c < 'a' || c > 'f') && (c < '0' || c > '9')) {
@@ -198,6 +208,7 @@ int validargs(int argc, char **argv)
         argv++;
     }
     else if (strcompare(*argv, "-d")) {
+        assembleDisassemble = 1;
         argv++;
     }
     else {
@@ -215,13 +226,14 @@ int validargs(int argc, char **argv)
             if (*argv == NULL || **argv == '-') {
                 return 0;
             }
-            if (slen(*argv) > 8) {
+            if (slen(*argv) > 10) {
                 return 0;
             }
             if (hexvalidate(*argv) == 0) {
                 return 0;
             }
-            // FIGURE OUT HOW TO CHECK THE LEAST 12 SIGNIFICANT BITS ARE ALL '0'
+
+            // Converts "String" argument to unsigned int, then validates it
             base_addr = strToIntAddr(*argv);
             if (validateBaseAddr(base_addr) == 0) {
                 return 0;
@@ -245,7 +257,7 @@ int validargs(int argc, char **argv)
 
             argv++;
         }
-        // CHECK TO SEE IF THIS IS RIGHT
+
         else {
             return 0;
         }
@@ -255,27 +267,19 @@ int validargs(int argc, char **argv)
 
     // Constructing global_options
     // Third least significant bit, -e b
-    global_options = global_options << 29;
+    //global_options = global_options << 29;
     if (contains_e && ebbit) {
 
-        global_options |= 1;
+        global_options |= 0x4;
     }
 
     // Second least significant bit
-    global_options = global_options << 1;
+    //global_options = global_options << 1;
     if (assembleDisassemble) {
-        global_options |= 1;
+        global_options |= 0x2;
     }
 
-    global_options = global_options << 1;
-
-    // should -h provision go here?
-
-    // if -b is specified ...
-    base_addr = global_options;
-    if (contains_b) {
-        base_addr &= 0x000;
-    }
+    //global_options = global_options << 1;
 
 
     return 1; // MAKE SURE EVERYTHING IS RIGHT FIRST
