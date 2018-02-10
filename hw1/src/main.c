@@ -32,22 +32,8 @@ int main(int argc, char **argv)
     if(global_options & 0x1) { // -h
         USAGE(*argv, EXIT_SUCCESS);
     }
-    if (global_options | 0x10) { // -d
-        //unsigned int value = 0x10aeff;
-        //int decodeVal = decode(&i, value);
-        //printf("%d\n", decodeVal);
-        int valShift = 0;
-        int val = 0;
-        char c;
-        while ((c = getchar()) != EOF && valShift < 32) {
-            val |= c;
-            valShift += 8;
-            val <<= 8;
-        }
-        i.value = val;
-        decode(&i, base_addr);
-    }
-    else if (global_options & 0x00) { // -a
+
+    if ((global_options & 0x0) == 0) { // -a
         //unsigned int value = 0x10aeff;
         //int encodeVal = encode(&i, value);
         char instr[120];//NULL;
@@ -57,8 +43,9 @@ int main(int argc, char **argv)
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
 
-        while ((c = getchar()) != EOF)  {
-            fgets(instr, 120, stdin); // size == 120?
+        while ((c = getc(stdin)) != EOF)  {
+        //while (fgets(instr, 120, stdin) != NULL) {
+            //fgets(instr, 120, stdin); // size == 120?
             sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
             encode(&i, base_addr);
             //instr.value
@@ -76,6 +63,22 @@ int main(int argc, char **argv)
             val >>= 8;
         }
     }
+    else if (global_options & 0x2) { // -d
+        //unsigned int value = 0x10aeff;
+        //int decodeVal = decode(&i, value);
+        //printf("%d\n", decodeVal);
+        int valShift = 0;
+        int val = 0;
+        char c;
+        while ((c = getchar()) != EOF && valShift < 32) {
+            val |= c;
+            valShift += 8;
+            val <<= 8;
+        }
+        i.value = val;
+        decode(&i, base_addr);
+    }
+
 
 
     return EXIT_SUCCESS;
