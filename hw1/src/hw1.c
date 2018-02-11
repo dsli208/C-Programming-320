@@ -307,6 +307,7 @@ int validargs(int argc, char **argv)
  * binary code for the instruction.
  */
 int encode(Instruction *ip, unsigned int addr) {
+    //printf("Starts encode");
     Instruction i = *ip;
     Instr_info i_info = *(i.info); // opcode, type, srcs[3], format
 
@@ -314,8 +315,7 @@ int encode(Instruction *ip, unsigned int addr) {
     Opcode op = i_info.opcode;
 
     // Add opcode, then shift left by 5 bits
-    val |= op;
-    val <<= 26;
+    val |= (op << 26);
 
     if (i_info.type == RTYP) {
         // Instruction format can be unsigned int, will be stored in 2's complement binary
@@ -323,7 +323,7 @@ int encode(Instruction *ip, unsigned int addr) {
         // First, find the opcode and go into the table
         // Add rs, rt, and rd, shifting accordingly each time - NOT DONE
         // Can we construct the "register" part of the value simply using regs[3]
-        int n = 0;
+        /*int n = 0;
         for (; n < 3; n++) {
             if (i_info.srcs[n] == RS) {
                 int rs_reg = i.args[n];
@@ -341,22 +341,30 @@ int encode(Instruction *ip, unsigned int addr) {
                 val |= rd_reg;
             }
             // ELSE?
-        }
+        }*/
+        // RS
+        int rs_reg = i.regs[0];
+        int rt_reg = i.regs[1];
+        int rd_reg = i.regs[2];
+
+        val |= (rs_reg << 21);
+        val |= (rt_reg << 16);
+        val |= (rd_reg << 11);
         // Add shamt, then shift by 6
         // is the shamt instruction.extra or of type EXTRA in srcs?
         int extra = i.extra;
-        extra <<= 6;
-        val |= extra;
+        val |= (extra << 6);
 
         // Add function
         // Don't care?
 
         // Finally, set the value
         i.value = val;
+        //printf("%d", val);
     }
     else if (i_info.type == ITYP) {
 
-        int n = 0;
+        /*int n = 0;
         for (; n < 3; n++) {
             if (i_info.srcs[n] == RS) {
                 int rs_reg = i.args[n];
@@ -372,10 +380,19 @@ int encode(Instruction *ip, unsigned int addr) {
                 int extra_value = i.extra;
                 val |= i.extra;
             }
-        }
+        }*/
+
+        int rs_reg = i.regs[0];
+        int rt_reg = i.regs[1];
+
+        val |= (rs_reg << 21);
+        val |= (rt_reg << 16);
+
+        val |= i.extra;
 
         // Set val
         i.value = val;
+        //printf("%d", val);
     }
     else { // JTYP
         // add address
@@ -383,12 +400,18 @@ int encode(Instruction *ip, unsigned int addr) {
 
         // Set val
         i.value = val;
+
+        //printf("%d", val);
     }
 
     // If big endian conversion is required, do it here
     if (contains_e && ebbit == 1) {
         addr = convertEndian(addr);
     }
+
+
+
+    //printf("Finishes encode");
     return 1;
 }
 
@@ -468,6 +491,14 @@ int decode(Instruction *ip, unsigned int addr) {
     ip -> extra = setExtra(val, info.type, opcode);
 
     // Set registers
+    int rs = (0x3E << 21) & val;
+    int rt = (0x1F << 16) & val;
+    int rd = (0xFC << 11) & val;
+
+    ip -> regs[0] = rs;
+    ip -> regs[1] = rt;
+    ip -> regs[2] = rd;
+
     (void)info;
 
 
