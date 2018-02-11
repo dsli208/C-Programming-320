@@ -12,3 +12,5 @@ unsigned int base_addr;
 int contains_b;
 int contains_e;
 int ebbit;
+
+int strcompare(char *a, char *b);

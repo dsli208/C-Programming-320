@@ -12,7 +12,7 @@
 #error "Do not #include <ctype.h>. You will get a ZERO."
 #endif
 
-#include "hw1.h" // includes global_options
+#include "hw1.h" // includes global_options and other variables
 #include "debug.h"
 
 int main(int argc, char **argv)
@@ -43,15 +43,27 @@ int main(int argc, char **argv)
         int rs = 0, rt = 0, rd = 0;
         int *rsp = &rs, *rtp = &rt, *rdp = &rd;
 
-        while ((c = getc(stdin)) != EOF)  {
-        //while (fgets(instr, 120, stdin) != NULL) {
+        //printf("Starts encode");
+
+        char *instructionFormat;
+        //while ((c = getc(stdin)) != EOF)  {
+        while ((instructionFormat = fgets(instr, 120, stdin)) != NULL) {
             //fgets(instr, 120, stdin); // size == 120?
-            sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
+            //sscanf(instr, "%s $%d,$%d,$%d", instr_type, rsp, rtp, rdp);
+            for (int n = 0; n < 63; n++) {
+                Instr_info tableInfo = instrTable[n];
+                if (sscanf(instructionFormat, tableInfo.format, instr_type, rsp, rtp, rdp)) {
+                    inin.format = instructionFormat;
+                    break;
+                }
+            }
             encode(&i, base_addr);
             //instr.value
 
             base_addr += 4;
         }
+
+        //printf("Finished encode");
 
         int valShift = 0;
         int val = i.value;
