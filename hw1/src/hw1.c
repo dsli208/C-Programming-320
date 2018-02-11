@@ -37,10 +37,24 @@ int validateBaseAddr(unsigned int baseAddr) {
     return 0;
 }
 
+unsigned int decStrToIntAddr(char *initAddr) {
+    unsigned int val = 0;
+    char *p = initAddr;
+    while (*p != '\0') {
+        val *= 10;
+        val += (*p - 48);
+        p++;
+    }
+    return val;
+}
+
 unsigned int strToIntAddr(char *initAddr) {
     // Check for "hex number" --> "0x"
     if (*initAddr == '0' && *(initAddr + 1) == 'x') {
         initAddr += 2;
+    }
+    else {
+        return decStrToIntAddr(initAddr);
     }
 
     char *p = initAddr;
@@ -93,7 +107,12 @@ int setExtra(int value, Type type, Opcode opcode) {
         extra = value & 0x000007C0;
     }
     else if (type == ITYP) {
-        extra = value & 0x0000FFFF;
+        short initExtra = value & 0x0000FFFF;
+        extra = initExtra;
+        if (opcode == OP_BEQ || opcode == OP_BGEZ || opcode == OP_BGEZAL || opcode == OP_BGTZ || opcode == OP_BLEZ || opcode == OP_BLTZ || opcode == OP_BLTZAL) {
+            extra <<= 2;
+
+        }
     }
     return extra;
 }
@@ -139,10 +158,7 @@ unsigned int convertEndian(unsigned int value) {
 
 int hexvalidate(char *s) {
     // Check for the "0x"
-    if (*s == 'x') {
-        s++;
-    }
-    else if (*(s + 1) == 'x') {
+    if (*s == '0' && *(s + 1) == 'x') {
         s += 2;
     }
 
@@ -352,6 +368,7 @@ int encode(Instruction *ip, unsigned int addr) {
         val |= (rd_reg << 11);
         // Add shamt, then shift by 6
         // is the shamt instruction.extra or of type EXTRA in srcs?
+
         int extra = i.extra;
         val |= (extra << 6);
 
