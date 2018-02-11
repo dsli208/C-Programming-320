@@ -18,6 +18,17 @@
  * You may modify this file and/or move the functions contained here
  * to other source files (except for main.c) as you wish.
  */
+int slen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
+    int len = 0;
+    char c = *s;
+    while (c != '\0') {
+        len++;
+        s++;
+        c = *s;
+    }
+    return len;
+}
+
 int validateBaseAddr(unsigned int baseAddr) {
     unsigned int leastTwelveBits = baseAddr & 0x000;
     if (leastTwelveBits == 0) {
@@ -33,12 +44,13 @@ unsigned int strToIntAddr(char *initAddr) {
     }
 
     char *p = initAddr;
+    int len = slen(initAddr);
     int shiftAmt = 0;
 
     unsigned int addr = 0;
 
 
-    while (*p != '\0' && shiftAmt < 28) {
+    while (*p != '\0' && shiftAmt < (len * 4) - 4) {
         char currentChar = *p;
         int orValue = 0;
         if ((currentChar >= 'A' && currentChar <= 'F') || (currentChar >= 'a' && currentChar <= 'f')) {
@@ -86,22 +98,22 @@ int setExtra(int value, Type type, Opcode opcode) {
     return extra;
 }
 // ABCD --> ??
-// Endianness - convert
+// Endianness - convert --> WORKS
 unsigned int convertEndian(unsigned int value) {
     unsigned int newVal = 0;
     int valZero = 0;
     int bits = 32;
 
-    int upperBitIndex = bits - 8; // 28, 20
-    int lowerBitIndex = bits - 16; // 24, 16
+    int upperBitIndex = bits - 4; // 28, 20
+    int lowerBitIndex = bits - 8; // 24, 16
 
     int newUpperBitIndex = 4; // 4, 12
     int newLowerBitIndex = 0; // 0, 8
 
     while (bits > 0 && newUpperBitIndex <= 32) {
         // "Extract" values
-        int upperAnd = endianOrConv << upperBitIndex;
-        int lowerAnd = endianOrConv << lowerBitIndex;
+        int upperAnd = endianOrConv << lowerBitIndex;
+        int lowerAnd = endianOrConv << newLowerBitIndex;
 
         // AND to get your intitial values
         int newLower = value & upperAnd;
@@ -109,7 +121,8 @@ unsigned int convertEndian(unsigned int value) {
 
         // Shift the new values according to where they are supposed to go in the big endian value
         newLower >>= lowerBitIndex - newLowerBitIndex;
-        newUpper >>= upperBitIndex - newUpperBitIndex;
+        newLower &= (endianOrConv << newLowerBitIndex); // Added to handle the possibility of sign extension
+        newUpper <<= lowerBitIndex - newLowerBitIndex;
 
         // OR your new values in
         newVal |= newUpper;
@@ -157,16 +170,6 @@ int strcompare(char *a, char *b) { // checking for string/argument equality
     return 1;
 }
 
-int slen(char* s) { // Useful to check length of BASEADDR and ENDIANESS
-    int len = 0;
-    char c = *s;
-    while (c != '\0') {
-        len++;
-        s++;
-        c = *s;
-    }
-    return len;
-}
 
 /**
  * @brief Validates command line arguments passed to the program.
@@ -280,7 +283,9 @@ int validargs(int argc, char **argv)
     }
 
     //global_options = global_options << 1;
-
+    /*if (ebbit && contains_e) {
+        global_options = convertEndian(global_options);
+    }*/
 
     return 1; // MAKE SURE EVERYTHING IS RIGHT FIRST
 }
@@ -344,7 +349,7 @@ int encode(Instruction *ip, unsigned int addr) {
         val |= extra;
 
         // Add function
-        // ????
+        // Don't care?
 
         // Finally, set the value
         i.value = val;
@@ -352,7 +357,7 @@ int encode(Instruction *ip, unsigned int addr) {
     else if (i_info.type == ITYP) {
 
         int n = 0;
-        for (; n <= 3; n++) {
+        for (; n < 3; n++) {
             if (i_info.srcs[n] == RS) {
                 int rs_reg = i.args[n];
                 rs_reg <<= 21;
@@ -374,7 +379,7 @@ int encode(Instruction *ip, unsigned int addr) {
     }
     else { // JTYP
         // add address
-        val += addr;
+        val |= addr;
 
         // Set val
         i.value = val;
@@ -407,7 +412,10 @@ int encode(Instruction *ip, unsigned int addr) {
  */
 int decode(Instruction *ip, unsigned int addr) {
 
-    addr = convertEndian(addr);
+    if (ebbit && contains_e) {
+        addr = convertEndian(addr);
+    }
+
     // Before we do anything, first get the value field.
     unsigned int val = ip -> value;
 
