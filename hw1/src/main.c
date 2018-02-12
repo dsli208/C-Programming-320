@@ -33,7 +33,47 @@ int main(int argc, char **argv)
         USAGE(*argv, EXIT_SUCCESS);
     }
 
-    if ((global_options & 0x0) == 0) { // -a
+    else if (global_options & 0x2) { // -d
+        //unsigned int value = 0x10aeff;
+        //int decodeVal = decode(&i, value);
+        //printf("%d\n", decodeVal);
+        int shifted = 0;
+        int val = 0;
+        char c;
+        while ((c = fgetc(stdin)) != EOF) {
+
+            if (shifted % 4 == 0) {
+                i.value = val;
+                decode(&i, base_addr);
+                continue;
+            }
+
+            int charValue = 0;
+            switch (c) {
+                case 'a':
+                case 'A': charValue = 10; break;
+                case 'b':
+                case 'B': charValue = 11; break;
+                case 'c':
+                case 'C': charValue = 12; break;
+                case 'd':
+                case 'D': charValue = 13; break;
+                case 'e':
+                case 'E': charValue = 14; break;
+                case 'f':
+                case 'F': charValue = 15; break;
+                default: charValue = (c - 48);
+            }
+
+            val |= charValue;
+            val <<= 4;
+
+            shifted++;
+        }
+
+    }
+
+    else if ((global_options & 0x0) == 0) { // -a
         //unsigned int value = 0x10aeff;
         //int encodeVal = encode(&i, value);
         char instr[120];//NULL;
@@ -81,45 +121,7 @@ int main(int argc, char **argv)
         //printf("Finished encode");
 
     }
-    else if (global_options & 0x2) { // -d
-        //unsigned int value = 0x10aeff;
-        //int decodeVal = decode(&i, value);
-        //printf("%d\n", decodeVal);
-        int shifted = 0;
-        int val = 0;
-        char c;
-        while ((c = fgetc(stdin)) != EOF) {
 
-            if (shifted % 4 == 0) {
-                i.value = val;
-                decode(&i, base_addr);
-                continue;
-            }
-
-            int charValue = 0;
-            switch (c) {
-                case 'a':
-                case 'A': charValue = 10; break;
-                case 'b':
-                case 'B': charValue = 11; break;
-                case 'c':
-                case 'C': charValue = 12; break;
-                case 'd':
-                case 'D': charValue = 13; break;
-                case 'e':
-                case 'E': charValue = 14; break;
-                case 'f':
-                case 'F': charValue = 15; break;
-                default: charValue = (c - 48);
-            }
-
-            val |= charValue;
-            val <<= 4;
-
-            shifted++;
-        }
-
-    }
 
 
 

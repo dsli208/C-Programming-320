@@ -452,6 +452,7 @@ int encode(Instruction *ip, unsigned int addr) {
  */
 int decode(Instruction *ip, unsigned int addr) {
 
+    //printf("Decode started");
     if (ebbit && contains_e) {
         addr = convertEndian(addr);
     }
@@ -516,7 +517,8 @@ int decode(Instruction *ip, unsigned int addr) {
     ip -> regs[1] = rt;
     ip -> regs[2] = rd;
 
-    (void)info;
+    printf(info.format, rs, rt, rd);
+    printf("\n");
 
 
     return 1;
