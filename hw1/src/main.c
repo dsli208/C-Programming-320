@@ -68,8 +68,10 @@ int main(int argc, char **argv)
             while (valShift < 32) {
                 // val = 0x00000000 format
                 int lowestTwoValBits = val & shifter;
+                lowestTwoValBits >>= valShift;
                 putchar(lowestTwoValBits);
                 valShift += 8;
+                shifter <<= 8;
                 val >>= 8;
             }
 
