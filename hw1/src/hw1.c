@@ -466,7 +466,7 @@ int decode(Instruction *ip, unsigned int addr) {
 
     // Determine if the opcode is SPECIAL or BCOND
     if (opcode == SPECIAL) {
-        int specialTableIndex = val & 0x1f;
+        int specialTableIndex = val & 0x2f;
         opcode = specialTable[specialTableIndex];
         if (opcode == ILLEGL)
             return 0;

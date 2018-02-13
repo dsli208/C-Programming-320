@@ -37,18 +37,21 @@ int main(int argc, char **argv)
         //unsigned int value = 0x10aeff;
         //int decodeVal = decode(&i, value);
         //printf("%d\n", decodeVal);
+        int shift = 0;
         int shifted = 0;
-        int val = 0;
+        unsigned int val = 0;
         char c;
         while ((c = fgetc(stdin)) != EOF) {
 
-            if (shifted % 4 == 0) {
+            if (shifted % 4 == 0 && shift) {
                 i.value = val;
                 decode(&i, base_addr);
+                val = 0;
+                shift = 0;
                 continue;
             }
 
-            int charValue = 0;
+            int charValue = 48;
             switch (c) {
                 case 'a':
                 case 'A': charValue = 10; break;
@@ -62,13 +65,15 @@ int main(int argc, char **argv)
                 case 'E': charValue = 14; break;
                 case 'f':
                 case 'F': charValue = 15; break;
+                case '\0': continue; break;
                 default: charValue = (c - 48);
             }
 
             val |= charValue;
-            val <<= 4;
+            val <<= 7;
 
             shifted++;
+            shift = 1;
         }
 
     }
