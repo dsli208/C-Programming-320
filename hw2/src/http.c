@@ -21,6 +21,7 @@ typedef struct HDRNODE *HEADERS;
 HEADERS http_parse_headers(HTTP *http);
 void http_free_headers(HEADERS env);
 
+
 /*
  * Routines to manage HTTP connections
  */
@@ -35,6 +36,7 @@ struct http {
   char *response;		/* Response string with message */
   HEADERS headers;		/* Reply headers */
 };
+
 
 /*
  * Open an HTTP connection for a specified IP address and port number
@@ -134,7 +136,7 @@ http_response(HTTP *http)
 {
   void *prev;
   char *response;
-  int len;
+  int len = 0;
 
   if(http->state != ST_HDRS)
     return(1);
@@ -147,7 +149,10 @@ http_response(HTTP *http)
   }
   rewind(http->file);
   signal(SIGPIPE, prev);
-  response = fgetln(http->file, &len);
+  //response = fgetln(http->file, &len);
+  FILE *file = http -> file;
+  size_t n = (size_t)len;
+  getline(&response, &n, file);
   if(response == NULL
      || (http->response = malloc(len+1)) == NULL)
     return(1);
@@ -216,36 +221,36 @@ http_parse_headers(HTTP *http)
     char *line, *l, *ll, *cp;
 
     while((ll = fgetln(f, &len)) != NULL) {
-	line = l = malloc(len+1);
-	l[len] = '\0';
-	strncpy(l, ll, len);
-	while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r'))
-	      l[--len] = '\0';
-	if(len == 0) {
-	    free(line);
-	    break;
-	}
-	node = malloc(sizeof(HDRNODE));
-	node->next = NULL;
-	for(cp = l; *cp == ' '; cp++) ;
-	l = cp;
-	for( ; *cp != ':' && *cp != '\0'; cp++) ;
-	if(*cp == '\0' || *(cp+1) != ' ') {
-	    free(line);
-	    free(node);
-	    continue;
-	}
-	*cp++ = '\0';
-	node->key = strdup(l);
-	while(*cp == ' ')
-	    cp++;
-	node->value = strdup(cp);
-	for(cp = node->key; *cp != NULL; cp++)
-	    if(isupper(*cp))
-		*cp = tolower(*cp);
-	last->next = node;
-	last = node;
-	free(line);
+	     line = l = malloc(len+1);
+	     l[len] = '\0';
+	     strncpy(l, ll, len);
+	     while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r'))
+	         l[--len] = '\0';
+	     if(len == 0) {
+	       free(line);
+	       break;
+	     }
+	     node = malloc(sizeof(HDRNODE));
+	     node->next = NULL;
+	     for(cp = l; *cp == ' '; cp++); // Remove ';'
+	         l = cp;
+	     for( ; *cp != ':' && *cp != '\0'; cp++) ;
+	         if(*cp == '\0' || *(cp+1) != ' ') {
+	             free(line);
+	             free(node);
+	             continue;
+	         }
+	     *cp++ = '\0';
+	     node->key = strdup(l);
+	     while(*cp == ' ')
+	         cp++;
+	     node->value = strdup(cp);
+	     for(cp = node->key; *cp != '\0'; cp++)
+	         if(isupper(*cp))
+		    *cp = tolower(*cp);
+	     last->next = node;
+	     last = node;
+	     free(line);
     }
     return(env);
 }
