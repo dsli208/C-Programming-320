@@ -217,10 +217,12 @@ http_parse_headers(HTTP *http)
     FILE *f = http->file;
     HEADERS env = NULL, last = NULL;
     HDRNODE *node;
-    int len;
+    int len = sizeof(*f)/sizeof(char);
+    size_t n = (size_t)len;
     char *line, *l, *ll, *cp;
 
-    while((ll = fgetln(f, &len)) != NULL) {
+    // while((ll = fgetln(f, &len)) != NULL) {
+    while(getline(&ll, &n, f) != '\0') {
 	     line = l = malloc(len+1);
 	     l[len] = '\0';
 	     strncpy(l, ll, len);
@@ -265,11 +267,11 @@ http_free_headers(HEADERS env)
     HEADERS next;
 
     while(env != NULL) {
-	free(env->key);
-	free(env->value);
-	next = env->next;
-	free(env);
-	env = next;
+	     free(env->key);
+	     free(env->value);
+	     next = env->next;
+	     free(env);
+	     env = next;
     }
 }
 

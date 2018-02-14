@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "debug.h"
 #include "http.h"
@@ -55,7 +56,7 @@ main(int argc, char *argv[])
   http_response(http);
   /*
    * At this point, response status and headers are available for querying.
-   * 
+   *
    * Some of the possible HTTP response status codes are as follows:
    *
    *	200	Success -- document follows
