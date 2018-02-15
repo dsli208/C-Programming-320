@@ -30,6 +30,7 @@ main(int argc, char *argv[])
   parse_args(argc, argv);
   if((up = url_parse(url_to_snarf)) == NULL) {
     fprintf(stderr, "Illegal URL: '%s'\n", argv[1]);
+    url_free(up);
     exit(1);
   }
   method = url_method(up);
@@ -37,11 +38,13 @@ main(int argc, char *argv[])
   port = url_port(up);
   if(method == NULL || strcasecmp(method, "http")) {
     fprintf(stderr, "Only HTTP access method is supported\n");
+    url_free(up);
     exit(1);
   }
   if((http = http_open(addr, port)) == NULL) {
     fprintf(stderr, "Unable to contact host '%s', port %d\n",
 	    url_hostname(up) != NULL ? url_hostname(up) : "(NULL)", port);
+    url_free(up);
     exit(1);
   }
   http_request(http, up);
