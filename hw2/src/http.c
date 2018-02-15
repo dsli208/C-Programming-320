@@ -138,6 +138,7 @@ http_response(HTTP *http)
   char *response;
   int len = 0;
 
+
   if(http->state != ST_HDRS)
     return(1);
   /* Ignore SIGPIPE so we don't die while doing this */
@@ -151,7 +152,9 @@ http_response(HTTP *http)
   signal(SIGPIPE, prev);
   //response = fgetln(http->file, &len);
   FILE *file = http -> file;
+  len = sizeof(*file)/sizeof(char);
   size_t n = (size_t)len;
+
   getline(&response, &n, file);
   if(response == NULL
      || (http->response = malloc(len+1)) == NULL)
@@ -217,10 +220,12 @@ http_parse_headers(HTTP *http)
     FILE *f = http->file;
     HEADERS env = NULL, last = NULL;
     HDRNODE *node;
-    int len;
+    int len = sizeof(*f)/sizeof(char);
+    size_t n = (size_t)len;
+
     char *line, *l, *ll, *cp;
 
-    while((ll = fgetln(f, &len)) != NULL) {
+    while((getline(&ll, &n, f)) != '\0') {
 	     line = l = malloc(len+1);
 	     l[len] = '\0';
 	     strncpy(l, ll, len);
