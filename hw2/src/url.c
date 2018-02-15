@@ -21,29 +21,24 @@ struct url {
   struct in_addr addr;		/* IP address of the server */
 };
 
-// Wrapper function for url_parse?
-
 /*
  * Parse a URL given as a string into its constituent parts,
  * and return it as a URL object.
  */
 
-URL*
+URL *
 url_parse(char *url)
 {
   URL *up;
   char *cp, c;
   char *slash, *colon;
 
-  if((up = malloc(sizeof(*up))) == NULL) {
-    free(up);
+  if((up = malloc(sizeof(*up))) == NULL)
     return(NULL);
-  }
   /*
    * Make a copy of the argument that we can fiddle with
    */
   if((up->stuff = strdup(url)) == NULL) {
-    free(up -> stuff);
     free(up);
     return(NULL);
   }
@@ -52,7 +47,6 @@ url_parse(char *url)
   /*
    * Now ready to parse the URL
    */
-  cp = malloc(sizeof(char*));
   cp = up->stuff;
   slash = strchr(cp, '/');
   colon = strchr(cp, ':');
@@ -62,13 +56,12 @@ url_parse(char *url)
      * of the URL before the colon is the access method.
      */
     if(colon < slash) {
-        *colon = '\0';
-        up->method = malloc(sizeof(char*));
-        up->method = strdup(cp);
-        cp = colon+1;
-        if(!strcasecmp(up->method, "http"))
-	         up->port = 80;
-        free(up->method);
+      *colon = '\0';
+      free(up->method);
+      up->method = strdup(cp);
+      cp = colon+1;
+      if(!strcasecmp(up->method, "http"))
+	up->port = 80;
     }
     if(*(slash+1) == '/') {
       /*
@@ -76,29 +69,27 @@ url_parse(char *url)
        * and the following string, up to the next slash, colon or the end
        * of the URL, is the host name.
        */
-      for(cp = slash+2; *cp != '\0' && *cp != ':' && *cp != '/'; cp++) {
-          c = *cp;
-          *cp = '\0';
-          up->hostname = malloc(sizeof(char*));
-          up->hostname = slash+2;
-          free(up->hostname);
-          *cp = c;
-      }
+      for(cp = slash+2; *cp != '\0' && *cp != ':' && *cp != '/'; cp++)
+	;
+      c = *cp;
+      *cp = '\0';
+      free(up->hostname);
+      up->hostname = slash+2;
+      *cp = c;
       /*
        * If we found a ':', then we have to collect the port number
        */
       if(*cp == ':') {
-	       char *cp1;
-	       cp1 = ++cp;
-	       while(isdigit(*cp))
-	         cp++;
-	       c = *cp;
-	       *cp = '\0';
-	       up->port = atoi(cp1);
-	       *cp = c;
+	char *cp1;
+	cp1 = ++cp;
+	while(isdigit(*cp))
+	  cp++;
+	c = *cp;
+	*cp = '\0';
+	up->port = atoi(cp1);
+	*cp = c;
       }
     }
-    up -> path = malloc(sizeof(char*));
     if(*cp == '\0')
       up->path = "/";
     else
@@ -108,7 +99,6 @@ url_parse(char *url)
      * No colon: a relative URL with no method or hostname
      */
     up->path = cp;
-    free (up->path);
   }
   return(up);
 }
