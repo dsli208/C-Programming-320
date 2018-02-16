@@ -27,8 +27,14 @@ main(int argc, char *argv[])
   int port, c, code;
   char *status, *method;
 
+  // Place unit test code to be debugged here.  Remove all code before submitting.
+  up = url_parse("http://www.google.com");
+  http = http_open(url_address(up), url_port(up));
+  // Remove code between this comment and the last one.  It could cause errors during grading.
+
   parse_args(argc, argv);
   if((up = url_parse(url_to_snarf)) == NULL) {
+    url_free(up);
     fprintf(stderr, "Illegal URL: '%s'\n", argv[1]);
     exit(1);
   }
@@ -36,12 +42,14 @@ main(int argc, char *argv[])
   addr = url_address(up);
   port = url_port(up);
   if(method == NULL || strcasecmp(method, "http")) {
+    url_free(up);
     fprintf(stderr, "Only HTTP access method is supported\n");
     exit(1);
   }
   if((http = http_open(addr, port)) == NULL) {
     fprintf(stderr, "Unable to contact host '%s', port %d\n",
 	    url_hostname(up) != NULL ? url_hostname(up) : "(NULL)", port);
+    url_free(up);
     exit(1);
   }
   http_request(http, up);
