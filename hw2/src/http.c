@@ -135,7 +135,7 @@ int
 http_response(HTTP *http)
 {
   void *prev;
-  char *response;
+  char *response = NULL;
   int len = 0;
 
 
@@ -167,7 +167,7 @@ http_response(HTTP *http)
 	 || http->response[len] == '\n'));
   if(sscanf(http->response, "HTTP/%3s %d ", http->version, &http->code) != 2)
     return(1);
-  http->headers = http_parse_headers(http);
+  http->headers = http_parse_headers(http); // PROGRAM SEGFAULTS HERE
   http->state = ST_BODY;
   return(0);
 }
@@ -223,9 +223,12 @@ http_parse_headers(HTTP *http)
     int len = sizeof(*f)/sizeof(char);
     size_t n = (size_t)len;
 
-    char *line, *l, *ll, *cp;
+    char *line = NULL;
+    char *l = NULL;
+    char *ll = NULL;
+    char *cp = NULL;
 
-    while((getline(&ll, &n, f)) != '\0') {
+    while((getline(&ll, &n, f)) != EOF) { // INFINITE LOOP
 	     line = l = malloc(len+1);
 	     l[len] = '\0';
 	     strncpy(l, ll, len);
@@ -253,8 +256,10 @@ http_parse_headers(HTTP *http)
 	     for(cp = node->key; *cp != '\0'; cp++)
 	         if(isupper(*cp))
 		    *cp = tolower(*cp);
-	     last->next = node;
-	     last = node;
+       if (last != NULL) {
+	       last->next = node;
+	       last = node;
+     }
 	     free(line);
     }
     return(env);

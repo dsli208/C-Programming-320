@@ -42,7 +42,7 @@ main(int argc, char *argv[])
   addr = url_address(up);
   port = url_port(up);
   if(method == NULL || strcasecmp(method, "http")) {
-    url_free(up);
+    url_free(up); // Error at this line
     fprintf(stderr, "Only HTTP access method is supported\n");
     exit(1);
   }

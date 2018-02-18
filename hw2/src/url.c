@@ -4,8 +4,11 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 #include "url.h"
+
+
 
 /*
  * Routines to interpret and manage URL's
@@ -63,7 +66,7 @@ url_parse(char *url)
       if(!strcasecmp(up->method, "http"))
 	up->port = 80;
     }
-    if(*(slash+1) == '/') {
+    if((slash != NULL) && (*(slash+1) == '/')) {
       /*
        * If there are two slashes, then we have a full, absolute URL,
        * and the following string, up to the next slash, colon or the end
@@ -73,7 +76,7 @@ url_parse(char *url)
 	;
       c = *cp;
       *cp = '\0';
-      free(up->hostname);
+      //free(up->hostname);
       up->hostname = slash+2;
       *cp = c;
       /*
@@ -100,6 +103,7 @@ url_parse(char *url)
      */
     up->path = cp;
   }
+
   return(up);
 }
 
@@ -111,8 +115,13 @@ void
 url_free(URL *up)
 {
   free(up->stuff);
-  if(up->method != NULL) free(up->method);
+  if(up->method != NULL) {
+    //up->path = NULL;
+    free(up->method);
+  }
+  // Problems with the two lines below
   if(up->hostname != NULL) free(up->hostname);
+  if (up->path != NULL) free(up->path); // Problem line -> memory error -> is PATH the same thing as STUFF?
   free(up);
 }
 
@@ -167,10 +176,13 @@ url_address(URL *up)
 {
   struct hostent *he;
 
+  if (up == NULL) {
+    return(NULL);
+  }
   if(!up->dnsdone) {
     if(up->hostname != NULL && *up->hostname != '\0') {
-      if((he = gethostbyname(up->hostname)) == NULL)
-	return(NULL);
+      if((he = gethostbyname(up->hostname)) == NULL) // SEGFAULT for he = gethostbyname(up -> hostname);
+	       return(NULL);
       bcopy(he->h_addr, &up->addr, sizeof(struct in_addr));
     }
     up->dnsdone = 1;
