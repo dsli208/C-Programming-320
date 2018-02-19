@@ -67,7 +67,7 @@ http_open(IPADDR *addr, int port)
     free(http);
     close(sock);
     return(NULL);
-  }
+  } // Problem - the above if statement triggers
   http->state = ST_REQ;
   return(http);
 }

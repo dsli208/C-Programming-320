@@ -28,8 +28,10 @@ main(int argc, char *argv[])
   char *status, *method;
 
   // Place unit test code to be debugged here.  Remove all code before submitting.
-  up = url_parse("http://www.google.com");
-  http = http_open(url_address(up), url_port(up));
+  //up = url_parse("www.google.com");
+  //up = url_parse("http://bsd7.cs.stonybrook.edu/index.html");
+  //http = http_open(url_address(up), url_port(up)); // url_address returns NULL
+  //status = http_status(http, &code);
   // Remove code between this comment and the last one.  It could cause errors during grading.
 
   parse_args(argc, argv);

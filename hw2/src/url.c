@@ -50,7 +50,7 @@ url_parse(char *url)
   /*
    * Now ready to parse the URL
    */
-  cp = up->stuff;
+  cp = strdup(up->stuff);
   slash = strchr(cp, '/');
   colon = strchr(cp, ':');
   if(colon != NULL) {
@@ -64,21 +64,20 @@ url_parse(char *url)
       up->method = strdup(cp);
       cp = colon+1;
       if(!strcasecmp(up->method, "http"))
-	up->port = 80;
+	       up->port = 80;
     }
-    if((slash != NULL) && (*(slash+1) == '/')) {
+  if((slash != NULL) && (*(slash+1) == '/')) {
       /*
        * If there are two slashes, then we have a full, absolute URL,
        * and the following string, up to the next slash, colon or the end
        * of the URL, is the host name.
        */
-      for(cp = slash+2; *cp != '\0' && *cp != ':' && *cp != '/'; cp++)
-	;
-      c = *cp;
+      for(cp = slash+2; *cp != '\0' && *cp != ':' && *cp != '/'; cp++);
+          c = *cp;
       *cp = '\0';
       //free(up->hostname);
       up->hostname = slash+2;
-      *cp = c;
+      //*cp = c;
       /*
        * If we found a ':', then we have to collect the port number
        */
@@ -120,8 +119,8 @@ url_free(URL *up)
     free(up->method);
   }
   // Problems with the two lines below
-  if(up->hostname != NULL) free(up->hostname);
-  if (up->path != NULL) free(up->path); // Problem line -> memory error -> is PATH the same thing as STUFF?
+  //if(up->hostname != NULL) free(up->hostname); // ""
+  //if (up->path != NULL) free(up->path); // Problem line -> memory error -> is PATH the same thing as STUFF?
   free(up);
 }
 
@@ -181,7 +180,8 @@ url_address(URL *up)
   }
   if(!up->dnsdone) {
     if(up->hostname != NULL && *up->hostname != '\0') {
-      if((he = gethostbyname(up->hostname)) == NULL) // SEGFAULT for he = gethostbyname(up -> hostname);
+      // sample hostname: www.google.com
+      if((he = gethostbyname(up->hostname)) == NULL) // SEGFAULT for he = gethostbyname(up -> hostname), and for one unit test, it returns NULL
 	       return(NULL);
       bcopy(he->h_addr, &up->addr, sizeof(struct in_addr));
     }
