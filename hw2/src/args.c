@@ -30,11 +30,12 @@ parse_args(int argc, char *argv[])
       switch (option) {
         case 'q': {
           info("Query header: %s", optarg);
+          // One keyword or multiple keywords?
           break;
         }
         case 'o': {
           info("Output file: %s", optarg);
-	       output_file = optarg;
+	        output_file = optarg;
           break;
         }
         case '?': {

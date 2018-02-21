@@ -109,8 +109,10 @@ url_parse(char *url)
     }
     if(*cp == '\0')
       up->path = "/";
-    else
+    else {
+
       up->path = cp;
+    }
   } else {
     /*
      * No colon: a relative URL with no method or hostname

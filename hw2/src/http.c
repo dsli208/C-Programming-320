@@ -16,6 +16,7 @@
 
 #include "url.h"
 #include "http.h"
+#include "snarf.h"
 
 typedef struct HDRNODE *HEADERS;
 HEADERS http_parse_headers(HTTP *http);
@@ -56,7 +57,12 @@ http_open(IPADDR *addr, int port)
   else {
     http->code = 0;
     http->response = malloc(sizeof(char*));
-    http->file = stdout;
+    if (output_file != NULL) {
+      http->file = fopen(output_file, "w");
+    }
+    else {
+      http->file = stdout;
+    }
   }
   bzero(http, sizeof(*http));
   if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -238,6 +244,7 @@ http_parse_headers(HTTP *http)
     char *l = NULL;
     char *ll = NULL;
     char *cp = NULL;
+    char* valuep = NULL;
 
     while((getline(&ll, &n, f)) != EOF) { // INFINITE LOOP
 	     line = l = malloc(len+1);
@@ -253,8 +260,10 @@ http_parse_headers(HTTP *http)
 
 	     node = malloc(sizeof(HDRNODE));
 
-       // initializing ENV
-       env = node;
+       // initializing ENV if it is the FIRST ONE
+       if (env == NULL) {
+          env = node;
+       }
 
 	     node->next = NULL;
 	     for(cp = l; *cp == ' '; cp++); // Remove ';'
@@ -272,13 +281,19 @@ http_parse_headers(HTTP *http)
 	     while(*cp == ' ')
 	         cp++;
 	     node->value = strdup(cp);
+       for (valuep = node->value; *valuep != '\0'; valuep++) {
+          if (*valuep == '\r' || *valuep == '\n') {
+            *valuep = '\0';
+          }
+       }
 	     for(cp = node->key; *cp != '\0'; cp++)
 	         if(isupper(*cp))
-		    *cp = tolower(*cp);
+		          *cp = tolower(*cp);
        if (last != NULL) {
 	       last->next = node;
-	       last = node;
+         //last = node;
      }
+     last = node;
 	     free(line);
     }
 
@@ -316,9 +331,9 @@ http_headers_lookup(HTTP *http, char *key)
 {
     HEADERS env = http->headers;
     while(env != NULL) {
-	if(!strcmp(env->key, key))
-	    return(env->value);
-	env = env->next;
+	     if(!strcmp(env->key, key))
+	       return(env->value);
+	     env = env->next;
     }
     return(NULL);
 }

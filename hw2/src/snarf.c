@@ -20,16 +20,25 @@
 
 // UNIT TEST DEBUGGING METHOD BELOW - COMMENT THIS OUT AND UNCOMMENT THE REAL MAIN BELOW THIS TO AVOID PROBLEMS DURING SUBMISSION
 
-/*int main(){
+int main(){
   URL *url = url_parse("http://bsd7.cs.stonybrook.edu/index.html");
   HTTP *http = http_open(url_address(url), url_port(url));
-  printf("%d", (http != NULL));
-}*/
+  http_request(http, url);
+  http_response(http);
+  int code;
+  char *status = http_status(http, &code);
+  (void)status;
+  char *contentLength = http_headers_lookup(http, "content-length");
+  printf("%s\n", contentLength);
+  char *contentType = http_headers_lookup(http, "content-type");
+  (void)contentType;
+  http_close(http);
+}
 
 // MAKE SURE THE ABOVE IS COMMENTED OUT BEFORE SUBMITTING
 
 int
-main(int argc, char *argv[])
+_main(int argc, char *argv[])
 {
   URL *up;
   HTTP *http = NULL;
