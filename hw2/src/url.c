@@ -33,8 +33,8 @@ URL *
 url_parse(char *url)
 {
   URL *up;
-  char *cp, c;
-  char *slash, *colon;
+  char *cp, c, *hostptr;
+  char *slash, *colon, *hostslash;
 
   if((up = malloc(sizeof(*up))) == NULL) { // sizeof(up), NOT sizeof(*up)
     return(NULL);
@@ -83,8 +83,16 @@ url_parse(char *url)
           c = *cp;
       //*cp = '\0';
       //free(up->hostname);
-      up->hostname = slash+2;
-      *cp = c;
+      up->hostname = strdup(slash+2);
+      hostptr = up->hostname;
+
+      // Fixing hostname issue
+      hostslash = strchr(hostptr, '/');
+      if (hostslash != NULL) {
+        *hostslash = '\0';
+      }
+
+      //*cp = c;
       /*
        * If we found a ':', then we have to collect the port number
        */
