@@ -36,15 +36,15 @@ url_parse(char *url)
   char *cp, c;
   char *slash, *colon;
 
-  if((up = malloc(sizeof(*up))) == NULL) {
+  if((up = malloc(sizeof(*up))) == NULL) { // sizeof(up), NOT sizeof(*up)
     return(NULL);
   }
-  else {
+  /*else {
     up->stuff = malloc(sizeof(char*));
     up->method = malloc(sizeof(char*));
     up->hostname = malloc(sizeof(char*));
     up->path = malloc(sizeof(char*));
-  }
+  }*/
   /*
    * Make a copy of the argument that we can fiddle with
    */

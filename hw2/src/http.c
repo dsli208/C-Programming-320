@@ -53,6 +53,10 @@ http_open(IPADDR *addr, int port)
     return(NULL);
   if((http = malloc(sizeof(*http))) == NULL)
     return(NULL);
+  else {
+    //http->code = 0;
+    //http->response = malloc(sizeof(char*));
+  }
   bzero(http, sizeof(*http));
   if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     free(http);
@@ -184,8 +188,10 @@ http_status(HTTP *http, int *code)
 {
   if(http->state != ST_BODY)
     return(NULL);
-  if(code != NULL)
-    *code = http->code;
+  if(code != NULL) {
+    //*code = http->code;
+    http->code = *code;
+  }
   return(http->response);
 }
 
@@ -314,5 +320,14 @@ http_headers_lookup(HTTP *http, char *key)
 	env = env->next;
     }
     return(NULL);
+}
+
+/**
+Get code from HTTP struct
+*/
+
+int
+http_get_code(HTTP *http) {
+  return http->code;
 }
 

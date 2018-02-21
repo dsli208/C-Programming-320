@@ -18,36 +18,24 @@
 #include "url.h"
 #include "snarf.h"
 
-int main(){
-    URL *url = url_parse("http://www.google.com");
-    HTTP *http = http_open(url_address(url), url_port(url));
+// UNIT TEST DEBUGGING METHOD BELOW - COMMENT THIS OUT AND UNCOMMENT THE REAL MAIN BELOW THIS TO AVOID PROBLEMS DURING SUBMISSION
 
-    http_request(http, url);
-    http_response(http);
-    int code;
-    char *status = http_status(http, &code); // Failing test here
-    (void)status;
-    http_close(http);
-}
+/*int main(){
+  URL *url = url_parse("http://bsd7.cs.stonybrook.edu/index.html");
+  HTTP *http = http_open(url_address(url), url_port(url));
+  printf("%d", (http != NULL));
+}*/
+
+// MAKE SURE THE ABOVE IS COMMENTED OUT BEFORE SUBMITTING
 
 int
-_main(int argc, char *argv[])
+main(int argc, char *argv[])
 {
   URL *up;
-  HTTP *http;
+  HTTP *http = NULL;
   IPADDR *addr;
   int port, c, code;
   char *status, *method;
-
-  // Place unit test code to be debugged here.  Remove all code before submitting. -- THIS MAY CAUSE EXTRA MEMORY LEAKAGE WHEN RUNNING VALGRIND
-  //up = url_parse("www.google.com");
-  //up = url_parse("http://bsd7.cs.stonybrook.edu/index.html");
-  //http = http_open(url_address(up), url_port(up)); // url_address returns NULL
-  //http_request(http, up);
-  //http_response(http);
-  //status = http_status(http, &code);
-  //printf("%s", status);
-  // Remove code between this comment and the last one.  It could cause errors during grading.
 
   parse_args(argc, argv);
   if((up = url_parse(url_to_snarf)) == NULL) {
@@ -70,6 +58,7 @@ _main(int argc, char *argv[])
     http_close(http);
     exit(1);
   }
+
   http_request(http, up);
   /*
    * Additional RFC822-style headers can be sent at this point,
@@ -99,6 +88,10 @@ _main(int argc, char *argv[])
    *	text/plain	The body of the document is plain ASCII text
    */
   status = http_status(http, &code);
+
+  // How to ensure that "code" value is properly set?  Figure that out
+  int exitCode = http_get_code(http);
+
 #ifdef DEBUG
   debug("%s", status);
 #else
@@ -110,7 +103,16 @@ _main(int argc, char *argv[])
    */
   while((c = http_getc(http)) != EOF)
     putchar(c);
+
+
+
   http_close(http);
   url_free(up);
-  return(0);
+  if (exitCode == 200) {
+    return(0);
+  }
+  else {
+    return(exitCode);
+  }
+  //return(0);
 }
