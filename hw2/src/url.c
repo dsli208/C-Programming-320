@@ -36,8 +36,15 @@ url_parse(char *url)
   char *cp, c;
   char *slash, *colon;
 
-  if((up = malloc(sizeof(*up))) == NULL)
+  if((up = malloc(sizeof(*up))) == NULL) {
     return(NULL);
+  }
+  else {
+    up->stuff = malloc(sizeof(char*));
+    up->method = malloc(sizeof(char*));
+    up->hostname = malloc(sizeof(char*));
+    up->path = malloc(sizeof(char*));
+  }
   /*
    * Make a copy of the argument that we can fiddle with
    */
@@ -60,7 +67,7 @@ url_parse(char *url)
      */
     if(colon < slash) {
       *colon = '\0';
-      free(up->method);
+      //free(up->method);
       up->method = strdup(cp);
       cp = colon+1;
       if(!strcasecmp(up->method, "http"))
@@ -74,10 +81,10 @@ url_parse(char *url)
        */
       for(cp = slash+2; *cp != '\0' && *cp != ':' && *cp != '/'; cp++);
           c = *cp;
-      *cp = '\0';
+      //*cp = '\0';
       //free(up->hostname);
       up->hostname = slash+2;
-      //*cp = c;
+      *cp = c;
       /*
        * If we found a ':', then we have to collect the port number
        */
@@ -87,7 +94,7 @@ url_parse(char *url)
 	while(isdigit(*cp))
 	  cp++;
 	c = *cp;
-	*cp = '\0';
+	//*cp = '\0';
 	up->port = atoi(cp1);
 	*cp = c;
       }

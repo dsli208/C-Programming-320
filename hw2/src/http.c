@@ -160,11 +160,13 @@ http_response(HTTP *http)
      || (http->response = malloc(len+1)) == NULL)
     return(1);
   strncpy(http->response, response, len);
-  do
-    http->response[len--] = '\0';
+  do {
+    http->response[len] = '\0';
+    len--;
+  }
   while(len >= 0 &&
 	(http->response[len] == '\r'
-	 || http->response[len] == '\n'));
+	 || http->response[len] == '\n' || http->response[len] == '\0')); // remove semi-colon?
   if(sscanf(http->response, "HTTP/%3s %d ", http->version, &http->code) != 2)
     return(1);
   http->headers = http_parse_headers(http); // PROGRAM SEGFAULTS HERE
@@ -204,6 +206,8 @@ http_getc(HTTP *http)
  * as part of the response to an HTTP request.
  */
 
+// "LINKED LIST"
+
 typedef struct HDRNODE {
     char *key;
     char *value;
@@ -218,7 +222,7 @@ HEADERS
 http_parse_headers(HTTP *http)
 {
     FILE *f = http->file;
-    HEADERS env = NULL, last = NULL;
+    HEADERS env = NULL, last = NULL; // PROBLEM LINE --> is env the head of the linked list?
     HDRNODE *node;
     int len = sizeof(*f)/sizeof(char);
     size_t n = (size_t)len;
@@ -236,16 +240,24 @@ http_parse_headers(HTTP *http)
 	         l[--len] = '\0';
 	     if(len == 0) {
 	       free(line);
+         line = NULL;
 	       break;
 	     }
+
 	     node = malloc(sizeof(HDRNODE));
+
+       // initializing ENV
+       env = node;
+
 	     node->next = NULL;
 	     for(cp = l; *cp == ' '; cp++); // Remove ';'
 	         l = cp;
 	     for( ; *cp != ':' && *cp != '\0'; cp++) ;
 	         if(*cp == '\0' || *(cp+1) != ' ') {
 	             free(line);
+               line = NULL;
 	             free(node);
+               node = NULL;
 	             continue;
 	         }
 	     *cp++ = '\0';
@@ -261,6 +273,11 @@ http_parse_headers(HTTP *http)
 	       last = node;
      }
 	     free(line);
+    }
+
+    if (node != NULL) {
+      free(node);
+      node = NULL;
     }
     return(env);
 }

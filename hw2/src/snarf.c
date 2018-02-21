@@ -18,8 +18,20 @@
 #include "url.h"
 #include "snarf.h"
 
+int main(){
+    URL *url = url_parse("http://www.google.com");
+    HTTP *http = http_open(url_address(url), url_port(url));
+
+    http_request(http, url);
+    http_response(http);
+    int code;
+    char *status = http_status(http, &code); // Failing test here
+    (void)status;
+    http_close(http);
+}
+
 int
-main(int argc, char *argv[])
+_main(int argc, char *argv[])
 {
   URL *up;
   HTTP *http;
@@ -27,11 +39,14 @@ main(int argc, char *argv[])
   int port, c, code;
   char *status, *method;
 
-  // Place unit test code to be debugged here.  Remove all code before submitting.
+  // Place unit test code to be debugged here.  Remove all code before submitting. -- THIS MAY CAUSE EXTRA MEMORY LEAKAGE WHEN RUNNING VALGRIND
   //up = url_parse("www.google.com");
   //up = url_parse("http://bsd7.cs.stonybrook.edu/index.html");
   //http = http_open(url_address(up), url_port(up)); // url_address returns NULL
+  //http_request(http, up);
+  //http_response(http);
   //status = http_status(http, &code);
+  //printf("%s", status);
   // Remove code between this comment and the last one.  It could cause errors during grading.
 
   parse_args(argc, argv);
@@ -52,6 +67,7 @@ main(int argc, char *argv[])
     fprintf(stderr, "Unable to contact host '%s', port %d\n",
 	    url_hostname(up) != NULL ? url_hostname(up) : "(NULL)", port);
     url_free(up);
+    http_close(http);
     exit(1);
   }
   http_request(http, up);
