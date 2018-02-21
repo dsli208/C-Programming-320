@@ -5,6 +5,7 @@
 
 #include "debug.h"
 #include "snarf.h"
+#include "http.h"
 
 int opterr;
 int optopt;
@@ -33,7 +34,7 @@ parse_args(int argc, char *argv[])
         }
         case 'o': {
           info("Output file: %s", optarg);
-	  output_file = optarg;
+	       output_file = optarg;
           break;
         }
         case '?': {

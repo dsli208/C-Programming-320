@@ -54,8 +54,9 @@ http_open(IPADDR *addr, int port)
   if((http = malloc(sizeof(*http))) == NULL)
     return(NULL);
   else {
-    //http->code = 0;
-    //http->response = malloc(sizeof(char*));
+    http->code = 0;
+    http->response = malloc(sizeof(char*));
+    http->file = stdout;
   }
   bzero(http, sizeof(*http));
   if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -189,8 +190,8 @@ http_status(HTTP *http, int *code)
   if(http->state != ST_BODY)
     return(NULL);
   if(code != NULL) {
-    //*code = http->code;
-    http->code = *code;
+    *code = http->code;
+    //http->code = *code;
   }
   return(http->response);
 }

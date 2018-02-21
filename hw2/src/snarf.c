@@ -91,6 +91,7 @@ main(int argc, char *argv[])
 
   // How to ensure that "code" value is properly set?  Figure that out
   int exitCode = http_get_code(http);
+  //int exitCode = http.code;
 
 #ifdef DEBUG
   debug("%s", status);
