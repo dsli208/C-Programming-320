@@ -168,8 +168,10 @@ http_response(HTTP *http)
 
   getline(&response, &n, file);
   if(response == NULL
-     || (http->response = malloc(len+1)) == NULL)
+     || (http->response = malloc(len+1)) == NULL) {
+    //free(http->response);
     return(1);
+  }
   strncpy(http->response, response, len);
   do {
     http->response[len] = '\0';
@@ -238,6 +240,7 @@ http_parse_headers(HTTP *http)
     HEADERS env = NULL, last = NULL; // PROBLEM LINE --> is env the head of the linked list?
     HDRNODE *node;
     int len = sizeof(*f)/sizeof(char);
+    int size = 0;
     size_t n = (size_t)len;
 
     char *line = NULL;
@@ -246,7 +249,7 @@ http_parse_headers(HTTP *http)
     char *cp = NULL;
     char* valuep = NULL;
 
-    while((getline(&ll, &n, f)) != EOF) { // INFINITE LOOP
+    while((size += (getline(&ll, &n, f))) != EOF) { // INFINITE LOOP
 	     line = l = malloc(len+1);
 	     l[len] = '\0';
 	     strncpy(l, ll, len);
@@ -259,6 +262,8 @@ http_parse_headers(HTTP *http)
 	     }
 
 	     node = malloc(sizeof(HDRNODE));
+       //node->key = malloc(sizeof(char*));
+       //node->value = malloc(sizeof(char*));
 
        // initializing ENV if it is the FIRST ONE
        if (env == NULL) {
@@ -314,11 +319,11 @@ http_free_headers(HEADERS env)
     HEADERS next;
 
     while(env != NULL) {
-	free(env->key);
-	free(env->value);
-	next = env->next;
-	free(env);
-	env = next;
+	   free(env->key);
+	   free(env->value);
+	   next = env->next;
+	   free(env);
+	   env = next;
     }
 }
 

@@ -36,7 +36,9 @@ url_parse(char *url)
   char *cp, c, *hostptr;
   char *slash, *colon, *hostslash;
 
-  if((up = malloc(sizeof(*up))) == NULL) { // sizeof(up), NOT sizeof(*up)
+  up = malloc(sizeof(*up));
+  if((up) == NULL) {
+    free(up);
     return(NULL);
   }
   /*else {
@@ -49,7 +51,7 @@ url_parse(char *url)
    * Make a copy of the argument that we can fiddle with
    */
   if((up->stuff = strdup(url)) == NULL) {
-    free(up);
+    url_free(up);
     return(NULL);
   }
   up->dnsdone = 0;
@@ -68,6 +70,7 @@ url_parse(char *url)
     if(colon < slash) {
       *colon = '\0';
       //free(up->method);
+      //up->method = NULL;
       up->method = strdup(cp);
       cp = colon+1;
       if(!strcasecmp(up->method, "http"))
@@ -108,16 +111,16 @@ url_parse(char *url)
       }
     }
     if(*cp == '\0')
-      up->path = "/";
+      up->path = strdup("/");
     else {
 
-      up->path = cp;
+      up->path = strdup(cp);
     }
   } else {
     /*
      * No colon: a relative URL with no method or hostname
      */
-    up->path = cp;
+    up->path = strdup(cp);
   }
 
   return(up);
@@ -130,15 +133,25 @@ url_parse(char *url)
 void
 url_free(URL *up)
 {
+
   free(up->stuff);
+  up->stuff = NULL;
   if(up->method != NULL) {
     //up->path = NULL;
     free(up->method);
+    up->method = NULL;
   }
   // Problems with the two lines below
-  //if(up->hostname != NULL) free(up->hostname); // ""
-  //if (up->path != NULL) free(up->path); // Problem line -> memory error -> is PATH the same thing as STUFF?
+  if(up->hostname != NULL) {
+    free(up->hostname);
+    up->hostname = NULL;
+  } // ""
+  if (up->path != NULL) {
+    free(up->path);
+    up->path = NULL;
+  } // Problem line -> memory error -> is PATH the same thing as STUFF?
   free(up);
+  up = NULL;
 }
 
 /*

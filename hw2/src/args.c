@@ -20,6 +20,7 @@ parse_args(int argc, char *argv[])
 {
   int i;
   char option;
+  int contains_o = 0;
 
   for (i = 0; optind < argc; i++) {
     debug("%d opterr: %d", i, opterr);
@@ -34,19 +35,30 @@ parse_args(int argc, char *argv[])
           break;
         }
         case 'o': {
+          if (contains_o) {
+            fprintf(stderr, KRED "-%co has already been entered\n" KNRM,
+                    optopt);
+            exit(-1);
+          }
           info("Output file: %s", optarg);
 	        output_file = optarg;
+          contains_o = 1;
           break;
         }
         case '?': {
-          if (optopt != 'h')
+          if (optopt != 'h') {
             fprintf(stderr, KRED "-%c is not a supported argument\n" KNRM,
                     optopt);
+            exit(-1);
+          }
+          else {
           USAGE(argv[0]);
           exit(0);
+        }
           break;
         }
         default: {
+          //exit(-1);
           break;
         }
       }
