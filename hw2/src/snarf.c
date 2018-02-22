@@ -40,7 +40,7 @@
 int
 main(int argc, char *argv[])
 {
-  URL *up;
+  URL *up = NULL;
   HTTP *http = NULL;
   IPADDR *addr;
   int port, c, code;
@@ -118,7 +118,7 @@ main(int argc, char *argv[])
 
   http_close(http);
   url_free(up);
-  //free(up);
+  up = NULL;
   if (exitCode == 200) {
     return(0);
   }

@@ -32,7 +32,11 @@ struct url {
 URL *
 url_parse(char *url)
 {
-  URL *up;
+  if (url == NULL) {
+    return(NULL);
+  }
+
+  URL *up = NULL;
   char *cp, c, *hostptr;
   char *slash, *colon, *hostslash;
 
@@ -41,12 +45,12 @@ url_parse(char *url)
     free(up);
     return(NULL);
   }
-  /*else {
-    up->stuff = malloc(sizeof(char*));
-    up->method = malloc(sizeof(char*));
-    up->hostname = malloc(sizeof(char*));
-    up->path = malloc(sizeof(char*));
-  }*/
+  else {
+    up->stuff = NULL;
+    up->method = NULL;
+    up->hostname = NULL;
+    up->path = NULL;
+  }
   /*
    * Make a copy of the argument that we can fiddle with
    */
@@ -122,7 +126,7 @@ url_parse(char *url)
      */
     up->path = strdup(cp);
   }
-
+  //free(cp);
   return(up);
 }
 
@@ -133,9 +137,12 @@ url_parse(char *url)
 void
 url_free(URL *up)
 {
-
-  free(up->stuff);
-  up->stuff = NULL;
+  if (up == NULL)
+    return;
+  if (up->stuff != NULL) {
+    free(up->stuff);
+    up->stuff = NULL;
+  }
   if(up->method != NULL) {
     //up->path = NULL;
     free(up->method);
