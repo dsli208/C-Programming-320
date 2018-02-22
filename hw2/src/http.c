@@ -241,9 +241,9 @@ http_parse_headers(HTTP *http)
     HDRNODE *node;
     int initLen = sizeof(*f)/sizeof(char);
     int len = initLen;
-    int size = 0;
+    //int size = 0;
     size_t n = (size_t)len;
-    ssize_t sLen = 0;
+    //ssize_t sLen = 0;
 
     char *line = NULL;
     char *l = NULL;
@@ -251,19 +251,19 @@ http_parse_headers(HTTP *http)
     char *cp = NULL;
     char* valuep = NULL;
 
-    while((sLen = (getline(&ll, &n, f))) != EOF) { // INFINITE LOOP
+    while(((getline(&ll, &n, f))) != EOF) { // INFINITE LOOP
       //len = initLen;
-      size += sLen;
+      //size += sLen;
 	     line = l = malloc(len+1);
 	     l[len] = '\0';
 	     strncpy(l, ll, len);
-	     while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r' || l[len - 1] == '\0'))
+	     while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r'))
 	         l[--len] = '\0';
 	     if(len == 0) {
 	       free(line);
          line = NULL;
-         //break;
-	       return env;
+         break;
+	       //return env;
 	     }
 
 	     node = malloc(sizeof(HDRNODE));
