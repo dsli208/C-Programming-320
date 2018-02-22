@@ -57,12 +57,12 @@ http_open(IPADDR *addr, int port)
   else {
     http->code = 0;
     http->response = malloc(sizeof(char*));
-    if (output_file != NULL) {
+    /*if (output_file != NULL) {
       http->file = fopen(output_file, "w");
     }
     else {
       http->file = stdout;
-    }
+    }*/
   }
   bzero(http, sizeof(*http));
   if((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -239,9 +239,11 @@ http_parse_headers(HTTP *http)
     FILE *f = http->file;
     HEADERS env = NULL, last = NULL; // PROBLEM LINE --> is env the head of the linked list?
     HDRNODE *node;
-    int len = sizeof(*f)/sizeof(char);
+    int initLen = sizeof(*f)/sizeof(char);
+    int len = initLen;
     int size = 0;
     size_t n = (size_t)len;
+    ssize_t sLen = 0;
 
     char *line = NULL;
     char *l = NULL;
@@ -249,16 +251,19 @@ http_parse_headers(HTTP *http)
     char *cp = NULL;
     char* valuep = NULL;
 
-    while((size += (getline(&ll, &n, f))) != EOF) { // INFINITE LOOP
+    while((sLen = (getline(&ll, &n, f))) != EOF) { // INFINITE LOOP
+      //len = initLen;
+      size += sLen;
 	     line = l = malloc(len+1);
 	     l[len] = '\0';
 	     strncpy(l, ll, len);
-	     while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r'))
+	     while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r' || l[len - 1] == '\0'))
 	         l[--len] = '\0';
 	     if(len == 0) {
 	       free(line);
          line = NULL;
-	       break;
+         //break;
+	       return env;
 	     }
 
 	     node = malloc(sizeof(HDRNODE));
