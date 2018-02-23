@@ -14,6 +14,8 @@ char *optarg;
 
 char *url_to_snarf;
 char *output_file;
+char **keywords;
+char **keywordStatus;
 
 void
 parse_args(int argc, char *argv[])
@@ -21,6 +23,8 @@ parse_args(int argc, char *argv[])
   int i;
   char option;
   int contains_o = 0;
+  int contains_q = 0;
+  int keywordCount = 0;
 
   for (i = 0; optind < argc; i++) {
     debug("%d opterr: %d", i, opterr);
@@ -31,7 +35,14 @@ parse_args(int argc, char *argv[])
       switch (option) {
         case 'q': {
           info("Query header: %s", optarg);
-          // One keyword or multiple keywords?
+          contains_q = 1;
+          if (keywords == NULL) {
+            keywords = malloc(sizeof(char**));
+            keywordStatus = keywords;
+          }
+          *keywordStatus = optarg;
+          keywordStatus++;
+          keywordCount++;
           break;
         }
         case 'o': {
@@ -66,6 +77,30 @@ parse_args(int argc, char *argv[])
 	info("URL to snarf: %s", argv[optind]);
 	url_to_snarf = argv[optind];
 	optind++;
+    }
+  }
+
+  // Search for each of the args in the headers
+  if (contains_q) {
+    // Iterate through the "char array"
+    keywordStatus = keywords;
+
+    while (keywordStatus != NULL) {
+      char* keyword = keywordStatus;
+
+      HEADERS http_headers = http->headers;
+      HEADERS cursor = http_headers;
+
+      while (cursor != NULL) {
+        if (!strcmp(cursor.key, keyword)) {
+          printf(stderror, "%s", cursor.value);
+          break;
+        }
+        cursor = cursor->next;
+      }
+
+      keywordStatus++;
+
     }
   }
 }
