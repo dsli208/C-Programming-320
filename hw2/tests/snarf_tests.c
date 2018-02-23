@@ -37,7 +37,7 @@ Test(http_suite, basic_test) {
     http_request(http, url);
     http_response(http);
     int code;
-    char *status = http_status(http, &code);
+    char *status = http_status(http, &code); // Failing test here
     cr_assert_str_eq(status, "HTTP/1.0 200 OK");
     cr_assert_eq(code, 200);
     http_close(http);
