@@ -63,7 +63,8 @@ url_parse(char *url)
   /*
    * Now ready to parse the URL
    */
-  cp = strdup(up->stuff);
+  cp = up->stuff;
+  //cp = strdup(up->stuff);
   slash = strchr(cp, '/');
   colon = strchr(cp, ':');
   if(colon != NULL) {

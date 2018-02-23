@@ -312,10 +312,12 @@ http_parse_headers(HTTP *http)
 	             continue;
 	         }
 	     *cp++ = '\0';
+       //node->key = l;
 	     node->key = strdup(l);
 	     while(*cp == ' ')
 	         cp++;
-	     node->value = strdup(cp);
+	     //node->value = cp;
+       node->value = strdup(cp);
        for (valuep = node->value; *valuep != '\0'; valuep++) {
           if (*valuep == '\r' || *valuep == '\n') {
             *valuep = '\0';
