@@ -254,16 +254,21 @@ http_parse_headers(HTTP *http)
     while(((getline(&ll, &n, f))) != EOF) { // INFINITE LOOP
       //len = initLen;
       //size += sLen;
-	     line = l = malloc(len+1);
-	     l[len] = '\0';
-	     strncpy(l, ll, len);
-	     while(len > 0 && (l[len-1] == '\n' || l[len-1] == '\r'))
-	         l[--len] = '\0';
-	     if(len == 0) {
+      // Change len to n (size_t form)
+	     line = l = malloc(n+1);
+	     l[n] = '\0';
+	     strncpy(l, ll, n);
+       while(l[n - 1] == '\0') {
+        n--;
+       }
+	     while(n > 0 && (l[n-1] == '\n' || l[n-1] == '\r')) {
+	           l[--n] = '\0';
+       }
+	     if(n == 0) {
 	       free(line);
          line = NULL;
-         break;
-	       //return env;
+         //break;
+	       return env;
 	     }
 
 	     node = malloc(sizeof(HDRNODE));
@@ -276,8 +281,11 @@ http_parse_headers(HTTP *http)
        }
 
 	     node->next = NULL;
-	     for(cp = l; *cp == ' '; cp++); // Remove ';'
+       // Copy l to cp, removing any excess whitespace beforehand
+	     for(cp = l; *cp == ' '; cp++) // Remove ';'
 	         l = cp;
+
+       //
 	     for( ; *cp != ':' && *cp != '\0'; cp++) ;
 	         if(*cp == '\0' || *(cp+1) != ' ') {
 	             free(line);
@@ -305,6 +313,7 @@ http_parse_headers(HTTP *http)
      }
      last = node;
 	     free(line);
+       n = (size_t)initLen;
     }
 
     if (node != NULL) {
