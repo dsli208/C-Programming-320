@@ -20,6 +20,10 @@ char **keywordStatus;
 void
 parse_args(int argc, char *argv[])
 {
+  if (argc == 0 || argv == NULL) {
+    return;
+  }
+  outStream = NULL;
   int i;
   char option;
   int contains_o = 0;

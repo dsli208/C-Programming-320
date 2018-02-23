@@ -56,7 +56,7 @@ http_open(IPADDR *addr, int port)
     return(NULL);
   else {
     http->code = 0;
-    http->response = malloc(sizeof(char*));
+    //http->response = malloc(sizeof(char*));
     /*if (output_file != NULL) {
       http->file = fopen(output_file, "w");
     }
@@ -334,6 +334,8 @@ http_parse_headers(HTTP *http)
        //free(ll);
        //ll = NULL;
        n = (size_t)initLen;
+
+       //free(sLen);
     }
 
     if (node != NULL) {
@@ -396,6 +398,9 @@ http_get_code(HTTP *http) {
 
 void
 http_search_keywords(HTTP *http, char **keywords) {
+    if (keywords == NULL) {
+      return;
+    }
 // Search for each of the args in the headers
     // Iterate through the "char array"
     char **keywordStatus = keywords;
@@ -423,4 +428,5 @@ http_search_keywords(HTTP *http, char **keywords) {
 void http_free_keywords(HTTP* http, char **keywords) {
   (void)http;
   free(keywords);
+  keywords = NULL;
 }
