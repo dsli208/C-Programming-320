@@ -400,7 +400,7 @@ http_search_keywords(HTTP *http, char **keywords) {
     // Iterate through the "char array"
     char **keywordStatus = keywords;
 
-    while (keywordStatus != NULL) {
+    while (*keywordStatus != NULL) {
       char* keyword = *keywordStatus;
 
       HEADERS http_headers = http_get_headers(http);

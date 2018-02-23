@@ -113,12 +113,14 @@ main(int argc, char *argv[])
    */
 
   //url_free(up);
+  if (contains_q) {
+    http_search_keywords(http, keywords);
+  }
+
   while((c = http_getc(http)) != EOF)
     putchar(c);
+    //putc(c, outStream);
 
-  if (contains_q) {
-
-  }
 
   http_close(http);
   url_free(up);

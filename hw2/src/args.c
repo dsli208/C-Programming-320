@@ -79,5 +79,10 @@ parse_args(int argc, char *argv[])
 	optind++;
     }
   }
-
+  if (!contains_o) {
+    outStream = stdout;
+  }
+  else {
+    outStream = fopen(output_file, "w");
+  }
 }

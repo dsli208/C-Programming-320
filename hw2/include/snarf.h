@@ -17,7 +17,13 @@
             (prog_name));                                                      \
   } while (0)
 
+FILE* outStream;
+
 extern char *url_to_snarf;
 extern char *output_file;
+char **keywords;
+char **keywordStatus;
+
+int contains_q;
 
 void parse_args(int argc, char *argv[]);

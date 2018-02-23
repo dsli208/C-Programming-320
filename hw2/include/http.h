@@ -56,3 +56,11 @@ int http_getc(HTTP *http);
 char *http_status(HTTP *http, int *code);
 char *http_headers_lookup(HTTP *http, char *key);
 int http_get_code(HTTP *http);
+
+typedef struct HDRNODE *HEADERS;
+HEADERS http_parse_headers(HTTP *http);
+HEADERS http_get_headers(HTTP *http);
+HEADERS http_headers;
+
+void http_search_keywords(HTTP* http, char **keywords);
+void http_free_keywords(HTTP* http, char **keywords);
