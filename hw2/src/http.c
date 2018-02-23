@@ -338,6 +338,11 @@ http_parse_headers(HTTP *http)
        n = (size_t)initLen;
 
        //free(sLen);
+
+       /*if (node != NULL) {
+        free(node);
+        node = NULL;
+      }*/
     }
 
     if (node != NULL) {
