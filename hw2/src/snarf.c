@@ -116,6 +116,10 @@ main(int argc, char *argv[])
   while((c = http_getc(http)) != EOF)
     putchar(c);
 
+  if (contains_q) {
+
+  }
+
   http_close(http);
   url_free(up);
   up = NULL;

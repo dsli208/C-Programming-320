@@ -23,7 +23,7 @@ parse_args(int argc, char *argv[])
   int i;
   char option;
   int contains_o = 0;
-  int contains_q = 0;
+  contains_q = 0;
   int keywordCount = 0;
 
   for (i = 0; optind < argc; i++) {
@@ -80,27 +80,4 @@ parse_args(int argc, char *argv[])
     }
   }
 
-  // Search for each of the args in the headers
-  if (contains_q) {
-    // Iterate through the "char array"
-    keywordStatus = keywords;
-
-    while (keywordStatus != NULL) {
-      char* keyword = keywordStatus;
-
-      HEADERS http_headers = http->headers;
-      HEADERS cursor = http_headers;
-
-      while (cursor != NULL) {
-        if (!strcmp(cursor.key, keyword)) {
-          printf(stderror, "%s", cursor.value);
-          break;
-        }
-        cursor = cursor->next;
-      }
-
-      keywordStatus++;
-
-    }
-  }
 }

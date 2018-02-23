@@ -149,6 +149,9 @@ http_response(HTTP *http)
   char *response = NULL;
   int len = 0;
 
+  if(http == NULL) {
+    return(1);
+  }
 
   if(http->state != ST_HDRS)
     return(1);
@@ -236,7 +239,13 @@ typedef struct HDRNODE {
 HEADERS
 http_parse_headers(HTTP *http)
 {
+    if (http == NULL) {
+      return(NULL);
+    }
     FILE *f = http->file;
+    if (f == NULL) {
+      return NULL;
+    }
     HEADERS env = NULL, last = NULL; // PROBLEM LINE --> is env the head of the linked list?
     HDRNODE *node;
     int initLen = sizeof(*f)/sizeof(char);
@@ -256,11 +265,16 @@ http_parse_headers(HTTP *http)
       //size += sLen;
       // Change len to n (size_t form)
 	     line = l = malloc(n+1);
+       //ll = malloc(n + 1);
 	     l[n] = '\0';
 	     strncpy(l, ll, n);
+
+       // Fix issue with len constantly being the size of the buffer
        while(l[n - 1] == '\0') {
         n--;
        }
+
+       // Remove \r\n
 	     while(n > 0 && (l[n-1] == '\n' || l[n-1] == '\r')) {
 	           l[--n] = '\0';
        }
@@ -290,6 +304,9 @@ http_parse_headers(HTTP *http)
 	         if(*cp == '\0' || *(cp+1) != ' ') {
 	             free(line);
                line = NULL;
+               line = NULL;
+               //free(ll);
+               //ll = NULL;
 	             free(node);
                node = NULL;
 	             continue;
@@ -313,6 +330,9 @@ http_parse_headers(HTTP *http)
      }
      last = node;
 	     free(line);
+       line = NULL;
+       //free(ll);
+       //ll = NULL;
        n = (size_t)initLen;
     }
 
@@ -321,6 +341,11 @@ http_parse_headers(HTTP *http)
       node = NULL;
     }
     return(env);
+}
+
+HEADERS
+http_get_headers(HTTP *http) {
+  return http->headers;
 }
 
 /*
@@ -348,6 +373,9 @@ http_free_headers(HEADERS env)
 char *
 http_headers_lookup(HTTP *http, char *key)
 {
+    if (http == NULL ){
+      return NULL;
+    }
     HEADERS env = http->headers;
     while(env != NULL) {
 	     if(!strcmp(env->key, key))
@@ -366,3 +394,33 @@ http_get_code(HTTP *http) {
   return http->code;
 }
 
+void
+http_search_keywords(HTTP *http, char **keywords) {
+// Search for each of the args in the headers
+    // Iterate through the "char array"
+    char **keywordStatus = keywords;
+
+    while (keywordStatus != NULL) {
+      char* keyword = *keywordStatus;
+
+      HEADERS http_headers = http_get_headers(http);
+      HEADERS cursor = http_headers;
+
+      while (cursor != NULL) {
+        if (!strcasecmp(cursor->key, keyword)) {
+          fprintf(stderr, "%s\n", cursor->value);
+          break;
+        }
+        cursor = cursor->next;
+      }
+
+      keywordStatus++;
+
+    }
+
+}
+
+void http_free_keywords(HTTP* http, char **keywords) {
+  (void)http;
+  free(keywords);
+}
