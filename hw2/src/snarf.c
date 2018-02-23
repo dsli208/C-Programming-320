@@ -118,8 +118,8 @@ main(int argc, char *argv[])
   }
 
   while((c = http_getc(http)) != EOF)
-    putchar(c);
-    //putc(c, outStream);
+    //putchar(c);
+    putc(c, outStream);
 
 
   http_close(http);

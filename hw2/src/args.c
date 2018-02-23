@@ -31,7 +31,7 @@ parse_args(int argc, char *argv[])
     debug("%d optind: %d", i, optind);
     debug("%d optopt: %d", i, optopt);
     debug("%d argv[optind]: %s", i, argv[optind]);
-    if ((option = getopt(argc, argv, "+q:o")) != -1) {
+    if ((option = getopt(argc, argv, "+q:o:")) != -1) {
       switch (option) {
         case 'q': {
           info("Query header: %s", optarg);
@@ -80,7 +80,7 @@ parse_args(int argc, char *argv[])
     }
   }
   if (!contains_o) {
-    outStream = stdout;
+    outStream = fdopen(1, "w");
   }
   else {
     outStream = fopen(output_file, "w");
