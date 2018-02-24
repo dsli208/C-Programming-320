@@ -300,7 +300,7 @@ http_parse_headers(HTTP *http)
            l = cp;
 
        //
-       for( ; *cp != ':' && *cp != '\0'; cp++) ;
+       for( ; *cp != ':' && *cp != '\0'; cp++);
            if(*cp == '\0' || *(cp+1) != ' ') {
                free(line);
                line = NULL;
@@ -404,16 +404,16 @@ http_get_code(HTTP *http) {
 }
 
 void
-http_search_keywords(HTTP *http, char **keywords) {
+http_search_keywords(HTTP *http, char *keywords[]) {
     if (keywords == NULL) {
       return;
     }
 // Search for each of the args in the headers
     // Iterate through the "char array"
-    char **keywordStatus = keywords;
+    //char **keywordStatus = keywords;
 
-    while (*keywordStatus != NULL) {
-      char* keyword = *keywordStatus;
+     for (int i = 0; keywords[i] != NULL && i < 100; i++) {
+      char* keyword = keywords[i];
 
       HEADERS http_headers = http_get_headers(http);
       HEADERS cursor = http_headers;
@@ -426,14 +426,14 @@ http_search_keywords(HTTP *http, char **keywords) {
         cursor = cursor->next;
       }
 
-      keywordStatus++;
+      //keywordStatus++;
 
     }
 
 }
 
-void http_free_keywords(HTTP* http, char **keywords) {
+/*void http_free_keywords(HTTP* http, char **keywords) {
   (void)http;
   free(keywords);
   keywords = NULL;
-}
+}*/

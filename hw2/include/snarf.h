@@ -21,8 +21,9 @@ FILE* outStream;
 
 extern char *url_to_snarf;
 extern char *output_file;
-char **keywords;
-char **keywordStatus;
+char *keywords[100];
+char *keywordStatus;
+int keywordCount;
 
 int contains_q;
 

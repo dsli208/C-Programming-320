@@ -124,7 +124,7 @@ main(int argc, char *argv[])
 
   http_close(http);
   url_free(up);
-  http_free_keywords(http, keywords);
+  //http_free_keywords(http, keywords);
   up = NULL;
   fclose(outStream);
   outStream = NULL;

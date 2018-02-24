@@ -14,8 +14,9 @@ char *optarg;
 
 char *url_to_snarf;
 char *output_file;
-char **keywords;
-char **keywordStatus;
+//char **keywords;
+char* keywords[100];
+char *keywordStatus;
 
 void
 parse_args(int argc, char *argv[])
@@ -28,7 +29,7 @@ parse_args(int argc, char *argv[])
   char option;
   int contains_o = 0;
   contains_q = 0;
-  int keywordCount = 0;
+  keywordCount = 0;
 
   for (i = 0; optind < argc; i++) {
     debug("%d opterr: %d", i, opterr);
@@ -40,12 +41,13 @@ parse_args(int argc, char *argv[])
         case 'q': {
           info("Query header: %s", optarg);
           contains_q = 1;
-          if (keywords == NULL) {
-            keywords = malloc(sizeof(char**));
+          /*if (keywords == NULL) {
+            //keywords = malloc(sizeof(char**));
             keywordStatus = keywords;
-          }
-          *keywordStatus = optarg;
-          keywordStatus++;
+          }*/
+          keywordStatus = optarg;
+          keywords[keywordCount] = keywordStatus;
+          //keywordStatus++;
           keywordCount++;
           break;
         }
