@@ -323,9 +323,9 @@ http_parse_headers(HTTP *http)
             *valuep = '\0';
           }
        }
-       for(cp = node->key; *cp != '\0'; cp++)
+       /*for(cp = node->key; *cp != '\0'; cp++)
            if(isupper(*cp))
-              *cp = tolower(*cp);
+              *cp = tolower(*cp);*/
        if (last != NULL) {
          last->next = node;
          //last = node;
