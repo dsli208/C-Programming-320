@@ -24,8 +24,11 @@ parse_args(int argc, char *argv[])
     return;
   }
   outStream = NULL;
+<<<<<<< HEAD
   //output_file = NULL;
   keywords = NULL;
+=======
+>>>>>>> parent of 5eee5be... Reference commit, 552 bytes still reachable
   int i;
   char option;
   int contains_o = 0;
@@ -47,7 +50,6 @@ parse_args(int argc, char *argv[])
             keywordStatus = keywords;
           }
           *keywordStatus = optarg;
-          //*keywordStatus = realloc(keywords, sizeof(optarg));
           keywordStatus++;
           keywordCount++;
           break;
@@ -59,7 +61,10 @@ parse_args(int argc, char *argv[])
             exit(-1);
           }
           info("Output file: %s", optarg);
+<<<<<<< HEAD
           //output_file = malloc(sizeof(char*));
+=======
+>>>>>>> parent of 5eee5be... Reference commit, 552 bytes still reachable
 	        output_file = optarg;
           contains_o = 1;
           break;

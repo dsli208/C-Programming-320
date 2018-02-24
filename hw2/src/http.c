@@ -282,8 +282,6 @@ http_parse_headers(HTTP *http)
 	       free(line);
          line = NULL;
          //break;
-
-
 	       return env;
 	     }
 
@@ -422,7 +420,7 @@ http_search_keywords(HTTP *http, char **keywords) {
 
       while (cursor != NULL) {
         if (!strcasecmp(cursor->key, keyword)) {
-          fprintf(stderr, "%s: %s\n", cursor->key, cursor->value);
+          fprintf(stderr, "%s\n", cursor->value);
           break;
         }
         cursor = cursor->next;

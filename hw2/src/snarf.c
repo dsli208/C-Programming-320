@@ -50,7 +50,7 @@ main(int argc, char *argv[])
   if((up = url_parse(url_to_snarf)) == NULL) {
     url_free(up);
     fprintf(stderr, "Illegal URL: '%s'\n", argv[1]);
-    exit(-1);
+    exit(1);
   }
   method = url_method(up);
   addr = url_address(up);
@@ -58,14 +58,14 @@ main(int argc, char *argv[])
   if(method == NULL || strcasecmp(method, "http")) {
     url_free(up); // Error at this line
     fprintf(stderr, "Only HTTP access method is supported\n");
-    exit(-1);
+    exit(1);
   }
   if((http = http_open(addr, port)) == NULL) {
     fprintf(stderr, "Unable to contact host '%s', port %d\n",
 	    url_hostname(up) != NULL ? url_hostname(up) : "(NULL)", port);
     url_free(up);
     http_close(http);
-    exit(-1);
+    exit(1);
   }
 
   http_request(http, up);
@@ -127,6 +127,7 @@ main(int argc, char *argv[])
   http_free_keywords(http, keywords);
   up = NULL;
   fclose(outStream);
+<<<<<<< HEAD
   /*if (output_file != NULL) {
     free(output_file);
     output_file = NULL;
@@ -135,6 +136,10 @@ main(int argc, char *argv[])
   //keywords = NULL;
   outStream = NULL;
   if (exitCode == 200) {;
+=======
+  outStream = NULL;
+  if (exitCode == 200) {
+>>>>>>> parent of 5eee5be... Reference commit, 552 bytes still reachable
     return(0);
   }
   else {
