@@ -119,18 +119,21 @@ main(int argc, char *argv[])
   }
 
   while((c = http_getc(http)) != EOF)
-    //putchar(c);
-    putc(c, outStream);
+    if (!contains_o)
+      putchar(c);
+    else
+      putc(c, outStream);
 
 
   http_close(http);
   url_free(up);
   //http_free_keywords(http, keywords);
   up = NULL;
-  if (!contains_o) {
+  /*if (!contains_o) {
     close(1);
-  }
-  fclose(outStream);
+  }*/
+  if (contains_o)
+    fclose(outStream);
 
   outStream = NULL;
   if (exitCode == 200) {

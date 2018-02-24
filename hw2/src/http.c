@@ -349,6 +349,11 @@ http_parse_headers(HTTP *http)
       free(node);
       node = NULL;
     }
+
+    if (line != NULL) {
+        free(line);
+        line = NULL;
+    }
     return(env);
 }
 
