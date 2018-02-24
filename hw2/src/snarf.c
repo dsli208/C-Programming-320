@@ -127,19 +127,18 @@ main(int argc, char *argv[])
   http_free_keywords(http, keywords);
   up = NULL;
   fclose(outStream);
-<<<<<<< HEAD
+
   /*if (output_file != NULL) {
     free(output_file);
     output_file = NULL;
   }*/
   //output_file = NULL;
   //keywords = NULL;
-  outStream = NULL;
-  if (exitCode == 200) {;
-=======
-  outStream = NULL;
+  //outStream = NULL;
+
+  //outStream = NULL;
   if (exitCode == 200) {
->>>>>>> parent of 5eee5be... Reference commit, 552 bytes still reachable
+
     return(0);
   }
   else {

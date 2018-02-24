@@ -175,14 +175,14 @@ http_response(HTTP *http)
     //free(http->response);
     return(1);
   }
-  strncpy(http->response, response, len);
+  strncpy(http->response, response, n);
   do {
     http->response[len] = '\0';
-    len--;
+    n--;
   }
   while(len >= 0 &&
 	(http->response[len] == '\r'
-	 || http->response[len] == '\n' || http->response[len] == '\0')); // remove semi-colon?
+	 || http->response[len] == '\n' || http->response[n] == '\0')); // remove semi-colon?
   if(sscanf(http->response, "HTTP/%3s %d ", http->version, &http->code) != 2)
     return(1);
   http->headers = http_parse_headers(http); // PROGRAM SEGFAULTS HERE
@@ -420,7 +420,7 @@ http_search_keywords(HTTP *http, char **keywords) {
 
       while (cursor != NULL) {
         if (!strcasecmp(cursor->key, keyword)) {
-          fprintf(stderr, "%s\n", cursor->value);
+          fprintf(stderr, "%s: %s\n", cursor->key, cursor->value);
           break;
         }
         cursor = cursor->next;
