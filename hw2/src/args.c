@@ -27,9 +27,10 @@ parse_args(int argc, char *argv[])
   outStream = NULL;
   int i;
   char option;
-  int contains_o = 0;
+  contains_o = 0;
   contains_q = 0;
   keywordCount = 0;
+  output_file = NULL;
 
   for (i = 0; optind < argc; i++) {
     debug("%d opterr: %d", i, opterr);
@@ -85,7 +86,7 @@ parse_args(int argc, char *argv[])
   optind++;
     }
   }
-  if (!contains_o) {
+  if (!contains_o || output_file == NULL) {
     outStream = fdopen(1, "w");
   }
   else {

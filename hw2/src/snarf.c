@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "debug.h"
 #include "http.h"
@@ -126,7 +127,11 @@ main(int argc, char *argv[])
   url_free(up);
   //http_free_keywords(http, keywords);
   up = NULL;
+  if (!contains_o) {
+    close(1);
+  }
   fclose(outStream);
+
   outStream = NULL;
   if (exitCode == 200) {
     return(0);

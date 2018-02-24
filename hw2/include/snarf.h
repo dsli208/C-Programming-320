@@ -26,5 +26,6 @@ char *keywordStatus;
 int keywordCount;
 
 int contains_q;
+int contains_o;
 
 void parse_args(int argc, char *argv[]);

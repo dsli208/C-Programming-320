@@ -425,6 +425,10 @@ http_search_keywords(HTTP *http, char *keywords[]) {
         }
         cursor = cursor->next;
       }
+      /*char* result;
+      if ((result = http_headers_lookup(http, keyword)) != NULL) {
+        fprintf(stderr, "%s\n", result);
+      }*/
 
       //keywordStatus++;
 
