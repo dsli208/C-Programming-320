@@ -133,7 +133,7 @@ main(int argc, char *argv[])
   }*/
   //output_file = NULL;
   //keywords = NULL;
-  //outStream = NULL;
+  outStream = NULL;
   if (exitCode == 200) {
     return(0);
   }

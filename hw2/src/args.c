@@ -25,7 +25,7 @@ parse_args(int argc, char *argv[])
   }
   outStream = NULL;
   output_file = NULL;
-  keywords = NULL;
+  //keywords = NULL;
   int i;
   char option;
   int contains_o = 0;
