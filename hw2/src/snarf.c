@@ -62,7 +62,7 @@ main(int argc, char *argv[])
   }
   if((http = http_open(addr, port)) == NULL) {
     fprintf(stderr, "Unable to contact host '%s', port %d\n",
-	    url_hostname(up) != NULL ? url_hostname(up) : "(NULL)", port);
+      url_hostname(up) != NULL ? url_hostname(up) : "(NULL)", port);
     url_free(up);
     http_close(http);
     exit(1);
@@ -83,18 +83,18 @@ main(int argc, char *argv[])
    *
    * Some of the possible HTTP response status codes are as follows:
    *
-   *	200	Success -- document follows
-   *	302	Document moved
-   *	400	Request error
-   *	401	Authentication required
-   *	403	Access denied
-   *	404	Document not found
-   *	500	Server error
+   *  200 Success -- document follows
+   *  302 Document moved
+   *  400 Request error
+   *  401 Authentication required
+   *  403 Access denied
+   *  404 Document not found
+   *  500 Server error
    *
    * You probably want to examine the "Content-type" header.
    * Two possibilities are:
-   *    text/html	The body of the document is HTML code
-   *	text/plain	The body of the document is plain ASCII text
+   *    text/html The body of the document is HTML code
+   *  text/plain  The body of the document is plain ASCII text
    */
   status = http_status(http, &code);
 
@@ -127,18 +127,8 @@ main(int argc, char *argv[])
   http_free_keywords(http, keywords);
   up = NULL;
   fclose(outStream);
-
-  /*if (output_file != NULL) {
-    free(output_file);
-    output_file = NULL;
-  }*/
-  //output_file = NULL;
-  //keywords = NULL;
-  //outStream = NULL;
-
-  //outStream = NULL;
+  outStream = NULL;
   if (exitCode == 200) {
-
     return(0);
   }
   else {

@@ -24,10 +24,6 @@ parse_args(int argc, char *argv[])
     return;
   }
   outStream = NULL;
-
-  //output_file = NULL;
-  keywords = NULL;
-
   int i;
   char option;
   int contains_o = 0;
@@ -60,10 +56,7 @@ parse_args(int argc, char *argv[])
             exit(-1);
           }
           info("Output file: %s", optarg);
-
-          //output_file = malloc(sizeof(char*));
-
-	        output_file = optarg;
+          output_file = optarg;
           contains_o = 1;
           break;
         }
@@ -85,9 +78,9 @@ parse_args(int argc, char *argv[])
         }
       }
     } else if(argv[optind] != NULL) {
-	info("URL to snarf: %s", argv[optind]);
-	url_to_snarf = argv[optind];
-	optind++;
+  info("URL to snarf: %s", argv[optind]);
+  url_to_snarf = argv[optind];
+  optind++;
     }
   }
   if (!contains_o) {

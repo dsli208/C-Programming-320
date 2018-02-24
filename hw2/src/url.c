@@ -15,13 +15,13 @@
  */
 
 struct url {
-  char *stuff;			/* Working storage containing all parts */
-  char *method;			/* The access method (http, ftp, etc.) */
-  char *hostname;		/* The server host name */
-  int port;			/* The TCP port to contact */
-  char *path;			/* The path of the document on the server */
-  int dnsdone;			/* Have we done DNS lookup yet? */
-  struct in_addr addr;		/* IP address of the server */
+  char *stuff;      /* Working storage containing all parts */
+  char *method;     /* The access method (http, ftp, etc.) */
+  char *hostname;   /* The server host name */
+  int port;     /* The TCP port to contact */
+  char *path;     /* The path of the document on the server */
+  int dnsdone;      /* Have we done DNS lookup yet? */
+  struct in_addr addr;    /* IP address of the server */
 };
 
 /*
@@ -79,7 +79,7 @@ url_parse(char *url)
       up->method = strdup(cp);
       cp = colon+1;
       if(!strcasecmp(up->method, "http"))
-	       up->port = 80;
+         up->port = 80;
     }
   if((slash != NULL) && (*(slash+1) == '/')) {
       /*
@@ -105,14 +105,14 @@ url_parse(char *url)
        * If we found a ':', then we have to collect the port number
        */
       if(*cp == ':') {
-	char *cp1;
-	cp1 = ++cp;
-	while(isdigit(*cp))
-	  cp++;
-	c = *cp;
-	//*cp = '\0';
-	up->port = atoi(cp1);
-	*cp = c;
+  char *cp1;
+  cp1 = ++cp;
+  while(isdigit(*cp))
+    cp++;
+  c = *cp;
+  //*cp = '\0';
+  up->port = atoi(cp1);
+  *cp = c;
       }
     }
     if(*cp == '\0')
@@ -220,7 +220,7 @@ url_address(URL *up)
     if(up->hostname != NULL && *up->hostname != '\0') {
       // sample hostname: www.google.com
       if((he = gethostbyname(up->hostname)) == NULL) // SEGFAULT for he = gethostbyname(up -> hostname), and for one unit test, it returns NULL
-	       return(NULL);
+         return(NULL);
       bcopy(he->h_addr, &up->addr, sizeof(struct in_addr));
     }
     up->dnsdone = 1;

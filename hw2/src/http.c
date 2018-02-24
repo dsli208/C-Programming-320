@@ -30,12 +30,12 @@ void http_free_headers(HEADERS env);
 typedef enum { ST_REQ, ST_HDRS, ST_BODY, ST_DONE } HTTP_STATE;
 
 struct http {
-  FILE *file;			/* Stream to remote server */
-  HTTP_STATE state;		/* State of the connection */
-  int code;			/* Response code */
-  char version[4];		/* HTTP version from the response */
-  char *response;		/* Response string with message */
-  HEADERS headers;		/* Reply headers */
+  FILE *file;     /* Stream to remote server */
+  HTTP_STATE state;   /* State of the connection */
+  int code;     /* Response code */
+  char version[4];    /* HTTP version from the response */
+  char *response;   /* Response string with message */
+  HEADERS headers;    /* Reply headers */
 };
 
 
@@ -125,8 +125,8 @@ int http_request(HTTP *http, URL *up)
   /* Ignore SIGPIPE so we don't die while doing this */
   prev = signal(SIGPIPE, SIG_IGN);
   if(fprintf(http->file, "GET %s://%s:%d%s HTTP/1.0\r\nHost: %s\r\n",
-	     url_method(up), url_hostname(up), url_port(up),
-	     url_path(up), url_hostname(up)) == -1) {
+       url_method(up), url_hostname(up), url_port(up),
+       url_path(up), url_hostname(up)) == -1) {
     signal(SIGPIPE, prev);
     return(1);
   }
@@ -175,14 +175,14 @@ http_response(HTTP *http)
     //free(http->response);
     return(1);
   }
-  strncpy(http->response, response, n);
+  strncpy(http->response, response, len);
   do {
     http->response[len] = '\0';
-    n--;
+    len--;
   }
   while(len >= 0 &&
-	(http->response[len] == '\r'
-	 || http->response[len] == '\n' || http->response[n] == '\0')); // remove semi-colon?
+  (http->response[len] == '\r'
+   || http->response[len] == '\n' || http->response[len] == '\0')); // remove semi-colon?
   if(sscanf(http->response, "HTTP/%3s %d ", http->version, &http->code) != 2)
     return(1);
   http->headers = http_parse_headers(http); // PROGRAM SEGFAULTS HERE
@@ -264,10 +264,10 @@ http_parse_headers(HTTP *http)
       //len = initLen;
       //size += sLen;
       // Change len to n (size_t form)
-	     line = l = malloc(n+1);
+       line = l = malloc(n+1);
        //ll = malloc(n + 1);
-	     l[n] = '\0';
-	     strncpy(l, ll, n);
+       l[n] = '\0';
+       strncpy(l, ll, n);
 
        // Fix issue with len constantly being the size of the buffer
        while(l[n - 1] == '\0') {
@@ -275,17 +275,17 @@ http_parse_headers(HTTP *http)
        }
 
        // Remove \r\n
-	     while(n > 0 && (l[n-1] == '\n' || l[n-1] == '\r')) {
-	           l[--n] = '\0';
+       while(n > 0 && (l[n-1] == '\n' || l[n-1] == '\r')) {
+             l[--n] = '\0';
        }
-	     if(n == 0) {
-	       free(line);
+       if(n == 0) {
+         free(line);
          line = NULL;
          //break;
-	       return env;
-	     }
+         return env;
+       }
 
-	     node = malloc(sizeof(HDRNODE));
+       node = malloc(sizeof(HDRNODE));
        //node->key = malloc(sizeof(char*));
        //node->value = malloc(sizeof(char*));
 
@@ -294,44 +294,44 @@ http_parse_headers(HTTP *http)
           env = node;
        }
 
-	     node->next = NULL;
+       node->next = NULL;
        // Copy l to cp, removing any excess whitespace beforehand
-	     for(cp = l; *cp == ' '; cp++) // Remove ';'
-	         l = cp;
+       for(cp = l; *cp == ' '; cp++) // Remove ';'
+           l = cp;
 
        //
-	     for( ; *cp != ':' && *cp != '\0'; cp++) ;
-	         if(*cp == '\0' || *(cp+1) != ' ') {
-	             free(line);
+       for( ; *cp != ':' && *cp != '\0'; cp++) ;
+           if(*cp == '\0' || *(cp+1) != ' ') {
+               free(line);
                line = NULL;
                line = NULL;
                //free(ll);
                //ll = NULL;
-	             free(node);
+               free(node);
                node = NULL;
-	             continue;
-	         }
-	     *cp++ = '\0';
+               continue;
+           }
+       *cp++ = '\0';
        //node->key = l;
-	     node->key = strdup(l);
-	     while(*cp == ' ')
-	         cp++;
-	     //node->value = cp;
+       node->key = strdup(l);
+       while(*cp == ' ')
+           cp++;
+       //node->value = cp;
        node->value = strdup(cp);
        for (valuep = node->value; *valuep != '\0'; valuep++) {
           if (*valuep == '\r' || *valuep == '\n') {
             *valuep = '\0';
           }
        }
-	     /*for(cp = node->key; *cp != '\0'; cp++)
-	         if(isupper(*cp))
-		          *cp = tolower(*cp);*/
+       for(cp = node->key; *cp != '\0'; cp++)
+           if(isupper(*cp))
+              *cp = tolower(*cp);
        if (last != NULL) {
-	       last->next = node;
+         last->next = node;
          //last = node;
      }
      last = node;
-	     free(line);
+       free(line);
        line = NULL;
        //free(ll);
        //ll = NULL;
@@ -367,11 +367,11 @@ http_free_headers(HEADERS env)
     HEADERS next;
 
     while(env != NULL) {
-	   free(env->key);
-	   free(env->value);
-	   next = env->next;
-	   free(env);
-	   env = next;
+     free(env->key);
+     free(env->value);
+     next = env->next;
+     free(env);
+     env = next;
     }
 }
 
@@ -387,9 +387,9 @@ http_headers_lookup(HTTP *http, char *key)
     }
     HEADERS env = http->headers;
     while(env != NULL) {
-	     if(!strcmp(env->key, key))
-	       return(env->value);
-	     env = env->next;
+       if(!strcmp(env->key, key))
+         return(env->value);
+       env = env->next;
     }
     return(NULL);
 }
@@ -420,7 +420,7 @@ http_search_keywords(HTTP *http, char **keywords) {
 
       while (cursor != NULL) {
         if (!strcasecmp(cursor->key, keyword)) {
-          fprintf(stderr, "%s: %s\n", cursor->key, cursor->value);
+          fprintf(stderr, "%s\n", cursor->value);
           break;
         }
         cursor = cursor->next;
