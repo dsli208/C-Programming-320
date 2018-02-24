@@ -387,7 +387,7 @@ http_headers_lookup(HTTP *http, char *key)
     }
     HEADERS env = http->headers;
     while(env != NULL) {
-       if(!strcmp(env->key, key))
+       if(!strcasecmp(env->key, key))
          return(env->value);
        env = env->next;
     }
