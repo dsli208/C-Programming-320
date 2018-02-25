@@ -118,22 +118,32 @@ main(int argc, char *argv[])
     http_search_keywords(http, keywords);
   }
 
-  while((c = http_getc(http)) != EOF)
-    if (!contains_o)
+  while((c = http_getc(http)) != EOF) {
+    putc(c, outStream);
+
+    /*if (!contains_o)
       putchar(c);
     else
-      putc(c, outStream);
+      putc(c, outStream);*/
+  }
 
 
   http_close(http);
   url_free(up);
   //http_free_keywords(http, keywords);
   up = NULL;
+
   /*if (!contains_o) {
     close(1);
-  }*/
-  if (contains_o)
+  }
+  else {
     fclose(outStream);
+  }*/
+  /*if (contains_o) {
+    fclose(outStream);
+  }*/
+
+  fclose(outStream);
 
   outStream = NULL;
   if (exitCode == 200) {

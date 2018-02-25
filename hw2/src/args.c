@@ -86,10 +86,16 @@ parse_args(int argc, char *argv[])
   optind++;
     }
   }
-  /*if (!contains_o || output_file == NULL) {
-    outStream = fdopen(1, "w");
-  }*/
-  //else {
+
+  if (!contains_o || output_file == NULL) {
+    //outStream = fdopen(1, "w");
+    outStream = stdout;
+  }
+  else {
     outStream = fopen(output_file, "w");
-  //}
+  }
+
+  /*if (contains_o) {
+    fopen(output_file, "w");
+  }*/
 }
