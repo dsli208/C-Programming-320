@@ -11,6 +11,7 @@ stages:
     - test
 build:
     stage: build
+    script:
 run:
     stage: run
     script:
