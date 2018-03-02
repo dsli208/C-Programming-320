@@ -12,7 +12,7 @@ stages:
 build:
     stage: build
     script:
-        - 
+        - echo "Build done"
 run:
     stage: run
     script:
