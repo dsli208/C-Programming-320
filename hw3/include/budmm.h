@@ -13,11 +13,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define ORDER_TO_BLOCK_SIZE(ord) (1 << (ord))
-int bsize_to_order(uint32_t bsize);
-
 #define ORDER_MIN 5  /* Min block size 32 */
 #define ORDER_MAX 15
+#define ORDER_TO_BLOCK_SIZE(ord) (1 << (ord))
 #define MIN_BLOCK_SIZE (ORDER_TO_BLOCK_SIZE(ORDER_MIN))
 #define MAX_BLOCK_SIZE (ORDER_TO_BLOCK_SIZE(ORDER_MAX-1))
 #define MAX_HEAP_SIZE (4 * ORDER_TO_BLOCK_SIZE(ORDER_MAX-1))

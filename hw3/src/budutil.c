@@ -19,15 +19,6 @@ static char *bud_heap_startp;   /* First byte of the heap */
 static char *bud_heap_endp;     /* Last byte of the heap + 1 */
 static char *bud_breakp;         /* Current heap break pointer */
 
-int block_size_to_order(uint32_t bsize) {
-    for(int i = ORDER_MIN; i < ORDER_MAX; i++) {
-	if(ORDER_TO_BLOCK_SIZE(i) == bsize)
-	    return i;
-    }
-    debug("block_size_to_order called with 0x%x -- not a valid block size", bsize);
-    abort();
-}
-
 void bud_mem_init() {
     // Initialize free lists as empty circular doubly linked lists.
     for(int i = 0; i < NUM_FREE_LIST; i++)
