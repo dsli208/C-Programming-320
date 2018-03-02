@@ -12,6 +12,7 @@ stages:
 build:
     stage: build
     script:
+        - 
 run:
     stage: run
     script:
