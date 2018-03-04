@@ -17,6 +17,15 @@
 extern bud_free_block free_list_heads[NUM_FREE_LIST];
 
 void *bud_malloc(uint32_t rsize) {
+    // base - error cases
+    if (rsize == 0 || rsize > MAX_BLOCK_SIZE - sizeof(bud_header)) {
+        errno = EINVAL;
+        return NULL;
+    }
+    // Case of success
+
+    // Case of failure
+
     return NULL;
 }
 
