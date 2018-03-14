@@ -1,0 +1,16 @@
+bltzal $2,12
+bltz $1,4
+blez $5,100
+bgtz $9,400
+bgezal $30,100
+bgez $4,8
+bne $2,$15,20
+beq $1,$6,40
+beq $2,$15,128
+bne $3,$15,256
+bgez $4,512
+bgezal $5,1028
+bgtz $6,2048
+blez $7,1028
+bltz $8,512
+bltzal $9,256

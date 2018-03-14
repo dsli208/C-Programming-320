@@ -20,6 +20,7 @@
 #define MAX_BLOCK_SIZE (ORDER_TO_BLOCK_SIZE(ORDER_MAX-1))
 #define MAX_HEAP_SIZE (4 * ORDER_TO_BLOCK_SIZE(ORDER_MAX-1))
 #define NUM_FREE_LIST (ORDER_MAX - ORDER_MIN)
+#define MIN_HEAP_ADDR bud_heap_start()
 
 /*
                                  Format of an allocated memory block
@@ -79,6 +80,11 @@ typedef struct bud_free_block {
     struct bud_free_block *next;
     struct bud_free_block *prev;
 } bud_free_block;
+
+/*
+ * Should have default value MIN_HEAP_ADDRESS
+ */
+char *sbrk_value;
 
 /*
  * Header nodes of the segregated free list.
