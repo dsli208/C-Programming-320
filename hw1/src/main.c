@@ -15,7 +15,25 @@
 #include "hw1.h" // includes global_options and other variables
 #include "debug.h"
 
-int main(int argc, char **argv)
+int main() {
+    Instr_info info = {.opcode = OP_BEQ, .type = ITYP, .srcs = {RS, RT, EXTRA}, .format = "beq $%d,$%d,%d"};
+    Instruction instruction = {
+        .value = 0,
+        .info = &info,
+        .regs = {7, 15, 31},
+        .extra = 0xfffffc1f,
+        .args = {7, 15, 127},
+    };
+
+    int ret_act = encode(&instruction, 0x1000);
+
+    printf("%d\n", ret_act);
+    printf("%d", 0xc004);
+
+    return 0;
+}
+
+int _main(int argc, char **argv)
 {
     Instr_info inin;
     Instruction i = {0x7, &inin, {}, 0x0, {}};
@@ -24,6 +42,7 @@ int main(int argc, char **argv)
     if(!validargs(argc, argv)) {
         //printf("%d\n", global_options);
         USAGE(*argv, EXIT_FAILURE);
+        exit(1);
     }
     debug("Options: 0x%X", global_options);
 
@@ -31,6 +50,7 @@ int main(int argc, char **argv)
 
     if(global_options & 0x1) { // -h
         USAGE(*argv, EXIT_SUCCESS);
+        exit(0);
     }
 
     else if (global_options & 0x2) { // -d

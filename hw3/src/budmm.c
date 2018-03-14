@@ -22,9 +22,33 @@ void *bud_malloc(uint32_t rsize) {
         errno = EINVAL;
         return NULL;
     }
-    // Case of success
 
-    // Case of failure
+    // Allocate to the closest power of 2 possible
+    int order = 0;
+    uint32_t size_alloc = 1;
+    while (size_alloc < rsize) {
+        size_alloc *= 2;
+        order++;
+    }
+
+    // Determine payload and header size
+    uint32_t size_header = sizeof(bud_header); // Is this right?
+    uint32_t size_payload = size_alloc - (rsize - size_header);
+    uint32_t size_padding; // IMPLEMENT?
+
+    // Determine if we need to allocate more memory
+    if ((char*)bud_heap_end - (char*)bud_heap_start < size_alloc) {
+
+    }
+
+    // Case of failure - request CANNOT be satisfied
+    void *sbrk_char_value = bud_sbrk();
+    if (sbrk_value == (void*)-1) {
+        errno = ENOMEM;
+        return NULL;
+    }
+    // Case of success - request CAN be satisfied
+    char *sbrk_value = (char*)sbrk_char_value;
 
     return NULL;
 }

@@ -299,9 +299,9 @@ int validargs(int argc, char **argv)
     }
 
     //global_options = global_options << 1;
-    /*if (ebbit && contains_e) {
+    if (ebbit && contains_e) {
         global_options = convertEndian(global_options);
-    }*/
+    }
 
     return 1; // MAKE SURE EVERYTHING IS RIGHT FIRST
 }

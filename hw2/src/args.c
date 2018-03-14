@@ -29,6 +29,7 @@ parse_args(int argc, char *argv[])
   char option;
   contains_o = 0;
   contains_q = 0;
+  int contains_url = 0;
   keywordCount = 0;
   output_file = NULL;
 
@@ -56,6 +57,7 @@ parse_args(int argc, char *argv[])
           if (contains_o) {
             fprintf(stderr, KRED "-%co has already been entered\n" KNRM,
                     optopt);
+            USAGE(argv[0]);
             exit(-1);
           }
           info("Output file: %s", optarg);
@@ -67,6 +69,7 @@ parse_args(int argc, char *argv[])
           if (optopt != 'h') {
             fprintf(stderr, KRED "-%c is not a supported argument\n" KNRM,
                     optopt);
+            USAGE(argv[0]);
             exit(-1);
           }
           else {
@@ -81,9 +84,13 @@ parse_args(int argc, char *argv[])
         }
       }
     } else if(argv[optind] != NULL) {
+      if (contains_url) {
+        exit(-1);
+      }
   info("URL to snarf: %s", argv[optind]);
   url_to_snarf = argv[optind];
   optind++;
+  contains_url = 1;
     }
   }
 
@@ -93,6 +100,10 @@ parse_args(int argc, char *argv[])
   }
   else {
     outStream = fopen(output_file, "w");
+    if (outStream == NULL) {
+      USAGE(argv[0]);
+      exit(-1);
+    }
   }
 
   /*if (contains_o) {
