@@ -1,0 +1,13 @@
+image: hwrunner:latest
+variables:
+    GIT_SSL_NO_VERIFY: "true"
+    EXEC: ecran
+    HW_DIR: hw4
+before_script:
+    - make clean all -C ${HW_DIR}
+stages:
+    - build
+build:
+    stage: build
+    script:
+        - echo "Build done"
