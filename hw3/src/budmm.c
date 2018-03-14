@@ -77,7 +77,12 @@ void *bud_malloc(uint32_t rsize) {
 
     // First, insert our newly allocated sbrk block, if any, to the free_head_list
     if (free_list_heads[9].next == free_list_heads[9].prev) {
-        bud_header newAllocHeader ={0, 14, 0, 16384, 0, 0};
+        bud_header newAllocHeader = {};
+        // CHECK TO SEE THAT THESE ARE THE VALUES YOU ARE SUPPOSED TO SET
+        newAllocHeader.allocated = 0;
+        newAllocHeader.order = 14;
+        newAllocHeader.padded = 0;
+
         bud_free_block newFreeBlock = {newAllocHeader, &free_list_heads[9], NULL};
         free_list_heads[9].next = &newFreeBlock;
     }
@@ -86,7 +91,12 @@ void *bud_malloc(uint32_t rsize) {
         while (cursor.next != NULL) {
             cursor = *(cursor.next);
         }
-        bud_header newAllocHeader ={0, 14, 0, 16384, 0, 0};
+        bud_header newAllocHeader ={};
+        // CHECK TO SEE THAT THESE ARE THE VALUES YOU ARE SUPPOSED TO SET
+        newAllocHeader.allocated = 0;
+        newAllocHeader.order = 14;
+        newAllocHeader.padded = 0;
+
         bud_free_block newFreeBlock = {newAllocHeader, &free_list_heads[9], NULL};
         cursor.next = &newFreeBlock;
     }
