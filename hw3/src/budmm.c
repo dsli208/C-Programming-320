@@ -114,7 +114,8 @@ void *bud_malloc(uint32_t rsize) {
         free_list_heads_insert(&newFreeBlock, (int)newAllocHeader.order);
     }
 
-    // Now, take the BIG block, and split it until we get a "almost perfect fit"
+    // Now, take the BIG block, and split it until we get a "almost perfect fit" --> START HERE NEXT TIME
+    //bud_free_block *alloc_block = (bud_free_block*)split_block(rsize, )
 
     return NULL;
 }
@@ -139,17 +140,19 @@ void *split_block(uint32_t rsize, bud_free_block *block) {
     if (new_size_block < rsize)
         return block;
 
+    // Reduce order
+    block -> header.order -= 1;
+
     // Should we split the block further?
     // This is the "rightmost" block, that should be put in the free list for later use
     bud_free_block *new_free_block = block + new_size_block;
     // First, set bits and block properties accordingly before adding to list
     new_free_block -> header.allocated = 0; new_free_block -> header.padded = 0;
-    uint32_t new_block_order = getOrder(new_size_block);
+    uint32_t new_block_order = getOrder(new_size_block); // or just use the decremented order
     new_free_block -> header.order = (uint64_t)new_block_order;
 
     // Store to free list
     free_list_heads_insert(new_free_block, (int)new_block_order);
 
-    return NULL;
+    return split_block(rsize, block);
 }
-
