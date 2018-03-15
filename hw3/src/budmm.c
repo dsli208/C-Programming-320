@@ -18,6 +18,24 @@ extern bud_free_block free_list_heads[NUM_FREE_LIST];
 
 extern char *sbrk_value; // MAKE GLOBAL?
 
+void free_list_heads_insert(bud_free_block *block, int order) {
+    int index = order - 5;
+
+    bud_free_block cursor = free_list_heads[index];
+    // Empty list condition
+    if (free_list_heads[index].next == free_list_heads[index].prev) {
+        block -> prev = &free_list_heads[index];
+        free_list_heads[index].next = block;
+        return;
+    }
+
+    while (cursor.next != NULL) {
+        cursor = *(cursor.next);
+    }
+    block -> prev = &cursor;
+    free_list_heads[index].next = block;
+}
+
 int isEmptyList(int i) {
     if (i >= 0 && i <= 9) {
         if (free_list_heads[i].next == free_list_heads[i].prev)
@@ -26,6 +44,14 @@ int isEmptyList(int i) {
     return 0;
 }
 
+uint32_t getOrder(uint32_t n) {
+    uint32_t order = 0;
+    while (n > 1) {
+        n /= 2;
+        order++;
+    }
+    return order;
+}
 
 /*
  * This is your implementation of bud_malloc. It acquires uninitialized memory that
@@ -41,6 +67,7 @@ int isEmptyList(int i) {
  */
 
 void *bud_malloc(uint32_t rsize) {
+    int sbrk_call = 0;
     // base - error cases
     if (rsize == 0 || rsize > MAX_BLOCK_SIZE - sizeof(bud_header)) {
         errno = EINVAL;
@@ -76,32 +103,18 @@ void *bud_malloc(uint32_t rsize) {
     // Case of success - request CAN be satisfied (enough memory)
 
     // First, insert our newly allocated sbrk block, if any, to the free_head_list
-    if (free_list_heads[9].next == free_list_heads[9].prev) {
+    if (sbrk_call) {
         bud_header newAllocHeader = {};
         // CHECK TO SEE THAT THESE ARE THE VALUES YOU ARE SUPPOSED TO SET
         newAllocHeader.allocated = 0;
         newAllocHeader.order = 14;
         newAllocHeader.padded = 0;
 
-        bud_free_block newFreeBlock = {newAllocHeader, &free_list_heads[9], NULL};
-        free_list_heads[9].next = &newFreeBlock;
-    }
-    else {
-        bud_free_block cursor = free_list_heads[9];
-        while (cursor.next != NULL) {
-            cursor = *(cursor.next);
-        }
-        bud_header newAllocHeader ={};
-        // CHECK TO SEE THAT THESE ARE THE VALUES YOU ARE SUPPOSED TO SET
-        newAllocHeader.allocated = 0;
-        newAllocHeader.order = 14;
-        newAllocHeader.padded = 0;
-
-        bud_free_block newFreeBlock = {newAllocHeader, &free_list_heads[9], NULL};
-        cursor.next = &newFreeBlock;
+        bud_free_block newFreeBlock = {newAllocHeader, NULL, NULL};
+        free_list_heads_insert(&newFreeBlock, (int)newAllocHeader.order);
     }
 
-
+    // Now, take the BIG block, and split it until we get a "almost perfect fit"
 
     return NULL;
 }
@@ -116,10 +129,27 @@ void bud_free(void *ptr) {
 
 /**
 * Helper function for splitting a large memory block
+*
+* Returns start of block intended to be allocated, places others on the free_list_heads[]
 **/
+// *** MAY NEED TO FIX THIS FUNCTION ***
+void *split_block(uint32_t rsize, bud_free_block *block) {
+    uint32_t size_block = sizeof(*block); // YOU MAY NEED TO FIX THIS
+    uint32_t new_size_block = size_block / 2;
+    if (new_size_block < rsize)
+        return block;
 
-void *split_block() {
-    //
+    // Should we split the block further?
+    // This is the "rightmost" block, that should be put in the free list for later use
+    bud_free_block *new_free_block = block + new_size_block;
+    // First, set bits and block properties accordingly before adding to list
+    new_free_block -> header.allocated = 0; new_free_block -> header.padded = 0;
+    uint32_t new_block_order = getOrder(new_size_block);
+    new_free_block -> header.order = (uint64_t)new_block_order;
+
+    // Store to free list
+    free_list_heads_insert(new_free_block, (int)new_block_order);
+
     return NULL;
 }
 
