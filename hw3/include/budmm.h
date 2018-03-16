@@ -84,7 +84,14 @@ typedef struct bud_free_block {
 /*
  * Should have default value MIN_HEAP_ADDRESS
  */
-char *sbrk_value;
+void *sbrk_value;
+
+/**
+ * Tracker for how much stuff is on the heap
+ *
+**/
+
+
 
 /*
  * Header nodes of the segregated free list.

@@ -3,7 +3,27 @@
 #include <string.h>
 #include "budmm.h"
 
-int main(int argc, char const *argv[]) {
+// INSERTING TEST MAIN HERE
+
+int main() {
+    errno = 0;
+    int **x = bud_malloc(sizeof(int *));
+    printf("%d", x == NULL);
+    //cr_assert_not_null(x, "bud_malloc returned null");
+
+    int a = 4;
+    *x = &a;
+
+    //cr_assert(*x == &a, "bud_malloc failed to give proper space for a pointer!");
+
+    //bud_header *bhdr = PAYLOAD_TO_HEADER(x);
+    //(void)bhdr;
+    //assert_header_values(bhdr, ALLOCATED, ORDER_MIN, PADDED, sizeof(int *));
+    //expect_errno_value(0);
+}
+
+
+/*int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
@@ -40,4 +60,4 @@ int main(int argc, char const *argv[]) {
     bud_mem_fini();
 
     return EXIT_SUCCESS;
-}
+}*/
