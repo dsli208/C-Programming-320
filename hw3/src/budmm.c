@@ -60,20 +60,24 @@ void free_list_heads_insert(bud_free_block *block, int order) {
 *
 * Returns start of block intended to be allocated, places others on the free_list_heads[]
 **/
-// *** MAY NEED TO FIX THIS FUNCTION ***
-void *split_block(uint32_t rsize, bud_free_block *block) {
-    uint64_t order = block -> header.order;
+// *** NEED TO FIX THIS FUNCTION ***
+void *split_block(uint32_t rsize, void *block) {
+    // Casting to allow use of header and other parts of the free_block struct
+    bud_free_block *cast_block  = (bud_free_block*)block;
+    //char *char_block = (char*)block;
+    uint64_t order = cast_block -> header.order;
     uint32_t size_block = ORDER_TO_BLOCK_SIZE(order); // YOU MAY NEED TO FIX THIS
     uint32_t new_size_block = size_block / 2;
     if (new_size_block < rsize)
         return block;
 
     // Reduce order
-    block -> header.order -= 1;
+    cast_block -> header.order -= 1;
 
     // Should we split the block further?
     // This is the "rightmost" block, that should be put in the free list for later use
-    bud_free_block *new_free_block = block + new_size_block;
+    // SEGFAULT ON THIS LINE, ARE YOU SPLITTING THE RIGHT WAY?
+    bud_free_block *new_free_block = (bud_free_block*)(cast_block + (unsigned long)new_size_block);
     // Initialize the struct value
     bud_header new_block_header = {};
     new_free_block -> header = new_block_header;
