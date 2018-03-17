@@ -17,42 +17,82 @@
 extern bud_free_block free_list_heads[NUM_FREE_LIST];
 
 extern void *sbrk_value; // MAKE GLOBAL
+extern uint64_t heap_mem_used;
+
+//////////////////// HEAP FUNCTIONS //////////////////////////////////////
+void heap_counter_init() {
+    heap_mem_used = 0;
+}
+
+void increment_heap_counter(uint32_t size_alloc) {
+    heap_mem_used += size_alloc;
+}
+
+void *get_current_heap_address() {
+    return bud_heap_start() + heap_mem_used;
+}
+
+//////// BUD_FREE HELPER FUNCTIONS //////////////////////////////////////////
+uint32_t block_size(uint64_t order) {
+    uint32_t size = 1;
+    for (int i = 0; i < (int)order; i++) {
+        size *= 2;
+    }
+    return size;
+}
 
 //////// BUD_MALLOC HELPER FUNCTIONS //////////////////////////////////////////
 
 int isEmptyList(uint32_t i) {
     if (i >= 0 && i <= 9) {
-        if (free_list_heads[i].next == free_list_heads[i].prev)
-            return 1;
+        if (free_list_heads[i].next == free_list_heads[i].prev) {
+            if (free_list_heads[i].next != &free_list_heads[i])
+                return 0;
+            else
+                return 1;
+        }
     }
     return 0;
 }
 
 uint32_t getOrder(uint32_t n) {
     uint32_t order = ORDER_MIN;
-    while (n > 1) {
+    while (n > 32) {
         n /= 2;
         order++;
     }
     return order;
 }
 
-void free_list_heads_insert(bud_free_block *block, int order) {
-    int index = order - 5;
+void free_list_heads_insert(bud_header *header, int order) {
+    int index = order - ORDER_MIN;
+
+    //bud_free_block block = {*header, NULL, NULL};
 
     bud_free_block cursor = free_list_heads[index];
     // Empty list condition
     if (isEmptyList(index)) {
-        block -> prev = &free_list_heads[index];
-        free_list_heads[index].next = block;
+        // Set the sentinel pointers to point to the new node
+        free_list_heads[index].next = (bud_free_block*)header;
+        free_list_heads[index].prev = (bud_free_block*)header;
+
+        // and set the new node's pointers to point to the sentinel
+        free_list_heads[index].next -> next = &free_list_heads[index];
+        free_list_heads[index].prev -> prev = &free_list_heads[index];
         return;
     }
 
-    while (cursor.next != NULL) {
+    while (cursor.next != &free_list_heads[index]) {
         cursor = *(cursor.next);
     }
-    block -> prev = &cursor;
-    free_list_heads[index].next = block;
+    // Pointers to new node
+    cursor.next = (bud_free_block*)header;
+    cursor.next -> prev = &cursor;
+
+    // Modify pointers to sentinel
+    cursor.next -> next = &free_list_heads[index];
+    free_list_heads[index].prev = (bud_free_block*)header;
+
 }
 
 /**
@@ -61,53 +101,57 @@ void free_list_heads_insert(bud_free_block *block, int order) {
 * Returns start of block intended to be allocated, places others on the free_list_heads[]
 **/
 // *** NEED TO FIX THIS FUNCTION ***
-void *split_block(uint32_t rsize, void *block) {
-    // Casting to allow use of header and other parts of the free_block struct
-    bud_free_block *cast_block  = (bud_free_block*)block;
+void *split_block(uint32_t rsize, void *header) {
+    bud_header* bud_split_header = (bud_header*)header;
     //char *char_block = (char*)block;
-    uint64_t order = cast_block -> header.order;
+    //uint64_t order = cast_block -> header.order;
+    uint64_t order = bud_split_header -> order;
     uint32_t size_block = ORDER_TO_BLOCK_SIZE(order); // YOU MAY NEED TO FIX THIS
-    uint32_t new_size_block = size_block / 2;
-    if (new_size_block < rsize)
-        return block;
+    intptr_t new_size_block = ORDER_TO_BLOCK_SIZE(order - 1);
+    if (new_size_block < rsize || new_size_block < 32)
+        return bud_split_header;
 
     // Reduce order
-    cast_block -> header.order -= 1;
+    bud_split_header -> order -= 1;
 
     // Should we split the block further?
     // This is the "rightmost" block, that should be put in the free list for later use
     // SEGFAULT ON THIS LINE, ARE YOU SPLITTING THE RIGHT WAY?
-    bud_free_block *new_free_block = (bud_free_block*)(cast_block + (unsigned long)new_size_block);
+    char *new_header_address = (header + new_size_block);
+    //bud_free_block new_free_block = {};
     // Initialize the struct value
-    bud_header new_block_header = {};
-    new_free_block -> header = new_block_header;
+    bud_header *new_block_header = (bud_header*)new_header_address;
+    //new_free_block.header = new_block_header;
     // First, set bits and block properties accordingly before adding to list
-    new_block_header.allocated = 0; new_block_header.padded = 0;
-    uint32_t new_block_order = getOrder(new_size_block); // or just use the decremented order
-    new_block_header.order = (uint64_t)new_block_order;
+    new_block_header->allocated = 0; new_block_header->padded = 0;
+    uint32_t new_block_order = bud_split_header -> order; // or just use the decremented order
+    new_block_header->order = (uint64_t)new_block_order;
+
+    //new_header_address = new_block_header;
 
     // Store to free list
-    free_list_heads_insert(new_free_block, (int)new_block_order);
+    free_list_heads_insert(new_block_header, (int)new_block_order);
 
-    return split_block(rsize, block);
+    return split_block(rsize, header);
+
 }
 
 void *get_free_block(uint32_t rsize, uint32_t order) {
-    uint32_t index = order - 5;
+    uint32_t index = order - ORDER_MIN;
     int block_split_required = 0;
     while (isEmptyList(index)) {
         block_split_required = 1;
         index++;
     }
     if (block_split_required) {
-        bud_free_block free_block = *free_list_heads[index].next;
-        free_list_heads[index].next = free_block.next;
-        return split_block(rsize, &free_block);
+        bud_header *free_header = (bud_header*)free_list_heads[index].next;
+        free_list_heads[index].next = free_list_heads[index].next -> next;
+        return split_block(rsize, free_header);
     }
     else {
         bud_free_block *free_block = free_list_heads[index].next;
         free_list_heads[index].next = free_block -> next;
-        return free_block;
+        return &(free_block -> header);
     }
 }
 
@@ -147,8 +191,8 @@ void *bud_malloc(uint32_t rsize) {
     uint32_t size_padding; // IMPLEMENT?
 
     // Determine if we need to allocate more memory - edit IF condition
-    if ((char*)bud_heap_end - (char*)bud_heap_start < size_alloc) {
-        sbrk_value = bud_sbrk();
+    if (sbrk_value == (void*)0) {
+        sbrk_value = bud_sbrk(); // will return 0x0, the BEGINNING
         sbrk_call = 1;
         //sbrk_value = (char*)sbrk_char_value;
     }
@@ -165,13 +209,16 @@ void *bud_malloc(uint32_t rsize) {
     // First, insert our newly allocated sbrk block, if any, to the free_head_list
     if (sbrk_call) {
         bud_header newAllocHeader = {};
+        void *bud_header_addr = sbrk_value;
+
         // CHECK TO SEE THAT THESE ARE THE VALUES YOU ARE SUPPOSED TO SET
         newAllocHeader.allocated = 0;
         newAllocHeader.order = 14;
         newAllocHeader.padded = 0;
 
-        bud_free_block newFreeBlock = {newAllocHeader, NULL, NULL};
-        free_list_heads_insert(&newFreeBlock, (int)newAllocHeader.order);
+        *(bud_header*)bud_header_addr = newAllocHeader;
+
+        free_list_heads_insert(bud_header_addr, (int)newAllocHeader.order);
     }
 
     // Now, take the BIG block, and split it until we get a "almost perfect fit" --> START HERE NEXT TIME
@@ -194,6 +241,8 @@ void *bud_malloc(uint32_t rsize) {
     // HOW DO WE SET THE UNUSED FIELDS?
     alloc_header.unused2 = rsize;
     alloc_header.rsize = rsize;
+
+    increment_heap_counter(size_alloc);
 
     return alloc_block + sizeof(bud_header);
 }
@@ -219,5 +268,10 @@ void bud_free(void *ptr) {
         abort();
     }
     // FINISH BASE CASES
+    else if (block_ptr -> header.padded == 0 && block_ptr -> header.rsize + sizeof(bud_header) != block_size(block_ptr -> header.order))
+        abort();
+    else if (block_ptr -> header.padded == 1 && block_ptr -> header.rsize + sizeof(bud_header) == block_size(block_ptr -> header.order))
+        abort();
+
     return;
 }

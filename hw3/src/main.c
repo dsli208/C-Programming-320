@@ -6,6 +6,8 @@
 // INSERTING TEST MAIN HERE
 
 int main() {
+    bud_mem_init();
+    heap_counter_init();
     errno = 0;
     int **x = bud_malloc(sizeof(int *));
     printf("%d", x == NULL);
@@ -14,6 +16,7 @@ int main() {
     int a = 4;
     *x = &a;
 
+    bud_mem_fini();
     //cr_assert(*x == &a, "bud_malloc failed to give proper space for a pointer!");
 
     //bud_header *bhdr = PAYLOAD_TO_HEADER(x);
@@ -27,7 +30,7 @@ int main() {
     int i;
 
     bud_mem_init();
-
+    heap_counter_init();
     char* ptr1 = (char*)bud_malloc(10); // 64
 
     ptr1[0] = 'a';
