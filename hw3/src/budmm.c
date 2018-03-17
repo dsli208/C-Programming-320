@@ -149,9 +149,9 @@ void *get_free_block(uint32_t rsize, uint32_t order) {
         return split_block(rsize, free_header);
     }
     else {
-        bud_free_block *free_block = free_list_heads[index].next;
-        free_list_heads[index].next = free_block -> next;
-        return &(free_block -> header);
+        bud_header *free_header = (bud_header*)free_list_heads[index].next;
+        free_list_heads[index].next = free_list_heads[index].next -> next;
+        return free_header;
     }
 }
 
@@ -223,28 +223,28 @@ void *bud_malloc(uint32_t rsize) {
 
     // Now, take the BIG block, and split it until we get a "almost perfect fit" --> START HERE NEXT TIME
     //bud_free_block *alloc_block = (bud_free_block*)(split_block(rsize, (bud_free_block*)sbrk_value)); // FIX
-    bud_free_block *alloc_block = (bud_free_block*)(get_free_block(rsize, order));
+    bud_header *alloc_header = (bud_header*)(get_free_block(rsize, order));
 
     // After we get our allocated block, let's set the bits accordingly
-    bud_header alloc_header = alloc_block -> header;
+    //bud_header alloc_header = alloc_block -> header;
     (void)alloc_header;
     // Allocated bit
-    alloc_header.allocated = 1;
+    alloc_header->allocated = 1;
     // Set the order bits
-    alloc_header.order = order; // Correct way?
+    alloc_header->order = order; // Correct way?
 
     // Padded bit - if padding is needed as described below
     if (size_alloc - rsize - sizeof(bud_header) > 0) {
-        alloc_header.padded = 1;
+        alloc_header->padded = 1;
     }
 
     // HOW DO WE SET THE UNUSED FIELDS?
-    alloc_header.unused2 = rsize;
-    alloc_header.rsize = rsize;
+    alloc_header->unused2 = rsize;
+    alloc_header->rsize = rsize;
 
     increment_heap_counter(size_alloc);
-
-    return alloc_block + sizeof(bud_header);
+    //return alloc_header;
+    return (char*)alloc_header + sizeof(bud_header);
 }
 
 void *bud_realloc(void *ptr, uint32_t rsize) {
