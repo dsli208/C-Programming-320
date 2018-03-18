@@ -33,6 +33,25 @@ void *get_current_heap_address() {
 }
 
 //////// BUD_FREE HELPER FUNCTIONS //////////////////////////////////////////
+// Get free block function to be used for coalescing in bud_free and potentially bud_realloc
+void *get_free_block_by_ptr(void *ptr, uint64_t order) {
+    int index = (int)order - ORDER_MIN;
+
+    bud_free_block *head = &free_list_heads[index];
+
+    // Search the given linked list for your ptr, or return NULL
+    bud_free_block *cursor = head -> next;
+    while (cursor != ptr && cursor != head) {
+        cursor = cursor -> next;
+    }
+    if (cursor == head) {
+        return NULL;
+    }
+    else {
+        return cursor;
+    }
+}
+
 uint32_t block_size(uint64_t order) {
     uint32_t size = 1;
     for (int i = 0; i < (int)order; i++) {
@@ -136,6 +155,7 @@ void *split_block(uint32_t rsize, void *header) {
 
 }
 
+// Function for getting the first free block possible
 void *get_free_block(uint32_t rsize, uint32_t order) {
     uint32_t index = order - ORDER_MIN;
     int block_split_required = 0;
@@ -267,11 +287,30 @@ void bud_free(void *ptr) {
     else if (block_ptr->header.allocated == 0) {
         abort();
     }
-    // FINISH BASE CASES
     else if (block_ptr -> header.padded == 0 && block_ptr -> header.rsize + sizeof(bud_header) != block_size(block_ptr -> header.order))
         abort();
     else if (block_ptr -> header.padded == 1 && block_ptr -> header.rsize + sizeof(bud_header) == block_size(block_ptr -> header.order))
         abort();
+    // FINISH LAST BASE CASE.  ALSO CHECK THE LAST TWO BASE CASES TO VERIFY THEY ARE CORRECT.
+
+    // Header - set allocated, rsize, etc. bits to zero
+    bud_header *header_ptr =(bud_header*)ptr;
+    header_ptr -> allocated = 0;
+    header_ptr -> rsize = 0;
+    header_ptr -> padded = 0;
+
+    // Header - get the order and figure out if we can coalesce with our "buddy block"
+    int64_t header_order = header_ptr -> order;
+    // Get the next block
+    bud_header *next_block_header = ptr + ORDER_TO_BLOCK_SIZE(header_order); // char*
+    int64_t next_block_order = next_block_header -> order;
+    if (next_block_order == header_order) { // Alternative: ORDER_TO_BLOCK_SIZE calls also return equivalent result, coalesce if this is true
+        // Coalescing the blocks
+
+        // Retrieve the block to coalesce with this one from the appropriate free list
+
+
+    }
 
     return;
 }
