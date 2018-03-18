@@ -308,7 +308,12 @@ void bud_free(void *ptr) {
         // Coalescing the blocks
 
         // Retrieve the block to coalesce with this one from the appropriate free list
+        bud_header *block_to_coalesce = (bud_header*)get_free_block_by_ptr(next_block_header, header_order);
 
+        // HOW TO COALESCE?
+
+    }
+    else { // No coalescing, just free
 
     }
 

@@ -5,7 +5,7 @@
 
 // INSERTING TEST MAIN HERE
 
-int main() {
+/*int main() {
     bud_mem_init();
     heap_counter_init();
     errno = 0;
@@ -23,10 +23,12 @@ int main() {
     //(void)bhdr;
     //assert_header_values(bhdr, ALLOCATED, ORDER_MIN, PADDED, sizeof(int *));
     //expect_errno_value(0);
-}
+}*/
+
+// UNCOMMENT WHAT IS ABOVE THIS AND BELOW THE ABOVE COMMENT BEFORE YOU SUBMIT IT FOR GRADING!!!!!
 
 
-/*int main(int argc, char const *argv[]) {
+int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
@@ -63,4 +65,4 @@ int main() {
     bud_mem_fini();
 
     return EXIT_SUCCESS;
-}*/
+}
