@@ -327,6 +327,13 @@ void *bud_malloc(uint32_t rsize) {
 }
 
 void *bud_realloc(void *ptr, uint32_t rsize) {
+    if (rsize == 0) {
+        bud_free(ptr);
+        return NULL;
+    }
+    else if (ptr == NULL) { // && rsize > 0
+        return bud_malloc(rsize);
+    }
 
     return NULL;
 }
@@ -362,8 +369,8 @@ void bud_free(void *ptr) {
     // Header - get the order and figure out if we can coalesce with our "buddy block" --> is it to the left or to the right?
     int64_t header_order = header_ptr -> order;
     // Get the next block
-    bud_header *next_block_header = ptr + ORDER_TO_BLOCK_SIZE(header_order); // char*
-    bud_header *prev_block_header = ptr - ORDER_TO_BLOCK_SIZE(header_order);
+    bud_header *next_block_header = (bud_header*)block_ptr + ORDER_TO_BLOCK_SIZE(header_order); // char*
+    bud_header *prev_block_header = (bud_header*)block_ptr - ORDER_TO_BLOCK_SIZE(header_order);
     int64_t next_block_order = next_block_header -> order;
     int64_t prev_block_order = prev_block_header -> order;
     if (next_block_order == header_order) { // Alternative: ORDER_TO_BLOCK_SIZE calls also return equivalent result, coalesce if this is true
@@ -373,11 +380,14 @@ void bud_free(void *ptr) {
         bud_header *block_to_coalesce = (bud_header*)get_free_block_by_ptr(next_block_header, header_order);
 
         // HOW TO COALESCE?
+        coalesce(block_ptr, next_block_header);
 
     }
     else if (prev_block_order == header_order) {
         // Retrieve the block to coalesce with this one from the appropriate free list
         bud_header *block_to_coalesce = (bud_header*)get_free_block_by_ptr(prev_block_header, header_order);
+
+        coalesce(prev_block_header, block_ptr);
     }
     else { // No coalescing, just free
         free_list_heads_insert(header_ptr, header_order);
