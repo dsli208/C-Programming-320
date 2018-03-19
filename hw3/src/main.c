@@ -5,30 +5,25 @@
 
 // INSERTING TEST MAIN HERE
 
-/*int main() {
+int main() {
     bud_mem_init();
     heap_counter_init();
-    errno = 0;
-    int **x = bud_malloc(sizeof(int *));
-    printf("%d", x == NULL);
-    //cr_assert_not_null(x, "bud_malloc returned null");
 
-    int a = 4;
-    *x = &a;
+    void *a = bud_malloc(4096 - sizeof(bud_header)); // -> 4096
+    int *x = bud_malloc(sizeof(int)); // -> MIN_BLOCK_SIZE
+    void *b = bud_malloc(sizeof(double)*2); // -> MIN_BLOCK_SIZE
+    char *y = bud_malloc(sizeof(char)*100); // -> 128
+
+    bud_free(x);
+    bud_free(y);
 
     bud_mem_fini();
-    //cr_assert(*x == &a, "bud_malloc failed to give proper space for a pointer!");
-
-    //bud_header *bhdr = PAYLOAD_TO_HEADER(x);
-    //(void)bhdr;
-    //assert_header_values(bhdr, ALLOCATED, ORDER_MIN, PADDED, sizeof(int *));
-    //expect_errno_value(0);
-}*/
+}
 
 // UNCOMMENT WHAT IS ABOVE THIS AND BELOW THE ABOVE COMMENT BEFORE YOU SUBMIT IT FOR GRADING!!!!!
 
 
-int main(int argc, char const *argv[]) {
+/*int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
@@ -65,4 +60,4 @@ int main(int argc, char const *argv[]) {
     bud_mem_fini();
 
     return EXIT_SUCCESS;
-}
+}*/
