@@ -183,7 +183,7 @@ Test(bud_free_suite, free_no_coalesce, .init = bud_mem_init, .fini = bud_mem_fin
     assert_header_values(bhdr_b, ALLOCATED, ORDER_MIN, PADDED, sizeof(double)*2);
 
     bud_free(x);
-    
+
     bud_free_block *blk = free_list_heads[0].next; // only x is expected on the list
     assert_nonempty_free_list(ORDER_MIN);
     assert_free_block_values(blk, ORDER_MIN, &free_list_heads[0], &free_list_heads[0]);
@@ -213,7 +213,7 @@ Test(bud_free_suite, free_coalesce_higher_addr_check_ptrs, .init = bud_mem_init,
     void *b = bud_malloc(sizeof(int));       //  1   0   1   1   0   1   1   1   1   0
     void *y = bud_malloc(sizeof(int) * 100); //  1   0   1   1   1   0   1   1   1   0
     void *z = bud_malloc(sizeof(char));      //  0   0   1   1   1   0   1   1   1   0
-    void *c = bud_malloc(sizeof(int));       //  1   1   0   1   1   0   1   1   1   0 
+    void *c = bud_malloc(sizeof(int));       //  1   1   0   1   1   0   1   1   1   0
     void *d = bud_malloc(sizeof(int));       //  0   1   0   1   1   0   1   1   1   0
 
     assert_empty_free_list(5);
@@ -225,9 +225,9 @@ Test(bud_free_suite, free_coalesce_higher_addr_check_ptrs, .init = bud_mem_init,
 
     bud_free(c);                             //  1   1   0   1   1   0   1   1   1   0
     bud_free(z);                             //  2   1   0   1   1   0   1   1   1   0
-    bud_free(y);                             //  2   1   0   1   0   1   1   1   1   0 
-    bud_free(a);                             //  3   1   0   1   0   1   1   1   1   0  
-    bud_free(b);                             //  2   2   0   1   0   1   1   1   1   0 
+    bud_free(y);                             //  2   1   0   1   0   1   1   1   1   0
+    bud_free(a);                             //  3   1   0   1   0   1   1   1   1   0
+    bud_free(b);                             //  2   2   0   1   0   1   1   1   1   0
     bud_free(x);                             //  1   1   1   1   0   1   1   1   1   0
 
     assert_nonempty_free_list(5);

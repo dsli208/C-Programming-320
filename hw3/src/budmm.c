@@ -149,6 +149,16 @@ void *get_free_block(uint32_t rsize, uint32_t order) {
     }
 }
 
+void *bud_max_malloc(uint32_t rsize, void *ptr) {
+    bud_header *bud_max_malloc_header = (bud_header*)ptr;
+    bud_max_malloc_header -> allocated = 1;
+    bud_max_malloc_header -> padded = 0;
+    bud_max_malloc_header -> order = ORDER_MAX - 1;
+    bud_max_malloc_header -> rsize = (uint64_t)rsize;
+
+    return ((char*)bud_max_malloc_header) + sizeof(bud_header);
+}
+
 //////// BUD_FREE HELPER FUNCTIONS //////////////////////////////////////////
 // coalesce function --> FIRST BLOCK IN MEMORY goes FIRST, rightward buddy is SECOND
 // blocks must be deallocated first and all padding removed
@@ -231,11 +241,15 @@ uint32_t block_size(uint64_t order) {
 
 void *bud_malloc(uint32_t rsize) {
     int sbrk_call = 0;
+    int max_malloc = 0;
+
     // base - error cases
     if (rsize == 0 || rsize > MAX_BLOCK_SIZE - sizeof(bud_header)) {
         errno = EINVAL;
         return NULL;
     }
+    else if (rsize == MAX_BLOCK_SIZE - sizeof(bud_header))
+        max_malloc = 1;
 
     // Allocate to the closest power of 2 possible
     int order = ORDER_MIN;
@@ -277,6 +291,11 @@ void *bud_malloc(uint32_t rsize) {
         newAllocHeader.padded = 0;
 
         *(bud_header*)bud_header_addr = newAllocHeader;
+
+        // max_malloc case
+        if (max_malloc) {
+            return bud_max_malloc(rsize, bud_header_addr);
+        }
 
         free_list_heads_insert(bud_header_addr, (int)newAllocHeader.order);
     }
