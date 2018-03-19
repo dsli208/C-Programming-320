@@ -327,15 +327,29 @@ void *bud_malloc(uint32_t rsize) {
 }
 
 void *bud_realloc(void *ptr, uint32_t rsize) {
-    if (rsize == 0) {
+    bud_header *header_ptr = ptr - sizeof(bud_header);
+    if (rsize == 0) { // Realloc to 0
         bud_free(ptr);
         return NULL;
     }
-    else if (ptr == NULL) { // && rsize > 0
+    else if (header_ptr == NULL) { // && rsize > 0, NULL ptr so we need to bud_malloc
         return bud_malloc(rsize);
     }
+    else if (header_ptr -> rsize > rsize) {  // less size, return same pointer, but allocate a smaller block, splitting this one if needed
+        // WORK ON THIS !!!!
+        header_ptr = split_block(rsize, header_ptr);
+        return ptr;
+    }
+    else if (rsize > header_ptr -> rsize) { // more size, free and allocate a new, larger, block
+        void *new_block_payload = bud_malloc(rsize);
+        bud_free(ptr);
+        return new_block_payload;
+    }
+    else { // rsize stays the same, so return the ptr
+        return ptr;
+    }
 
-    return NULL;
+    //return NULL;
 }
 
 void bud_free(void *ptr) {
