@@ -5,18 +5,18 @@
 
 // INSERTING TEST MAIN HERE
 
-/*int main() {
+int main() {
     bud_mem_init();
     heap_counter_init();
 
-    // FIRST TEST
+    /*// FIRST TEST
     void *a = bud_malloc(4096 - sizeof(bud_header)); // -> 4096
     int *x = bud_malloc(sizeof(int)); // -> MIN_BLOCK_SIZE
     void *b = bud_malloc(sizeof(double)*2); // -> MIN_BLOCK_SIZE
     char *y = bud_malloc(sizeof(char)*100); // -> 128
 
     bud_free(x);
-    bud_free(y);
+    bud_free(y);*/
 
     // MAX_MALLOC TEST
     for(int n = 0; n < MAX_HEAP_SIZE / MAX_BLOCK_SIZE; n++) {
@@ -28,12 +28,12 @@
     }
 
     bud_mem_fini();
-}*/
+}
 
 // UNCOMMENT WHAT IS ABOVE THIS AND BELOW THE ABOVE COMMENT BEFORE YOU SUBMIT IT FOR GRADING!!!!!
 
 
-int main(int argc, char const *argv[]) {
+/*int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
@@ -70,4 +70,4 @@ int main(int argc, char const *argv[]) {
     bud_mem_fini();
 
     return EXIT_SUCCESS;
-}
+}*/

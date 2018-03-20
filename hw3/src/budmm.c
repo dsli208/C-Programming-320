@@ -35,7 +35,7 @@ void *get_current_heap_address() {
 //////// BUD_MALLOC HELPER FUNCTIONS //////////////////////////////////////////
 
 int isEmptyList(uint32_t i) {
-    if (i >= 0 && i <= 9) {
+    if (i >= 0 && i < ORDER_MAX - ORDER_MIN) {
         if (free_list_heads[i].next == free_list_heads[i].prev) {
             if (free_list_heads[i].next != &free_list_heads[i])
                 return 0;
@@ -44,6 +44,17 @@ int isEmptyList(uint32_t i) {
         }
     }
     return 0;
+}
+
+// Determine if we need to sbrk again
+int sbrk_again() {
+    int i = 0;
+    while (i < ORDER_MAX - ORDER_MIN) {
+        if (!isEmptyList(i))
+            return 0;
+        i++;
+    }
+    return 1;
 }
 
 uint32_t getOrder(uint32_t n) {
@@ -135,6 +146,10 @@ void *get_free_block(uint32_t rsize, uint32_t order) {
         block_split_required = 1;
         index++;
     }
+    if (index >= ORDER_MAX - ORDER_MIN) {
+        errno = ENOMEM;
+        return NULL;
+    }
     if (block_split_required) {
         bud_header *free_header = (bud_header*)free_list_heads[index].next;
         free_list_heads[index].next = free_list_heads[index].next -> next;
@@ -155,6 +170,8 @@ void *bud_max_malloc(uint32_t rsize, void *ptr) {
     bud_max_malloc_header -> padded = 0;
     bud_max_malloc_header -> order = ORDER_MAX - 1;
     bud_max_malloc_header -> rsize = (uint64_t)rsize;
+
+    increment_heap_counter(rsize);
 
     return ((char*)bud_max_malloc_header) + sizeof(bud_header);
 }
@@ -265,8 +282,8 @@ void *bud_malloc(uint32_t rsize) {
     uint32_t size_padding; // IMPLEMENT?
 
     // Determine if we need to allocate more memory - edit IF condition
-    if (sbrk_value == (void*)0) {
-        sbrk_value = bud_sbrk(); // will return 0x0, the BEGINNING
+    if (sbrk_value == (void*)0 || sbrk_again()) {
+        sbrk_value = bud_sbrk();
         sbrk_call = 1;
         //sbrk_value = (char*)sbrk_char_value;
     }
@@ -304,6 +321,11 @@ void *bud_malloc(uint32_t rsize) {
     //bud_free_block *alloc_block = (bud_free_block*)(split_block(rsize, (bud_free_block*)sbrk_value)); // FIX
     bud_header *alloc_header = (bud_header*)(get_free_block(rsize, order));
 
+    if (alloc_header == NULL) {
+        errno = ENOMEM;
+        return NULL;
+    }
+
     // After we get our allocated block, let's set the bits accordingly
     //bud_header alloc_header = alloc_block -> header;
     (void)alloc_header;
@@ -332,7 +354,7 @@ void *bud_realloc(void *ptr, uint32_t rsize) {
         bud_free(ptr);
         return NULL;
     }
-    else if (header_ptr == NULL) { // && rsize > 0, NULL ptr so we need to bud_malloc
+    else if (header_ptr == NULL || ptr == NULL) { // && rsize > 0, NULL ptr so we need to bud_malloc
         return bud_malloc(rsize);
     }
     else if (header_ptr -> rsize > rsize) {  // less size, return same pointer, but allocate a smaller block, splitting this one if needed
