@@ -4,23 +4,38 @@
 #include "budmm.h"
 
 // INSERTING TEST MAIN HERE
+#define HEADER_TO_PAYLOAD(hdr) (((char *)hdr) + sizeof(bud_header))
+#define PAYLOAD_TO_HEADER(ptr) (bud_header *)(((char *)ptr - sizeof(bud_header)))
 
-/*int main() {
+int main() {
     bud_mem_init();
     heap_counter_init();
 
-    void *original = bud_malloc(sizeof(int));
-    bud_malloc(500);
-    int* new = bud_realloc(original, sizeof(int) * 100); // 400 -> 512
+    // REALLOC LARGER TEST CASE
+    /*void *original = bud_malloc(sizeof(int));
+    void *second = bud_malloc(500);
+    int* new = bud_realloc(original, sizeof(int) * 100); // 400 -> 512*/
     // original will do a few steps of coalesce, resulting in 512
 
+    //(void)new;
+
+    // DIFF HDR CASE
+
+    int *x = bud_malloc(sizeof(int));
+    bud_header *bhdr = PAYLOAD_TO_HEADER(x);
+
+    bhdr->order = ORDER_MIN + 1;
+
+    void *y = bud_realloc(x, 200);
+    (void)y;
+
     bud_mem_fini();
-}*/
+}
 
 // UNCOMMENT WHAT IS ABOVE THIS AND BELOW THE ABOVE COMMENT BEFORE YOU SUBMIT IT FOR GRADING!!!!!
 
 
-int main(int argc, char const *argv[]) {
+/*int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
@@ -57,4 +72,4 @@ int main(int argc, char const *argv[]) {
     bud_mem_fini();
 
     return EXIT_SUCCESS;
-}
+}*/

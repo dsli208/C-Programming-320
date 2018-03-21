@@ -364,8 +364,9 @@ void *bud_realloc(void *ptr, uint32_t rsize) {
         return ptr;
     }
     else if (rsize > header_ptr -> rsize) { // more size, free and allocate a new, larger, block
+        bud_free(ptr);
         void *new_block_payload = bud_malloc(rsize);
-        bud_free(header_ptr);
+        //bud_free(ptr);
         return new_block_payload;
     }
     else { // rsize stays the same, so return the ptr
@@ -379,7 +380,7 @@ void bud_free(void *ptr) {
     int order = (int)(block_ptr -> header.order);
     if (ptr < bud_heap_start() || ptr > bud_heap_end())
         abort();
-    else if ((unsigned long)ptr % MIN_BLOCK_SIZE == 0) {
+    else if ((unsigned long)block_ptr % 8 != 0) {
         abort();
     }
     // Free block base cases
@@ -394,6 +395,12 @@ void bud_free(void *ptr) {
     else if (block_ptr -> header.padded == 1 && block_ptr -> header.rsize + sizeof(bud_header) == block_size(block_ptr -> header.order))
         abort();
     // FINISH LAST BASE CASE.  ALSO CHECK THE LAST TWO BASE CASES TO VERIFY THEY ARE CORRECT.
+    // rsize GREATER THAN proper order
+    else if (block_ptr -> header.rsize > ORDER_TO_BLOCK_SIZE(block_ptr -> header.order))
+        abort();
+    else if (block_ptr -> header.rsize < ORDER_TO_BLOCK_SIZE(block_ptr -> header.order) / 2 && block_ptr -> header.order > ORDER_MIN)
+        abort();
+
 
     // Header - set allocated, rsize, etc. bits to zero
     bud_header *header_ptr =(bud_header*)(ptr - sizeof(bud_header));
