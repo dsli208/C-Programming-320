@@ -360,6 +360,7 @@ void *bud_realloc(void *ptr, uint32_t rsize) {
     else if (header_ptr -> rsize > rsize) {  // less size, return same pointer, but allocate a smaller block, splitting this one if needed
         // WORK ON THIS !!!!
         header_ptr = split_block(rsize, header_ptr);
+        header_ptr -> rsize = rsize;
         return ptr;
     }
     else if (rsize > header_ptr -> rsize) { // more size, free and allocate a new, larger, block
@@ -370,8 +371,6 @@ void *bud_realloc(void *ptr, uint32_t rsize) {
     else { // rsize stays the same, so return the ptr
         return ptr;
     }
-
-    //return NULL;
 }
 
 void bud_free(void *ptr) {
