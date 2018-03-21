@@ -365,7 +365,7 @@ void *bud_realloc(void *ptr, uint32_t rsize) {
     }
     else if (rsize > header_ptr -> rsize) { // more size, free and allocate a new, larger, block
         void *new_block_payload = bud_malloc(rsize);
-        bud_free(ptr);
+        bud_free(header_ptr);
         return new_block_payload;
     }
     else { // rsize stays the same, so return the ptr
