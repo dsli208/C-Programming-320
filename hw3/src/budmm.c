@@ -177,41 +177,6 @@ void *bud_max_malloc(uint32_t rsize, void *ptr) {
 }
 
 //////// BUD_FREE HELPER FUNCTIONS //////////////////////////////////////////
-// coalesce function --> FIRST BLOCK IN MEMORY goes FIRST, rightward buddy is SECOND
-// blocks must be deallocated first and all padding removed
-void coalesce(void *block1, void *block2) {
-    bud_header *block1_header = (bud_header*)block1; bud_header *block2_header = (bud_header*)block2;
-
-    // BASE CASES
-    if (block2 > bud_heap_end() || block1 < bud_heap_start()) {
-        free_list_heads_insert(block1, block1_header -> order);
-        return;
-    }
-    else if (block2 != block1 + ORDER_TO_BLOCK_SIZE(block1_header -> order)) { // should this addition be in terms of char*?
-        free_list_heads_insert(block1, block1_header -> order);
-        return;
-    }
-    else if (block1_header -> allocated || block2_header -> allocated) {
-        free_list_heads_insert(block1, block1_header -> order);
-        return;
-    }
-    else if (block1_header -> padded || block2_header -> padded) {
-        free_list_heads_insert(block1, block1_header -> order);
-        return;
-    }
-
-    block1_header -> order += 1;
-    // How to figure out that a previously existing block was combined with another one?
-
-    bud_header *new_buddy_header = (bud_header*)(block1 + ORDER_TO_BLOCK_SIZE(block1_header -> order));
-
-    // What about the free lists?  How would this function handle it?
-    if (block1_header -> order == new_buddy_header -> order)
-        coalesce(block1, new_buddy_header);
-    else
-        free_list_heads_insert(block1, block1_header -> order);
-}
-
 // Get free block function to be used for coalescing in bud_free and potentially bud_realloc
 void *get_free_block_by_ptr(void *ptr, uint64_t order) {
     int index = (int)order - ORDER_MIN;
@@ -233,6 +198,56 @@ void *get_free_block_by_ptr(void *ptr, uint64_t order) {
         return cursor;
     }
 }
+
+// coalesce function --> FIRST BLOCK IN MEMORY goes FIRST, rightward buddy is SECOND
+// blocks must be deallocated first and all padding removed
+// WORK ON OBTAINING THE PROPER BLOCK FROM THE RIGHT FREE LIST SO YOU CAN LEGITIMATELY COALESCE
+void coalesce(void *block1, void *block2, int coalescePrevBlock) {
+    bud_header *block1_header = (bud_header*)block1; bud_header *block2_header = (bud_header*)block2;
+
+    uint64_t order = block1_header -> order;
+    bud_free_block *block_to_coalesce;
+    if (coalescePrevBlock) {
+        block_to_coalesce = (bud_free_block*)get_free_block_by_ptr(block1, order);
+    }
+    else {
+        block_to_coalesce = (bud_free_block*)get_free_block_by_ptr(block2, order);
+    }
+
+    (void)block_to_coalesce;
+
+    // BASE CASES
+    if (block2 > bud_heap_end() || block1 < bud_heap_start()) {
+        free_list_heads_insert(block1, block1_header -> order);
+        return;
+    }
+    else if (block2 != (void*)((uintptr_t)block1 ^ ORDER_TO_BLOCK_SIZE(block1_header -> order))) { // should this addition be in terms of char*?
+        free_list_heads_insert(block1, block1_header -> order);
+        return;
+    }
+    else if (block1_header -> allocated || block2_header -> allocated) {
+        free_list_heads_insert(block1, block1_header -> order);
+        return;
+    }
+    else if (block1_header -> padded || block2_header -> padded) {
+        free_list_heads_insert(block1, block1_header -> order);
+        return;
+    }
+
+    block1_header -> order += 1;
+    // How to figure out that a previously existing block was combined with another one?
+
+    //bud_header *new_buddy_header = (bud_header*)(block1 + ORDER_TO_BLOCK_SIZE(block1_header -> order));
+    bud_header *new_buddy_header = (bud_header*)((uintptr_t)block1 ^ ORDER_TO_BLOCK_SIZE(block1_header -> order));
+
+    // What about the free lists?  How would this function handle it?
+    if (block1_header -> order == new_buddy_header -> order && !new_buddy_header -> allocated)
+        coalesce(block1, new_buddy_header, 0);
+    else
+        free_list_heads_insert(block1, block1_header -> order);
+}
+
+
 
 uint32_t block_size(uint64_t order) {
     uint32_t size = 1;
@@ -364,9 +379,9 @@ void *bud_realloc(void *ptr, uint32_t rsize) {
         return ptr;
     }
     else if (rsize > header_ptr -> rsize) { // more size, free and allocate a new, larger, block
-        bud_free(ptr);
-        void *new_block_payload = bud_malloc(rsize);
         //bud_free(ptr);
+        void *new_block_payload = bud_malloc(rsize);
+        bud_free(ptr);
         return new_block_payload;
     }
     else { // rsize stays the same, so return the ptr
@@ -410,26 +425,18 @@ void bud_free(void *ptr) {
 
     // Header - get the order and figure out if we can coalesce with our "buddy block" --> is it to the left or to the right?
     int64_t header_order = header_ptr -> order;
-    // Get the next block
-    bud_header *next_block_header = (bud_header*)block_ptr + ORDER_TO_BLOCK_SIZE(header_order); // char*
-    bud_header *prev_block_header = (bud_header*)block_ptr - ORDER_TO_BLOCK_SIZE(header_order);
-    int64_t next_block_order = next_block_header -> order;
-    int64_t prev_block_order = prev_block_header -> order;
-    if (next_block_order == header_order) { // Alternative: ORDER_TO_BLOCK_SIZE calls also return equivalent result, coalesce if this is true
-        // Coalescing the blocks
+    // Get the buddy block
+    bud_header *buddy = ((bud_header*)((uint64_t)header_ptr ^ ORDER_TO_BLOCK_SIZE(header_order)));
+    int64_t bud_order = buddy -> order;
+    int64_t bud_alloc = buddy -> allocated;
 
-        // Retrieve the block to coalesce with this one from the appropriate free list
-        bud_header *block_to_coalesce = (bud_header*)get_free_block_by_ptr(next_block_header, header_order);
-
-        // HOW TO COALESCE?
-        coalesce(block_ptr, next_block_header);
-
-    }
-    else if (prev_block_order == header_order) {
-        // Retrieve the block to coalesce with this one from the appropriate free list
-        bud_header *block_to_coalesce = (bud_header*)get_free_block_by_ptr(prev_block_header, header_order);
-
-        coalesce(prev_block_header, block_ptr);
+    if (!bud_alloc && bud_order == header_order) {
+        if (buddy > header_ptr) {
+            coalesce(header_ptr, buddy, 0);
+        }
+        else {
+            coalesce(buddy, header_ptr, 1);
+        }
     }
     else { // No coalescing, just free
         free_list_heads_insert(header_ptr, header_order);

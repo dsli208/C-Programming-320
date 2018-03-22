@@ -11,23 +11,12 @@ int main() {
     bud_mem_init();
     heap_counter_init();
 
-    // REALLOC LARGER TEST CASE
-    /*void *original = bud_malloc(sizeof(int));
-    void *second = bud_malloc(500);
-    int* new = bud_realloc(original, sizeof(int) * 100); // 400 -> 512*/
+    void *original = bud_malloc(sizeof(int));
+    bud_malloc(500);
+    int* new = bud_realloc(original, sizeof(int) * 100); // 400 -> 512
     // original will do a few steps of coalesce, resulting in 512
 
-    //(void)new;
-
-    // DIFF HDR CASE
-
-    int *x = bud_malloc(sizeof(int));
-    bud_header *bhdr = PAYLOAD_TO_HEADER(x);
-
-    bhdr->order = ORDER_MIN + 1;
-
-    void *y = bud_realloc(x, 200);
-    (void)y;
+    bud_header *bhdr_new = PAYLOAD_TO_HEADER(new);
 
     bud_mem_fini();
 }
