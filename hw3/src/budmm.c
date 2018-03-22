@@ -215,6 +215,10 @@ void coalesce(void *block1, void *block2, int coalescePrevBlock) {
     }
 
     (void)block_to_coalesce;
+    /*if (block_to_coalesce == NULL) {
+        free_list_heads_insert(block1, block1_header -> order);
+        return;
+    }*/
 
     // BASE CASES
     if (block2 > bud_heap_end() || block1 < bud_heap_start()) {
@@ -247,8 +251,7 @@ void coalesce(void *block1, void *block2, int coalescePrevBlock) {
         free_list_heads_insert(block1, block1_header -> order);
 }
 
-
-
+// ORDER_TO_BLOCK_SIZE() alternative
 uint32_t block_size(uint64_t order) {
     uint32_t size = 1;
     for (int i = 0; i < (int)order; i++) {
@@ -440,7 +443,6 @@ void bud_free(void *ptr) {
     }
     else { // No coalescing, just free
         free_list_heads_insert(header_ptr, header_order);
-
     }
 
     return;
