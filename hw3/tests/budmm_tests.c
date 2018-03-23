@@ -333,3 +333,32 @@ Test(bud_realloc_suite, realloc_smaller_block_free_block, .init = bud_mem_init, 
 //DO NOT DELETE THESE COMMENTS
 //############################################
 
+// Malloc
+Test(bud_malloc_suite, bud_malloc_test_1, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+    //char *c = NULL;
+    char *c = bud_malloc(sizeof(char));
+    cr_assert_not_null(c, "c* is NULL");
+
+    // Error test
+    void *v = bud_malloc(0);
+    cr_assert_null(v, "v* is NOT NULL");
+
+    //
+
+}
+// Malloc 2
+Test(bud_malloc_suite, bud_malloc_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+
+}
+// Free
+Test(bud_free_suite, bud_free_test_1, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+
+}
+// Free 2
+Test(bud_malloc_suite, bud_free_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+
+}
+// Realloc
+Test(bud_realloc_suite, bud_realloc_test_1, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+
+}

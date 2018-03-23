@@ -7,7 +7,7 @@
 #define HEADER_TO_PAYLOAD(hdr) (((char *)hdr) + sizeof(bud_header))
 #define PAYLOAD_TO_HEADER(ptr) (bud_header *)(((char *)ptr - sizeof(bud_header)))
 
-/*int main() {
+int main() {
     bud_mem_init();
     heap_counter_init();
 
@@ -19,12 +19,12 @@
     bud_header *bhdr_new = PAYLOAD_TO_HEADER(new);
 
     bud_mem_fini();
-}*/
+}
 
 // UNCOMMENT WHAT IS ABOVE THIS AND BELOW THE ABOVE COMMENT BEFORE YOU SUBMIT IT FOR GRADING!!!!!
 
 
-int main(int argc, char const *argv[]) {
+/*int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
@@ -61,4 +61,4 @@ int main(int argc, char const *argv[]) {
     bud_mem_fini();
 
     return EXIT_SUCCESS;
-}
+}*/
