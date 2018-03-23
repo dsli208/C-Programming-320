@@ -350,9 +350,25 @@ Test(bud_malloc_suite, bud_malloc_test_1, .init = bud_mem_init, .fini = bud_mem_
 Test(bud_malloc_suite, bud_malloc_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
 
 }
-// Free
+// Free --> simple malloc and free
 Test(bud_free_suite, bud_free_test_1, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+    char *c = bud_malloc(sizeof(char));
+    cr_assert_not_null(c, "c* is NULL");
 
+    assert_nonempty_free_list(5);
+    assert_nonempty_free_list(6);
+    assert_nonempty_free_list(7);
+    assert_nonempty_free_list(8);
+    assert_nonempty_free_list(9);
+    assert_nonempty_free_list(10);
+
+    bud_free(c);
+    assert_empty_free_list(5);
+    assert_empty_free_list(6);
+    assert_empty_free_list(7);
+    assert_empty_free_list(8);
+    assert_empty_free_list(9);
+    assert_empty_free_list(10);
 }
 // Free 2
 Test(bud_malloc_suite, bud_free_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
