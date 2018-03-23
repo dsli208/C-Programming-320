@@ -343,15 +343,22 @@ Test(bud_malloc_suite, bud_malloc_test_1, .init = bud_mem_init, .fini = bud_mem_
     void *v = bud_malloc(0);
     cr_assert_null(v, "v* is NOT NULL");
 
-    //
+    expect_errno_value(EINVAL);
 
 }
 // Malloc 2
 Test(bud_malloc_suite, bud_malloc_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+    errno = 0;
+    void *x = bud_malloc(1900);
+    cr_assert_not_null(x, "x* is NULL");
 
+    bud_header *bhdr = PAYLOAD_TO_HEADER(x);
+    assert_header_values(bhdr, ALLOCATED, 11, PADDED, 1900);
+    expect_errno_value(0);
 }
 // Free --> simple malloc and free
 Test(bud_free_suite, bud_free_test_1, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+    errno = 0;
     char *c = bud_malloc(sizeof(char));
     cr_assert_not_null(c, "c* is NULL");
 
@@ -361,6 +368,10 @@ Test(bud_free_suite, bud_free_test_1, .init = bud_mem_init, .fini = bud_mem_fini
     assert_nonempty_free_list(8);
     assert_nonempty_free_list(9);
     assert_nonempty_free_list(10);
+    assert_nonempty_free_list(11);
+    assert_nonempty_free_list(12);
+    assert_nonempty_free_list(13);
+    assert_empty_free_list(14);
 
     bud_free(c);
     assert_empty_free_list(5);
@@ -369,12 +380,67 @@ Test(bud_free_suite, bud_free_test_1, .init = bud_mem_init, .fini = bud_mem_fini
     assert_empty_free_list(8);
     assert_empty_free_list(9);
     assert_empty_free_list(10);
+    assert_empty_free_list(11);
+    assert_empty_free_list(12);
+    assert_empty_free_list(13);
+    assert_nonempty_free_list(14);
+
+    expect_errno_value(0);
 }
 // Free 2
-Test(bud_malloc_suite, bud_free_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+Test(bud_free_suite, bud_free_test_2, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+    errno = 0;
+    void *v = bud_malloc(900); // 1024 block
+    void *x = bud_malloc(400); // 512 block
 
+    // Lists 0-3 should be EMPTY.  The rest should NOT be empty, save for the last one
+    assert_empty_free_list(5);
+    assert_empty_free_list(6);
+    assert_empty_free_list(7);
+    assert_empty_free_list(8);
+    assert_nonempty_free_list(9);
+    assert_empty_free_list(10);
+    assert_nonempty_free_list(11);
+    assert_nonempty_free_list(12);
+    assert_nonempty_free_list(13);
+    assert_empty_free_list(14);
+
+    bud_free(x);
+
+    assert_empty_free_list(5);
+    assert_empty_free_list(6);
+    assert_empty_free_list(7);
+    assert_empty_free_list(8);
+    assert_empty_free_list(9);
+    assert_nonempty_free_list(10);
+    assert_nonempty_free_list(11);
+    assert_nonempty_free_list(12);
+    assert_nonempty_free_list(13);
+    assert_empty_free_list(14);
+
+    bud_free(v);
+
+    assert_empty_free_list(5);
+    assert_empty_free_list(6);
+    assert_empty_free_list(7);
+    assert_empty_free_list(8);
+    assert_empty_free_list(9);
+    assert_empty_free_list(10);
+    assert_empty_free_list(11);
+    assert_empty_free_list(12);
+    assert_empty_free_list(13);
+    assert_nonempty_free_list(14);
+
+    expect_errno_value(0);
 }
 // Realloc
 Test(bud_realloc_suite, bud_realloc_test_1, .init = bud_mem_init, .fini = bud_mem_fini, .timeout = 5) {
+    void *v = bud_malloc(sizeof(char));
+    cr_assert_not_null(v, "v* is NULL");
 
+    void *x = bud_realloc(v, 500);
+    cr_assert_not_null(x, "x* is NULL");
+
+    void *y = bud_realloc(x, 175);
+    cr_assert_not_null(y, "y* is NULL");
 }
