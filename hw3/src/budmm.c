@@ -66,7 +66,7 @@ uint32_t getOrder(uint32_t n) {
     return order;
 }
 
-void free_list_heads_insert(bud_header *header, int order) {
+/*void free_list_heads_insert(bud_header *header, int order) {
     int index = order - ORDER_MIN;
 
     //bud_free_block block = {*header, NULL, NULL};
@@ -95,6 +95,29 @@ void free_list_heads_insert(bud_header *header, int order) {
     cursor.next -> next = &free_list_heads[index];
     free_list_heads[index].prev = (bud_free_block*)header;
 
+}*/
+
+// MODIFIED FREE_LIST_HEADS_INSERT FUNC. FOR LIFO OPERATION
+void free_list_heads_insert(bud_header *header, int order) {
+    int index = order - ORDER_MIN;
+
+    if (isEmptyList(index)) {
+        // Set the sentinel pointers to point to the new node
+        free_list_heads[index].next = (bud_free_block*)header;
+        free_list_heads[index].prev = (bud_free_block*)header;
+
+        // and set the new node's pointers to point to the sentinel
+        free_list_heads[index].next -> next = &free_list_heads[index];
+        free_list_heads[index].prev -> prev = &free_list_heads[index];
+        return;
+    }
+    else {
+        free_list_heads[index].next -> prev = (bud_free_block*)header;
+        ((bud_free_block*)header) -> next = free_list_heads[index].next;
+
+        ((bud_free_block*)header) -> prev = &free_list_heads[index];
+        free_list_heads[index].next = ((bud_free_block*)header);
+    }
 }
 
 /**
