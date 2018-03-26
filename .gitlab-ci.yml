@@ -1,18 +1,27 @@
 image: hwrunner:latest
 variables:
     GIT_SSL_NO_VERIFY: "true"
+<<<<<<< HEAD
     EXEC: budmm
     HW_DIR: hw3
+=======
+    EXEC: ecran
+    HW_DIR: hw4
+>>>>>>> HW4_CODE/master
 before_script:
     - make clean all -C ${HW_DIR}
 stages:
     - build
+<<<<<<< HEAD
     - run
     - test
+=======
+>>>>>>> HW4_CODE/master
 build:
     stage: build
     script:
         - echo "Build done"
+<<<<<<< HEAD
 run:
     stage: run
     script:
@@ -21,3 +30,5 @@ test:
     stage: test
     script:
         - ${HW_DIR}/bin/${EXEC}_test -S --verbose=0 --timeout 5
+=======
+>>>>>>> HW4_CODE/master
