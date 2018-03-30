@@ -55,7 +55,7 @@ SESSION *session_init(char *path, char *argv[]) {
 		int sfd = open(sname, O_RDWR);
 		setsid();
 		ioctl(sfd, TIOCSCTTY, 0);
-		dup2(sfd, 2); close(sfd); close(mfd);
+		dup2(sfd, 2);close(mfd);
 
 		// Set TERM environment variable to match vscreen terminal
 		// emulation capabilities (which currently aren't that great).
@@ -63,8 +63,12 @@ SESSION *session_init(char *path, char *argv[]) {
 
 		// Set up stdin/stdout and do exec.
 		// TO BE FILLED IN
-		fprintf(stderr, "EXEC FAILED (did you fill in this part?)\n");
-		exit(1);
+        dup2(sfd, 0);
+        dup2(sfd, 1); close(sfd);
+
+        execv(path, argv);
+		//fprintf(stderr, "EXEC FAILED (did you fill in this part?)\n");
+		//exit(1);
 	    }
 	    // Parent drops through
 	    session_setfg(session);
