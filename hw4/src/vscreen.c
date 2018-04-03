@@ -12,6 +12,7 @@
  */
 
 WINDOW *main_screen;
+WINDOW *status_line;
 
 struct vscreen {
     int num_lines;
@@ -114,9 +115,17 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
 	    vscreen->cur_col++;
     } else if(ch == '\n') {
 	l = vscreen->cur_line = (vscreen->cur_line + 1) % vscreen->num_lines;
+    vscreen->lines[0] = vscreen->lines[1];
+    for (int i = 1; i < vscreen->num_lines - 1; i++) {
+        vscreen->lines[l] = vscreen->lines[l + 1];
+    }
+    //l = vscreen->cur_line = (vscreen->cur_line + 1);
 	memset(vscreen->lines[l], 0, vscreen->num_cols);
     } else if(ch == '\r') {
 	vscreen->cur_col = 0;
+    } else if (ch == '\a') {
+        // Flash the screen
+        flash();
     }
     vscreen->line_changed[l] = 1;
 }

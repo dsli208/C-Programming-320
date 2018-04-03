@@ -28,7 +28,7 @@ int main(int argc, char const *argv[]) {
     int i;
 
     bud_mem_init();
-    heap_counter_init();
+    //heap_counter_init();
     char* ptr1 = (char*)bud_malloc(10); // 64
 
     ptr1[0] = 'a';

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <curses.h>
 #include <sys/signal.h>
 #include <sys/select.h>
 
@@ -16,10 +17,24 @@ static void curses_init(void);
 static void curses_fini(void);
 static void finalize(void);
 
+char *optarg;
+char *output_file;
+
 int main(int argc, char *argv[]) {
+
     initialize();
     mainloop();
     // NOT REACHED
+    char option;
+    for (int i = 0; i < argc; i++) {
+        if ((option = getopt(argc, argv, "+o:")) != -1) {
+            output_file = optarg;
+            outStream = fopen(output_file, "w");
+            dup2(2, fileno(outStream));
+        }
+    }
+
+    fclose(outStream);
 }
 
 /*
@@ -58,10 +73,12 @@ static void curses_init(void) {
     initscr();
     raw();                       // Don't generate signals, and make typein
                                  // immediately available.
-    noecho();                    // Don't echo -- let the pty handle it.
-    main_screen = stdscr;
+    noecho();
+    main_screen = newwin(0, 0, 0, 0); // Don't echo -- let the pty handle it.
+    //main_screen = stdscr;
     nodelay(main_screen, TRUE);  // Set non-blocking I/O on input.
-    wclear(main_screen);         // Clear the screen.
+    wclear(main_screen);        // Clear the screen.
+    status_line = newwin(0, 0, 0, 0);
     refresh();                   // Make changes visible.
 }
 
@@ -97,5 +114,9 @@ void do_command() {
  * to deal with sessions that have terminated.
  */
 void do_other_processing() {
+    // TO BE FILLED IN
+}
+
+void set_status(char *status) {
     // TO BE FILLED IN
 }

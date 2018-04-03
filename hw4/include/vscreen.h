@@ -6,10 +6,12 @@
  */
 
 #include <ncurses.h>
+#include <curses.h>
 
 typedef struct vscreen VSCREEN;
 
 extern WINDOW *main_screen;
+extern WINDOW *status_line;
 
 VSCREEN *vscreen_init(void);
 void vscreen_show(VSCREEN *vscreen);

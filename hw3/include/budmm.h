@@ -93,8 +93,8 @@ void *sbrk_value;
 
 uint64_t heap_mem_used;
 
-void heap_counter_init();
-void increment_heap_counter(uint32_t size_alloc);
+//void heap_counter_init();
+//void increment_heap_counter(uint32_t size_alloc);
 
 
 /*

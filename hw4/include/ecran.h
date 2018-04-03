@@ -1,5 +1,5 @@
 #include <ncurses.h>
-
+#include <curses.h>
 #include "session.h"
 #include "vscreen.h"
 
@@ -13,3 +13,5 @@
 int mainloop(void);
 void do_command(void);
 void do_other_processing(void);
+
+FILE *outStream;
