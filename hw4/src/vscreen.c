@@ -114,13 +114,19 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
 	if(vscreen->cur_col + 1 < vscreen->num_cols)
 	    vscreen->cur_col++;
     } else if(ch == '\n') {
-	l = vscreen->cur_line = (vscreen->cur_line + 1) % vscreen->num_lines;
-    vscreen->lines[0] = vscreen->lines[1];
-    for (int i = 1; i < vscreen->num_lines - 1; i++) {
-        vscreen->lines[l] = vscreen->lines[l + 1];
+    if (l == vscreen->num_lines) {
+        for (int i = 0; i < vscreen->num_lines - 1; i++) {
+            memcpy(vscreen->lines[i], vscreen->lines[i + 1], vscreen->num_cols);
+        }
+        memset(vscreen->lines[l], 0, vscreen->num_cols);
     }
-    //l = vscreen->cur_line = (vscreen->cur_line + 1);
-	memset(vscreen->lines[l], 0, vscreen->num_cols);
+    else {
+	       l = vscreen->cur_line = (vscreen->cur_line + 1) % vscreen->num_lines;
+    //vscreen->lines[0] = vscreen->lines[1];
+            //fprintf(outStream, "File not full yet");
+           //l = vscreen->cur_line = (vscreen->cur_line + 1);
+	       memset(vscreen->lines[l], 0, vscreen->num_cols);
+        }
     } else if(ch == '\r') {
 	vscreen->cur_col = 0;
     } else if (ch == '\a') {
@@ -134,5 +140,8 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
  * Deallocate a virtual screen that is no longer in use.
  */
 void vscreen_fini(VSCREEN *vscreen) {
+    if (vscreen != NULL) {
+        free(vscreen);
+    }
     // TO BE FILLED IN
 }

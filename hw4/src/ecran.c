@@ -23,8 +23,6 @@ char *output_file;
 int main(int argc, char *argv[]) {
 
     initialize();
-    mainloop();
-    // NOT REACHED
     char option;
     for (int i = 0; i < argc; i++) {
         if ((option = getopt(argc, argv, "+o:")) != -1) {
@@ -33,8 +31,8 @@ int main(int argc, char *argv[]) {
             dup2(2, fileno(outStream));
         }
     }
-
-    fclose(outStream);
+    mainloop();
+    // NOT REACHED
 }
 
 /*
@@ -60,6 +58,9 @@ static void initialize() {
  */
 static void finalize(void) {
     // REST TO BE FILLED IN
+    if (outStream != NULL) {
+        fclose(outStream);
+    }
     curses_fini();
     exit(EXIT_SUCCESS);
 }

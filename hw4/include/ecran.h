@@ -13,5 +13,3 @@
 int mainloop(void);
 void do_command(void);
 void do_other_processing(void);
-
-FILE *outStream;

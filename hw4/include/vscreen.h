@@ -19,4 +19,6 @@ void vscreen_sync(VSCREEN *vscreen);
 void vscreen_putc(VSCREEN *vscreen, char c);
 void vscreen_fini(VSCREEN *vscreen);
 
+FILE *outStream;
+
 #endif
