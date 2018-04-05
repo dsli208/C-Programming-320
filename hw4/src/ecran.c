@@ -79,7 +79,7 @@ static void curses_init(void) {
     //main_screen = stdscr;
     nodelay(main_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(main_screen);        // Clear the screen.
-    status_line = newwin(0, 0, 0, 0);
+    status_line = newwin(1, 0, 0, 0);
     refresh();                   // Make changes visible.
 }
 
@@ -102,9 +102,32 @@ void curses_fini(void) {
  */
 void do_command() {
     // Quit command: terminates the program cleanly
-    if(wgetch(main_screen) == 'q')
+    char c = wgetch(main_screen);
+    if(c == 'q')
 	finalize();
-    else
+    else if (c == 'n') {
+        // CREATE NEW TERMINAL SESSION
+    }
+    else if (c >= '0' && c <= '9') {
+        // If session exists, switch there
+        int sessionNum = c - 48;
+        SESSION *newSession = sessions[sessionNum];
+        if (newSession != NULL) {
+            session_setfg(newSession);
+        }
+        else {
+            // Else
+            flash();
+        }
+    }
+    else if (c == 'k') {
+        char c1 = wgetch(main_screen);
+        if (c1 >= '0' && c1 <= '9') {
+            int sessionNum = c1 - 48;
+            SESSION *sessionToKill = sessions[sessionNum];
+            session_kill(sessionToKill);
+        }
+    }
 	// OTHER COMMANDS TO BE IMPLEMENTED
 	flash();
 }
@@ -120,4 +143,5 @@ void do_other_processing() {
 
 void set_status(char *status) {
     // TO BE FILLED IN
+
 }

@@ -110,26 +110,29 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
     int l = vscreen->cur_line;
     int c = vscreen->cur_col;
     if(isprint(ch)) {
-	vscreen->lines[l][c] = ch;
-	if(vscreen->cur_col + 1 < vscreen->num_cols)
-	    vscreen->cur_col++;
-    } else if(ch == '\n') {
-    if (l == vscreen->num_lines) {
-        for (int i = 0; i < vscreen->num_lines - 1; i++) {
-            memcpy(vscreen->lines[i], vscreen->lines[i + 1], vscreen->num_cols);
-        }
-        memset(vscreen->lines[l], 0, vscreen->num_cols);
+	   vscreen->lines[l][c] = ch;
+	   if(vscreen->cur_col + 1 < vscreen->num_cols)
+	       vscreen->cur_col++;
     }
-    else {
-	       l = vscreen->cur_line = (vscreen->cur_line + 1) % vscreen->num_lines;
-    //vscreen->lines[0] = vscreen->lines[1];
-            //fprintf(outStream, "File not full yet");
-           //l = vscreen->cur_line = (vscreen->cur_line + 1);
+    else if(ch == '\n') {
+        if (vscreen->cur_line + 1 >= vscreen->num_lines) {
+            for (int i = 0; i < vscreen->num_lines - 1; i++) {
+                //memset(vscreen->lines[i], 0, vscreen->num_cols);
+                strncpy(vscreen->lines[i], vscreen->lines[i + 1], vscreen->num_cols);
+                vscreen->line_changed[i] = 1;
+                vscreen->line_changed[i + 1] = 1;
+            }
+            memset(vscreen->lines[vscreen->num_lines - 1], 0, vscreen->num_cols);
+        }
+        else {
+            l = vscreen->cur_line = (vscreen->cur_line + 1);
 	       memset(vscreen->lines[l], 0, vscreen->num_cols);
         }
-    } else if(ch == '\r') {
-	vscreen->cur_col = 0;
-    } else if (ch == '\a') {
+    }
+    else if(ch == '\r') {
+	   vscreen->cur_col = 0;
+    }
+    else if (ch == '\a') {
         // Flash the screen
         flash();
     }
