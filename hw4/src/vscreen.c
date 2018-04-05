@@ -30,7 +30,7 @@ static void update_line(VSCREEN *vscreen, int l);
  */
 VSCREEN *vscreen_init() {
     VSCREEN *vscreen = calloc(sizeof(VSCREEN), 1);
-    vscreen->num_lines = LINES;
+    vscreen->num_lines = LINES - 1; // LINES or LINES - 1?
     vscreen->num_cols = COLS;
     vscreen->cur_line = 0;
     vscreen->cur_col = 0;

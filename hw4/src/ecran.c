@@ -20,6 +20,15 @@ static void finalize(void);
 char *optarg;
 char *output_file;
 
+void set_status(char *status) {
+    wclear(status_line);
+    char *c = status;
+    while (*c != '\0') {
+        waddch(status_line, *c);
+        c++;
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     initialize();
@@ -75,12 +84,16 @@ static void curses_init(void) {
     raw();                       // Don't generate signals, and make typein
                                  // immediately available.
     noecho();
-    main_screen = newwin(0, 0, 0, 0); // Don't echo -- let the pty handle it.
-    //main_screen = stdscr;
+    //main_screen = newwin(0, 0, 0, 0); // Don't echo -- let the pty handle it.
+    main_screen = stdscr;
     nodelay(main_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(main_screen);        // Clear the screen.
-    status_line = newwin(1, 0, 0, 0);
-    refresh();                   // Make changes visible.
+    status_line = newwin(1, COLS, LINES - 1, 0);
+    nodelay(status_line, TRUE);
+    wclear(status_line);
+    refresh();              // Make changes visible. MAIN SCREEN ONLY
+    set_status("This is the status line");
+    wrefresh(status_line);
 }
 
 /*
@@ -129,7 +142,6 @@ void do_command() {
         }
     }
 	// OTHER COMMANDS TO BE IMPLEMENTED
-	flash();
 }
 
 /*
@@ -139,9 +151,4 @@ void do_command() {
  */
 void do_other_processing() {
     // TO BE FILLED IN
-}
-
-void set_status(char *status) {
-    // TO BE FILLED IN
-
 }
