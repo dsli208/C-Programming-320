@@ -152,7 +152,13 @@ void do_command() {
         if (c1 >= '0' && c1 <= '9') {
             int sessionNum = c1 - 48;
             SESSION *sessionToKill = sessions[sessionNum];
-            session_kill(sessionToKill);
+            if (sessionToKill != NULL)
+                session_kill(sessionToKill);
+            else
+                flash();
+        }
+        else {
+            flash();
         }
     }
 	// OTHER COMMANDS TO BE IMPLEMENTED
