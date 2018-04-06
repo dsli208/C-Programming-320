@@ -115,14 +115,14 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
 	       vscreen->cur_col++;
     }
     else if(ch == '\n') {
-        if (vscreen->cur_line + 1 >= vscreen->num_lines) {
-            for (int i = 0; i < vscreen->num_lines - 1; i++) {
+        if (vscreen->cur_line + 1 >= vscreen->num_lines - 1) {
+            for (int i = 0; i < vscreen->num_lines - 2; i++) {
                 //memset(vscreen->lines[i], 0, vscreen->num_cols);
                 strncpy(vscreen->lines[i], vscreen->lines[i + 1], vscreen->num_cols);
                 vscreen->line_changed[i] = 1;
                 vscreen->line_changed[i + 1] = 1;
             }
-            memset(vscreen->lines[vscreen->num_lines - 1], 0, vscreen->num_cols);
+            memset(vscreen->lines[vscreen->num_lines - 2], 0, vscreen->num_cols);
         }
         else {
             l = vscreen->cur_line = (vscreen->cur_line + 1);

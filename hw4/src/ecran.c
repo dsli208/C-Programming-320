@@ -54,7 +54,8 @@ static void initialize() {
     if(path == NULL)
 	path = "/bin/bash";
     char *argv[2] = { " (ecran session)", NULL };
-    session_init(path, argv);
+    if (session_init(path, argv) == NULL)
+        finalize();
 }
 
 /*
@@ -67,6 +68,10 @@ static void initialize() {
  */
 static void finalize(void) {
     // REST TO BE FILLED IN
+    for (int i = 0; i < MAX_SESSIONS; i++) {
+        // POSSIBLE ERROR CASES?
+        session_kill(sessions[i]);
+    }
     if (outStream != NULL) {
         fclose(outStream);
     }
@@ -116,10 +121,19 @@ void curses_fini(void) {
 void do_command() {
     // Quit command: terminates the program cleanly
     char c = wgetch(main_screen);
-    if(c == 'q')
-	finalize();
+    if(c == 'q') {
+	   finalize();
+    }
     else if (c == 'n') {
         // CREATE NEW TERMINAL SESSION
+        char *path = getenv("SHELL");
+        if(path == NULL)
+            path = "/bin/bash";
+        char *argv[2] = { " (ecran session)", NULL };
+        SESSION *new_session = session_init(path, argv);
+        if (new_session == NULL) {
+            set_status("Too many sessions or problem occurred in session creation.");
+        }
     }
     else if (c >= '0' && c <= '9') {
         // If session exists, switch there

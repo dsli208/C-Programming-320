@@ -22,6 +22,7 @@
 #include <fcntl.h>
 
 #include "session.h"
+#include "ecran.h"
 
 SESSION *sessions[MAX_SESSIONS];  // Table of existing sessions
 SESSION *fg_session;              // Current foreground session
@@ -35,8 +36,9 @@ SESSION *session_init(char *path, char *argv[]) {
     for(int i = 0; i < MAX_SESSIONS; i++) {
 	if(sessions[i] == NULL) {
 	    int mfd = posix_openpt(O_RDWR | O_NOCTTY);
-	    if(mfd == -1)
-		return NULL; // No more ptys
+	    if(mfd == -1) {
+		  return NULL; // No more ptys
+        }
 	    unlockpt(mfd);
 	    char *sname = ptsname(mfd);
 	    // Set nonblocking I/O on master side of pty
@@ -112,6 +114,9 @@ int session_putc(SESSION *session, char c) {
  * Forcibly terminate a session by sending SIGKILL to its process group.
  */
 void session_kill(SESSION *session) {
+    if (session != NULL) {
+
+    }
     // TO BE FILLED IN
 }
 
