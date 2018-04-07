@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include "session.h"
 #include "ecran.h"
@@ -89,6 +90,9 @@ SESSION *session_init(char *path, char *argv[]) {
 void session_setfg(SESSION *session) {
     fg_session = session;
     // REST TO BE FILLED IN
+    VSCREEN *session_vscreen = fg_session->vscreen;
+    update_vscreen(session_vscreen);
+    vscreen_show(session_vscreen);
 }
 
 /*

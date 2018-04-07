@@ -134,6 +134,8 @@ void do_command() {
         if (new_session == NULL) {
             set_status("Too many sessions or problem occurred in session creation.");
         }
+        // NOW, SET THE SCREEN TO THE ACTUAL NEW SESSION
+        session_setfg(new_session);
     }
     else if (c >= '0' && c <= '9') {
         // If session exists, switch there

@@ -42,6 +42,15 @@ VSCREEN *vscreen_init() {
 }
 
 /*
+* Helper function for updating screen when vscreen_show is called
+*/
+void update_vscreen(VSCREEN *vscreen) {
+    for(int l = 0; l < vscreen->num_lines; l++) {
+        vscreen->line_changed[l] = 1;
+    }
+}
+
+/*
  * Erase the physical screen and show the current contents of a
  * specified virtual screen.
  */
@@ -50,7 +59,7 @@ void vscreen_show(VSCREEN *vscreen) {
     for(int l = 0; l < vscreen->num_lines; l++) {
 	if(vscreen->line_changed[l]) {
 	    update_line(vscreen, l);
-	    vscreen->line_changed[l] = 0;
+	    vscreen->line_changed[l] = 0; // 0 or 1??
 	}
     }
     wmove(main_screen, vscreen->cur_line, vscreen->cur_col);
