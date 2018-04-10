@@ -27,6 +27,7 @@ void set_status(char *status) {
         waddch(status_line, *c);
         c++;
     }
+    wrefresh(status_line);
 }
 
 int main(int argc, char *argv[]) {
@@ -76,6 +77,7 @@ static void finalize(void) {
         fclose(outStream);
     }
     curses_fini();
+
     exit(EXIT_SUCCESS);
 }
 
@@ -89,8 +91,8 @@ static void curses_init(void) {
     raw();                       // Don't generate signals, and make typein
                                  // immediately available.
     noecho();
-    //main_screen = newwin(0, 0, 0, 0); // Don't echo -- let the pty handle it.
-    main_screen = stdscr;
+    main_screen = newwin(LINES - 1, COLS, 0, 0); // Don't echo -- let the pty handle it.
+    //main_screen = stdscr;
     nodelay(main_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(main_screen);        // Clear the screen.
     status_line = newwin(1, COLS, LINES - 1, 0);
@@ -145,8 +147,8 @@ void do_command() {
             session_setfg(newSession);
         }
         else {
-            // Else
             flash();
+            set_status("Session does not exist.");
         }
     }
     else if (c == 'k') {

@@ -21,9 +21,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "session.h"
 #include "ecran.h"
+#include "vscreen.h"
 
 SESSION *sessions[MAX_SESSIONS];  // Table of existing sessions
 SESSION *fg_session;              // Current foreground session
@@ -119,7 +122,19 @@ int session_putc(SESSION *session, char c) {
  */
 void session_kill(SESSION *session) {
     if (session != NULL) {
+        int pid = session->pid;
+        kill(pid, SIGKILL);
+        // CLEANUP/REAPING
+        pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
 
+        // Deallocate the terminated session
+        session_fini(session);
+        // ANYTHING ELSE?
+        session = NULL;
+
+    }
+    else {
+        set_status("Could not find session to kill.");
     }
     // TO BE FILLED IN
 }
@@ -133,5 +148,32 @@ void session_kill(SESSION *session) {
  * be set to some other session, or to NULL if there is none.
  */
 void session_fini(SESSION *session) {
-    // TO BE FILLED IN
+    // TO BE FILLED IN _ INCOMPLETE
+    // Free all the calloc'd parts - VSCREEN
+    VSCREEN *vscreen_dealloc = session -> vscreen;
+    vscreen_fini(vscreen_dealloc);
+    // Free all the callo'd parts - CLOSING FILE DESCRIPTORS
+    close(0);
+    close(1);
+    close(2);
+    close(3);
+
+    // Free all the calloc'd parts - SESSION
+    free(session);
+
+
+    // Set another session as the foreground one
+    for (int i = 0; i < MAX_SESSIONS; i++) {
+        if (sessions[i] != NULL) {
+            session_setfg(sessions[i]);
+                return;
+        }
+    }
+
+    char *path = getenv("SHELL");
+    if(path == NULL)
+        path = "/bin/bash";
+    char *argv[2] = { " (ecran session)", NULL };
+    SESSION *new_session = session_init(path, argv);
+    session_setfg(new_session);
 }

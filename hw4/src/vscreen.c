@@ -153,6 +153,11 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
  */
 void vscreen_fini(VSCREEN *vscreen) {
     if (vscreen != NULL) {
+        for (int i = 0; i < vscreen->num_lines; i++) {
+            free(vscreen->lines[i]);
+        }
+        free(vscreen->lines);
+        free(vscreen->line_changed);
         free(vscreen);
     }
     // TO BE FILLED IN
