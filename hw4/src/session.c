@@ -31,14 +31,6 @@
 SESSION *sessions[MAX_SESSIONS];  // Table of existing sessions
 SESSION *fg_session;              // Current foreground session
 
-/*
- * SIGCHLD Handler
- */
-
-void sigchld_handler(int sig) {
-    // Do something?
-}
-
 int find_current_session(SESSION *session) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         if (sessions[i] == session) {
@@ -138,20 +130,23 @@ int session_putc(SESSION *session, char c) {
  * Forcibly terminate a session by sending SIGKILL to its process group.
  */
 void session_kill(SESSION *session) {
-    //set_status("Killing session");
+    set_status("Killing session");
+    int index = find_current_session(session);
     if (session != NULL) {
-        int pid = session->pid;
-        kill(pid, SIGKILL);
+        set_status("Killing process.");
+        int pid = (session->pid) * -1;
+        //pid_t pgid = getsid(pid);
+        kill(pid, SIGKILL); // CODE BELOW IS NOT REACHED???
         // CLEANUP/REAPING
-        signal(SIGCHLD, sigchld_handler);
-        pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
+
+        // ?
 
         // Deallocate the terminated session
         set_status("Session killed.  Cleaning up the mess.");
+        sessions[index] = NULL;
         session_fini(session);
         // ANYTHING ELSE?
         session = NULL;
-
     }
     else {
         set_status("Could not find session to kill.");
@@ -177,16 +172,17 @@ void session_fini(SESSION *session) {
     // Free all the callo'd parts - CLOSING FILE DESCRIPTORS
     set_status("Closing file descriptors");
 
-    // Free all the calloc'd parts - SESSION
-    set_status("Freeing session");
-    free(session);
-
-
     // Set another session as the foreground one - IF THE FOREGROUND SESSION WAS THE ONE TERMINATED
     if (session != fg_session) {
+        set_status("Freeing session");
+        free(session);
         set_status("Session terminated successfully");
         return;
     }
+
+    // Free all the calloc'd parts - SESSION
+    set_status("Freeing session");
+    free(session);
 
     set_status("Searching for replacement session.");
     for (int i = 0; i < MAX_SESSIONS; i++) {

@@ -9,6 +9,8 @@
 #include <curses.h>
 #include <sys/signal.h>
 #include <sys/select.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "ecran.h"
 
@@ -19,6 +21,16 @@ static void finalize(void);
 
 char *optarg;
 char *output_file;
+
+volatile sig_atomic_t flag;
+
+/*
+ * SIGCHLD Handler
+ */
+
+void sigchld_handler(int sig) {
+    // Do something?
+}
 
 void set_status(char *status) {
     wclear(status_line);
@@ -31,7 +43,7 @@ void set_status(char *status) {
 }
 
 int main(int argc, char *argv[]) {
-
+    signal(SIGCHLD, sigchld_handler);
     initialize();
     char option;
     for (int i = 0; i < argc; i++) {
@@ -40,6 +52,9 @@ int main(int argc, char *argv[]) {
             outStream = fopen(output_file, "w");
             dup2(2, fileno(outStream));
         }
+    }
+    if (outStream == NULL) {
+        outStream = stderr;
     }
     mainloop();
     // NOT REACHED
@@ -181,4 +196,5 @@ void do_command() {
  */
 void do_other_processing() {
     // TO BE FILLED IN
+    pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
 }
