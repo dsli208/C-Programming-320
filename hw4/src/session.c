@@ -32,6 +32,23 @@ SESSION *sessions[MAX_SESSIONS];  // Table of existing sessions
 SESSION *fg_session;              // Current foreground session
 
 /*
+ * SIGCHLD Handler
+ */
+
+void sigchld_handler(int sig) {
+    // Do something?
+}
+
+int find_current_session(SESSION *session) {
+    for (int i = 0; i < MAX_SESSIONS; i++) {
+        if (sessions[i] == session) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/*
  * Initialize a new session whose session leader runs a specified command.
  * If the command is NULL, then the session leader runs a shell.
  * The new session becomes the foreground session.
@@ -121,13 +138,16 @@ int session_putc(SESSION *session, char c) {
  * Forcibly terminate a session by sending SIGKILL to its process group.
  */
 void session_kill(SESSION *session) {
+    //set_status("Killing session");
     if (session != NULL) {
         int pid = session->pid;
         kill(pid, SIGKILL);
         // CLEANUP/REAPING
+        signal(SIGCHLD, sigchld_handler);
         pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
 
         // Deallocate the terminated session
+        set_status("Session killed.  Cleaning up the mess.");
         session_fini(session);
         // ANYTHING ELSE?
         session = NULL;
@@ -149,22 +169,29 @@ void session_kill(SESSION *session) {
  */
 void session_fini(SESSION *session) {
     // TO BE FILLED IN _ INCOMPLETE
+
     // Free all the calloc'd parts - VSCREEN
+    set_status("Deallocating vscreen");
     VSCREEN *vscreen_dealloc = session -> vscreen;
     vscreen_fini(vscreen_dealloc);
     // Free all the callo'd parts - CLOSING FILE DESCRIPTORS
-    close(0);
-    close(1);
-    close(2);
-    close(3);
+    set_status("Closing file descriptors");
 
     // Free all the calloc'd parts - SESSION
+    set_status("Freeing session");
     free(session);
 
 
-    // Set another session as the foreground one
+    // Set another session as the foreground one - IF THE FOREGROUND SESSION WAS THE ONE TERMINATED
+    if (session != fg_session) {
+        set_status("Session terminated successfully");
+        return;
+    }
+
+    set_status("Searching for replacement session.");
     for (int i = 0; i < MAX_SESSIONS; i++) {
         if (sessions[i] != NULL) {
+            set_status("Replacement session found.");
             session_setfg(sessions[i]);
                 return;
         }
@@ -176,4 +203,5 @@ void session_fini(SESSION *session) {
     char *argv[2] = { " (ecran session)", NULL };
     SESSION *new_session = session_init(path, argv);
     session_setfg(new_session);
+    set_status("Session terminated successfully");
 }

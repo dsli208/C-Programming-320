@@ -76,6 +76,11 @@ static void finalize(void) {
     if (outStream != NULL) {
         fclose(outStream);
     }
+    //close(0);
+    //close(1);
+    //close(2);
+    //close(3);
+
     curses_fini();
 
     exit(EXIT_SUCCESS);
@@ -99,7 +104,7 @@ static void curses_init(void) {
     nodelay(status_line, TRUE);
     wclear(status_line);
     refresh();              // Make changes visible. MAIN SCREEN ONLY
-    set_status("This is the status line");
+    set_status("Terminal multiplexor started.");
     wrefresh(status_line);
 }
 
@@ -135,6 +140,7 @@ void do_command() {
         SESSION *new_session = session_init(path, argv);
         if (new_session == NULL) {
             set_status("Too many sessions or problem occurred in session creation.");
+            return;
         }
         // NOW, SET THE SCREEN TO THE ACTUAL NEW SESSION
         session_setfg(new_session);
