@@ -74,7 +74,8 @@ SESSION *session_init(char *path, char *argv[]) {
 
 		// Set TERM environment variable to match vscreen terminal
 		// emulation capabilities (which currently aren't that great).
-		putenv("TERM=dumb");
+		//putenv("TERM=dumb");
+        putenv("TERM=dumb");
 
 		// Set up stdin/stdout and do exec.
 		// TO BE FILLED IN

@@ -2,6 +2,7 @@
 #include <curses.h>
 #include "session.h"
 #include "vscreen.h"
+#include "debug.h"
 
 /*
  * The control character used to escape program commands,

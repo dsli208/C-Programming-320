@@ -11,6 +11,7 @@
 typedef struct vscreen VSCREEN;
 
 extern WINDOW *main_screen;
+extern WINDOW *sec_screen;
 extern WINDOW *status_line;
 
 VSCREEN *vscreen_init(void);

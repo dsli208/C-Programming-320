@@ -23,6 +23,8 @@ char *optarg;
 char *output_file;
 
 volatile sig_atomic_t flag;
+volatile sig_atomic_t o_flag;
+volatile sig_atomic_t s_flag;
 
 /*
  * SIGCHLD Handler
@@ -43,19 +45,29 @@ void set_status(char *status) {
 }
 
 int main(int argc, char *argv[]) {
+    //putenv("TERM=ansi");
+    o_flag = 0;
     signal(SIGCHLD, sigchld_handler);
     initialize();
     char option;
     for (int i = 0; i < argc; i++) {
-        if ((option = getopt(argc, argv, "+o:")) != -1) {
+        if ((option = getopt(argc, argv, "+o:")) != -1 && !o_flag) {
+            o_flag = 1;
             output_file = optarg;
             outStream = fopen(output_file, "w");
+            fputc('s', outStream);
             dup2(2, fileno(outStream));
+
+            // Get the rest of the line to serve as your first command
+
         }
     }
     if (outStream == NULL) {
         outStream = stderr;
     }
+    #ifdef DEBUG
+        debug("%s", "Hello world");
+    #endif
     mainloop();
     // NOT REACHED
 }
@@ -89,6 +101,8 @@ static void finalize(void) {
         session_kill(sessions[i]);
     }
     if (outStream != NULL) {
+        set_status("Closing file stream.");
+        fflush(outStream);
         fclose(outStream);
     }
     //close(0);
@@ -102,6 +116,22 @@ static void finalize(void) {
 }
 
 /*
+ * Helper function to split up the screen
+ *
+ */
+
+void split_screen(void) {
+    wresize(main_screen, LINES - 1, COLS/2);
+    sec_screen = newwin(LINES - 1, COLS/2, COLS/2, 0);
+    nodelay(sec_screen, TRUE);
+    wclear(sec_screen);
+    wrefresh(main_screen);
+    wrefresh(sec_screen);
+    set_status("Window successfully split.");
+
+}
+
+/*
  * Helper method to initialize the screen for use with curses processing.
  * You can find documentation of the "ncurses" package at:
  * https://invisible-island.net/ncurses/man/ncurses.3x.html
@@ -111,11 +141,11 @@ static void curses_init(void) {
     raw();                       // Don't generate signals, and make typein
                                  // immediately available.
     noecho();
-    main_screen = newwin(LINES - 1, COLS, 0, 0); // Don't echo -- let the pty handle it.
+    main_screen = newwin(LINES - 1, COLS * 2, 0, 0); // Don't echo -- let the pty handle it.
     //main_screen = stdscr;
     nodelay(main_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(main_screen);        // Clear the screen.
-    status_line = newwin(1, COLS, LINES - 1, 0);
+    status_line = newwin(1, COLS * 2, LINES - 1, 0);
     nodelay(status_line, TRUE);
     wclear(status_line);
     refresh();              // Make changes visible. MAIN SCREEN ONLY
@@ -128,6 +158,12 @@ static void curses_init(void) {
  * screen contents.
  */
 void curses_fini(void) {
+    if (main_screen != NULL)
+        delwin(main_screen);
+    if (status_line != NULL)
+        delwin(status_line);
+    if (sec_screen != NULL)
+        delwin(sec_screen);
     endwin();
 }
 
@@ -185,6 +221,12 @@ void do_command() {
         else {
             flash();
         }
+    }
+    else if (c == 's') { // SPLIT SCREEN
+        split_screen();
+    }
+    else {
+        flash();
     }
 	// OTHER COMMANDS TO BE IMPLEMENTED
 }

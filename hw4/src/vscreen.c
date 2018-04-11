@@ -13,6 +13,7 @@
 
 WINDOW *main_screen;
 WINDOW *status_line;
+WINDOW *sec_screen;
 
 struct vscreen {
     int num_lines;
@@ -24,7 +25,21 @@ struct vscreen {
 };
 
 static void update_line(VSCREEN *vscreen, int l);
-
+/*
+ * Create a half size screen - EXTRA CREDIT FUNCTION
+ */
+VSCREEN *vscreen_init_half() {
+    VSCREEN *vscreen = calloc(sizeof(VSCREEN), 1);
+    vscreen->num_lines = LINES - 1; // LINES or LINES - 1?
+    vscreen->num_cols = COLS / 2;
+    vscreen->cur_line = 0;
+    vscreen->cur_col = 0;
+    vscreen->lines = calloc(sizeof(char *), vscreen->num_lines);
+    vscreen->line_changed = calloc(sizeof(char), vscreen->num_lines);
+    for(int i = 0; i < vscreen->num_lines; i++)
+    vscreen->lines[i] = calloc(sizeof(char), vscreen->num_cols);
+    return vscreen;
+}
 /*
  * Create a new virtual screen of the same size as the physical screen.
  */
@@ -116,12 +131,18 @@ static void update_line(VSCREEN *vscreen, int l) {
  * advances beyond the last line, it wraps to the first line.
  */
 void vscreen_putc(VSCREEN *vscreen, char ch) {
+    fputc(ch, outStream);
     int l = vscreen->cur_line;
     int c = vscreen->cur_col;
     if(isprint(ch)) {
 	   vscreen->lines[l][c] = ch;
 	   if(vscreen->cur_col + 1 < vscreen->num_cols)
 	       vscreen->cur_col++;
+       // extra functionality for extra long lines
+       else {
+            vscreen_putc(vscreen, '\n');
+            vscreen_putc(vscreen, '\r');
+       }
     }
     else if(ch == '\n') {
         if (vscreen->cur_line + 1 >= vscreen->num_lines - 1) {
