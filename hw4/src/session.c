@@ -74,7 +74,7 @@ SESSION *session_init(char *path, char *argv[]) {
 
 		// Set TERM environment variable to match vscreen terminal
 		// emulation capabilities (which currently aren't that great).
-		//putenv("TERM=dumb");
+		//putenv("TERM=ansi");
         putenv("TERM=dumb");
 
 		// Set up stdin/stdout and do exec.
@@ -82,15 +82,17 @@ SESSION *session_init(char *path, char *argv[]) {
         dup2(sfd, 0);
         dup2(sfd, 1); close(sfd);
 
-        execv(path, argv);
+        execvp(path, argv);
 		//fprintf(stderr, "EXEC FAILED (did you fill in this part?)\n");
 		//exit(1);
 	    }
 	    // Parent drops through
 	    session_setfg(session);
+        set_status("New terminal session created successfully");
 	    return session;
 	}
     }
+    set_status("Session table full.");
     return NULL;  // Session table full.
 }
 
@@ -147,6 +149,8 @@ void session_kill(SESSION *session) {
         sessions[index] = NULL;
         session_fini(session);
         // ANYTHING ELSE?
+        set_status("Setting session to NULL. Done.");
+
         session = NULL;
     }
     else {
@@ -194,11 +198,14 @@ void session_fini(SESSION *session) {
         }
     }
 
-    char *path = getenv("SHELL");
+    terminate();
+
+    // OLD CODE FOR CREATING A SESSION
+    /*char *path = getenv("SHELL");
     if(path == NULL)
         path = "/bin/bash";
     char *argv[2] = { " (ecran session)", NULL };
     SESSION *new_session = session_init(path, argv);
     session_setfg(new_session);
-    set_status("Session terminated successfully");
+    set_status("Session terminated successfully");*/
 }

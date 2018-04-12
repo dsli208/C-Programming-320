@@ -131,7 +131,7 @@ static void update_line(VSCREEN *vscreen, int l) {
  * advances beyond the last line, it wraps to the first line.
  */
 void vscreen_putc(VSCREEN *vscreen, char ch) {
-    fputc(ch, outStream);
+    //fputc(ch, outStream);
     int l = vscreen->cur_line;
     int c = vscreen->cur_col;
     if(isprint(ch)) {
@@ -139,10 +139,10 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
 	   if(vscreen->cur_col + 1 < vscreen->num_cols)
 	       vscreen->cur_col++;
        // extra functionality for extra long lines
-       else {
-            vscreen_putc(vscreen, '\n');
+       /*else {
             vscreen_putc(vscreen, '\r');
-       }
+            vscreen_putc(vscreen, '\n');
+       }*/
     }
     else if(ch == '\n') {
         if (vscreen->cur_line + 1 >= vscreen->num_lines - 1) {
@@ -165,6 +165,20 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
     else if (ch == '\a') {
         // Flash the screen
         flash();
+    }
+    else if (ch == '\b') {
+        // backspace - delete characters??
+        c = vscreen->cur_col--;
+    }
+    else if (ch == '\t') {
+        // tab
+        //set_status("Fix tab.");
+        c = vscreen->cur_col += 8;
+    }
+    else if (ch == '\f') {
+        //set_status("Fix feed form.");
+        // clear
+        clear();
     }
     vscreen->line_changed[l] = 1;
 }

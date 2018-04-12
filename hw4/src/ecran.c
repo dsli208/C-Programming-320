@@ -11,6 +11,8 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "ecran.h"
 
@@ -54,7 +56,9 @@ int main(int argc, char *argv[]) {
         if ((option = getopt(argc, argv, "+o:")) != -1 && !o_flag) {
             o_flag = 1;
             output_file = optarg;
-            outStream = fopen(output_file, "w");
+            int fd = open(output_file, O_WRONLY | O_CREAT);
+            outStream = fdopen(fd, "w");
+            //outStream = fopen(output_file, "w");
             fputc('s', outStream);
             dup2(2, fileno(outStream));
 
@@ -104,7 +108,9 @@ static void finalize(void) {
         set_status("Closing file stream.");
         fflush(outStream);
         fclose(outStream);
+        set_status("File stream closed.");
     }
+
     //close(0);
     //close(1);
     //close(2);
@@ -141,11 +147,11 @@ static void curses_init(void) {
     raw();                       // Don't generate signals, and make typein
                                  // immediately available.
     noecho();
-    main_screen = newwin(LINES - 1, COLS * 2, 0, 0); // Don't echo -- let the pty handle it.
+    main_screen = newwin(LINES - 1, COLS, 0, 0); // Don't echo -- let the pty handle it.
     //main_screen = stdscr;
     nodelay(main_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(main_screen);        // Clear the screen.
-    status_line = newwin(1, COLS * 2, LINES - 1, 0);
+    status_line = newwin(1, COLS, LINES - 1, 0);
     nodelay(status_line, TRUE);
     wclear(status_line);
     refresh();              // Make changes visible. MAIN SCREEN ONLY
@@ -225,6 +231,9 @@ void do_command() {
     else if (c == 's') { // SPLIT SCREEN
         split_screen();
     }
+    else if (c == 'h') {
+        // HELP SCREEN
+    }
     else {
         flash();
     }
@@ -239,4 +248,11 @@ void do_command() {
 void do_other_processing() {
     // TO BE FILLED IN
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
+}
+
+/*
+ * Helper function for termination
+ */
+void terminate() {
+    finalize();
 }
