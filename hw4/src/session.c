@@ -108,6 +108,7 @@ void session_setfg(SESSION *session) {
     VSCREEN *session_vscreen = fg_session->vscreen;
     update_vscreen(session_vscreen);
     vscreen_show(session_vscreen);
+
 }
 
 /*
@@ -169,6 +170,7 @@ void session_kill(SESSION *session) {
  */
 void session_fini(SESSION *session) {
     // TO BE FILLED IN _ INCOMPLETE
+    close(session->ptyfd);
 
     // Free all the calloc'd parts - VSCREEN
     set_status("Deallocating vscreen");

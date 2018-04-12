@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "vscreen.h"
+#include "debug.h"
 
 /*
  * Functions to implement a virtual screen that can be multiplexed
@@ -131,7 +132,7 @@ static void update_line(VSCREEN *vscreen, int l) {
  * advances beyond the last line, it wraps to the first line.
  */
 void vscreen_putc(VSCREEN *vscreen, char ch) {
-    //fputc(ch, outStream);
+    debug("%c", ch);
     int l = vscreen->cur_line;
     int c = vscreen->cur_col;
     if(isprint(ch)) {
@@ -170,7 +171,7 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
         // backspace - delete characters??
         c = vscreen->cur_col--;
     }
-    else if (ch == '\t') {
+    else if (ch == '\t' || ch == 9) {
         // tab
         //set_status("Fix tab.");
         c = vscreen->cur_col += 8;

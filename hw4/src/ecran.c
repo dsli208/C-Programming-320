@@ -56,19 +56,21 @@ int main(int argc, char *argv[]) {
         if ((option = getopt(argc, argv, "+o:")) != -1 && !o_flag) {
             o_flag = 1;
             output_file = optarg;
-            int fd = open(output_file, O_WRONLY | O_CREAT);
-            outStream = fdopen(fd, "w");
+            int fd = open(output_file, O_WRONLY | O_CREAT, 0777);
+            //outStream = fdopen(fd, "w");
             //outStream = fopen(output_file, "w");
-            fputc('s', outStream);
-            dup2(2, fileno(outStream));
+            //fputc('s', outStream);
+
+            dup2(fd, 2);
+            debug("%s", "Hello world!");
 
             // Get the rest of the line to serve as your first command
 
         }
     }
-    if (outStream == NULL) {
+    /*if (outStream == NULL) {
         outStream = stderr;
-    }
+    }*/
     #ifdef DEBUG
         debug("%s", "Hello world");
     #endif
@@ -106,8 +108,8 @@ static void finalize(void) {
     }
     if (outStream != NULL) {
         set_status("Closing file stream.");
-        fflush(outStream);
-        fclose(outStream);
+        //fflush(outStream);
+        //fclose(outStream);
         set_status("File stream closed.");
     }
 
@@ -208,6 +210,10 @@ void do_command() {
         SESSION *newSession = sessions[sessionNum];
         if (newSession != NULL) {
             session_setfg(newSession);
+            set_status("New session successfully set.");
+            //char *s;
+            //sprintf(s, "New session set to session %d", sessionNum);
+            //set_status(s);
         }
         else {
             flash();
