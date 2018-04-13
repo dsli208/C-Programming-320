@@ -51,16 +51,24 @@ void set_status_intarg(char *s1, int i, char *s2) {
     waddch(status_line, ' ');
     waddch(status_line, (char)(i + 48));
     waddstr(status_line, s2);
-    wrefresh(status_line);
+
     int n = strlen(s1) + 1 + strlen(s2);
     debug("%d %d\n", COLS, LINES);
     debug("%s%d\n", "Total string length: ", n);
-    while (n < COLS - 15) {
+    while (n < COLS - 20) {
         n++;
         waddch(status_line, ' ');
     }
 
     waddstr(status_line, "Active sessions: ");
+    if (activeSessions < 10) {
+        waddch(status_line, (char)(activeSessions + 48));
+    }
+    else {
+        waddch(status_line, '1');
+        waddch(status_line, '0');
+    }
+    wrefresh(status_line);
 }
 
 void set_status(char *status) {
@@ -73,12 +81,18 @@ void set_status(char *status) {
         c++;
         i++;
     }*/
-    while (i < COLS - 15) {
+    while (i < COLS - 20) {
         i++;
         waddch(status_line, ' ');
     }
     waddstr(status_line, "Active sessions: ");
-
+    if (activeSessions < 10) {
+        waddch(status_line, (char)(activeSessions + 48));
+    }
+    else {
+        waddch(status_line, '1');
+        waddch(status_line, '0');
+    }
 
     //time_t now = time(0);
 
@@ -93,6 +107,7 @@ int main(int argc, char *argv[]) {
     initSessions();
     char option;
     for (int i = 0; i < argc; i++) {
+        debug("%d\n", i);
         if ((option = getopt(argc, argv, "+o:")) != -1 && !o_flag) {
             o_flag = 1;
             output_file = optarg;
@@ -109,7 +124,9 @@ int main(int argc, char *argv[]) {
             if(path == NULL)
                 path = "/bin/bash";
 
-            argv += 2;
+            /*if ((i + 2) < argc - 1)
+                execvp(*(argv + i + 2), (argv + i + 2));*/
+
             if (*argv != NULL) {
                 set_status("Argument detected.  Executing...");
                 session_init(path, argv);
@@ -122,6 +139,8 @@ int main(int argc, char *argv[]) {
     #ifdef DEBUG
         debug("%s\n", "Hello world");
     #endif
+
+
     mainloop();
     // NOT REACHED
 }
@@ -170,6 +189,20 @@ static void finalize(void) {
 
     exit(EXIT_SUCCESS);
 }
+
+/*
+ * Helper function to split up the screen
+ *
+ */
+void show_help(void) {
+    help_screen = newwin(LINES - 1, COLS, 0, 0);
+    nodelay(help_screen, TRUE);  // Set non-blocking I/O on input.
+    wclear(help_screen);
+    waddstr(help_screen, "This is the help screen.");
+    wrefresh(help_screen);
+}
+
+
 
 /*
  * Helper function to split up the screen
@@ -258,7 +291,7 @@ void do_command() {
         SESSION *newSession = sessions[sessionNum];
         if (newSession != NULL) {
             session_setfg(newSession);
-            set_status_intarg("New session", sessionNum, " successfully created.");
+            set_status_intarg("Successfully switched to session", sessionNum, "");
             //char *s;
             //sprintf(s, "New session set to session %d", sessionNum);
             //set_status(s);

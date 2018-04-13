@@ -45,7 +45,7 @@ int find_current_session(SESSION *session) {
 }
 
 void initSessions() {
-    activeSessions = 0;
+    activeSessions = 1;
 }
 
 /*
