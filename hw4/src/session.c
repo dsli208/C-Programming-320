@@ -23,6 +23,8 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <curses.h>
+#include <ncurses.h>
 
 #include "session.h"
 #include "ecran.h"
@@ -31,6 +33,8 @@
 SESSION *sessions[MAX_SESSIONS];  // Table of existing sessions
 SESSION *fg_session;              // Current foreground session
 
+int activeSessions;
+
 int find_current_session(SESSION *session) {
     for (int i = 0; i < MAX_SESSIONS; i++) {
         if (sessions[i] == session) {
@@ -38,6 +42,10 @@ int find_current_session(SESSION *session) {
         }
     }
     return -1;
+}
+
+void initSessions() {
+    activeSessions = 0;
 }
 
 /*
@@ -88,7 +96,8 @@ SESSION *session_init(char *path, char *argv[]) {
 	    }
 	    // Parent drops through
 	    session_setfg(session);
-        set_status("New terminal session created successfully");
+        activeSessions++;
+        set_status_intarg("New terminal session", i, " created successfully");
 	    return session;
 	}
     }
@@ -150,8 +159,8 @@ void session_kill(SESSION *session) {
         sessions[index] = NULL;
         session_fini(session);
         // ANYTHING ELSE?
+        activeSessions--;
         set_status("Setting session to NULL. Done.");
-
         session = NULL;
     }
     else {

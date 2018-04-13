@@ -13,8 +13,11 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
+#include <string.h>
 
 #include "ecran.h"
+#include "debug.h"
 
 static void initialize();
 static void curses_init(void);
@@ -36,21 +39,58 @@ void sigchld_handler(int sig) {
     // Do something?
 }
 
+/*char *get_enhanced_statusline() {
+    char s[18];
+    sprintf(s, "Active sessions: %d", activeSessions);
+    return s;
+}*/
+
+void set_status_intarg(char *s1, int i, char *s2) {
+    wclear(status_line);
+    waddstr(status_line, s1);
+    waddch(status_line, ' ');
+    waddch(status_line, (char)(i + 48));
+    waddstr(status_line, s2);
+    wrefresh(status_line);
+    int n = strlen(s1) + 1 + strlen(s2);
+    debug("%d %d\n", COLS, LINES);
+    debug("%s%d\n", "Total string length: ", n);
+    while (n < COLS - 15) {
+        n++;
+        waddch(status_line, ' ');
+    }
+
+    waddstr(status_line, "Active sessions: ");
+}
+
 void set_status(char *status) {
     wclear(status_line);
-    char *c = status;
+    waddstr(status_line, status);
+    int i = strlen(status);;
+    /*char *c = status;
     while (*c != '\0') {
         waddch(status_line, *c);
         c++;
+        i++;
+    }*/
+    while (i < COLS - 15) {
+        i++;
+        waddch(status_line, ' ');
     }
+    waddstr(status_line, "Active sessions: ");
+
+
+    //time_t now = time(0);
+
     wrefresh(status_line);
 }
 
 int main(int argc, char *argv[]) {
-    //putenv("TERM=ansi");
+
     o_flag = 0;
     signal(SIGCHLD, sigchld_handler);
     initialize();
+    initSessions();
     char option;
     for (int i = 0; i < argc; i++) {
         if ((option = getopt(argc, argv, "+o:")) != -1 && !o_flag) {
@@ -62,17 +102,25 @@ int main(int argc, char *argv[]) {
             //fputc('s', outStream);
 
             dup2(fd, 2);
-            debug("%s", "Hello world!");
+            debug("%s\n", "Hello world!");
 
             // Get the rest of the line to serve as your first command
+            char *path = getenv("SHELL");
+            if(path == NULL)
+                path = "/bin/bash";
 
+            argv += 2;
+            if (*argv != NULL) {
+                set_status("Argument detected.  Executing...");
+                session_init(path, argv);
+            }
         }
     }
     /*if (outStream == NULL) {
         outStream = stderr;
     }*/
     #ifdef DEBUG
-        debug("%s", "Hello world");
+        debug("%s\n", "Hello world");
     #endif
     mainloop();
     // NOT REACHED
@@ -210,14 +258,14 @@ void do_command() {
         SESSION *newSession = sessions[sessionNum];
         if (newSession != NULL) {
             session_setfg(newSession);
-            set_status("New session successfully set.");
+            set_status_intarg("New session", sessionNum, " successfully created.");
             //char *s;
             //sprintf(s, "New session set to session %d", sessionNum);
             //set_status(s);
         }
         else {
             flash();
-            set_status("Session does not exist.");
+            set_status_intarg("Session", sessionNum, " does not exist.");
         }
     }
     else if (c == 'k') {
@@ -225,8 +273,10 @@ void do_command() {
         if (c1 >= '0' && c1 <= '9') {
             int sessionNum = c1 - 48;
             SESSION *sessionToKill = sessions[sessionNum];
-            if (sessionToKill != NULL)
+            if (sessionToKill != NULL) {
                 session_kill(sessionToKill);
+                set_status_intarg("Session", sessionNum, " successfully killed.");
+            }
             else
                 flash();
         }

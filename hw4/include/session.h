@@ -27,4 +27,7 @@ int session_putc(SESSION *session, char c);
 void session_kill(SESSION *session);
 void session_fini(SESSION *session);
 
+int activeSessions;
+void initSessions();
+
 #endif

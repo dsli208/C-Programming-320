@@ -15,4 +15,5 @@ int mainloop(void);
 void do_command(void);
 void do_other_processing(void);
 void set_status(char *status);
+void set_status_intarg(char *s1, int i, char *s2);
 void terminate();

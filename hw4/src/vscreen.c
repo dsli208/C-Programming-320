@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <ncurses.h>
+#include <curses.h>
 
 #include "vscreen.h"
 #include "debug.h"
@@ -145,7 +147,7 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
             vscreen_putc(vscreen, '\n');
        }*/
     }
-    else if(ch == '\n') {
+    else if(ch == '\n' || ch == 10) {
         if (vscreen->cur_line + 1 >= vscreen->num_lines - 1) {
             for (int i = 0; i < vscreen->num_lines - 2; i++) {
                 //memset(vscreen->lines[i], 0, vscreen->num_cols);
@@ -160,14 +162,14 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
 	       memset(vscreen->lines[l], 0, vscreen->num_cols);
         }
     }
-    else if(ch == '\r') {
+    else if(ch == '\r' || ch == 13) {
 	   vscreen->cur_col = 0;
     }
-    else if (ch == '\a') {
+    else if (ch == '\a' || ch == 7) {
         // Flash the screen
         flash();
     }
-    else if (ch == '\b') {
+    else if (ch == '\b' || ch == 8) {
         // backspace - delete characters??
         c = vscreen->cur_col--;
     }
@@ -176,11 +178,55 @@ void vscreen_putc(VSCREEN *vscreen, char ch) {
         //set_status("Fix tab.");
         c = vscreen->cur_col += 8;
     }
-    else if (ch == '\f') {
+    else if (ch == '\f' || ch == 12) {
         //set_status("Fix feed form.");
         // clear
         clear();
     }
+    // POSSIBLE ANSI IMPLEMENTATION?
+    /*else if (ch == 27) {
+        // ANSI escape
+        char d;
+        if ((d = wgetch(main_screen)) == '[') {
+                char e = wgetch(main_screen);
+                if(e == 'n') {
+                    if (vscreen->cur_line + 1 >= vscreen->num_lines - 1) {
+                    for (int i = 0; i < vscreen->num_lines - 2; i++) {
+                        //memset(vscreen->lines[i], 0, vscreen->num_cols);
+                        strncpy(vscreen->lines[i], vscreen->lines[i + 1], vscreen->num_cols);
+                        vscreen->line_changed[i] = 1;
+                        vscreen->line_changed[i + 1] = 1;
+                    }
+                    memset(vscreen->lines[vscreen->num_lines - 2], 0, vscreen->num_cols);
+                }
+                else {
+                    l = vscreen->cur_line = (vscreen->cur_line + 1);
+                    memset(vscreen->lines[l], 0, vscreen->num_cols);
+                }
+            }
+            else if(e == 'r') {
+                vscreen->cur_col = 0;
+            }
+            else if (e == 'a') {
+                // Flash the screen
+                flash();
+            }
+            else if (e == 'b') {
+                // backspace - delete characters??
+                c = vscreen->cur_col--;
+            }
+            else if (e == 't') {
+                // tab
+                //set_status("Fix tab.");
+                c = vscreen->cur_col += 8;
+            }
+            else if (e == 'f') {
+                //set_status("Fix feed form.");
+                // clear
+                clear();
+            }
+        }
+    }*/
     vscreen->line_changed[l] = 1;
 }
 
