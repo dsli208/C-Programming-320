@@ -202,7 +202,9 @@ void show_help(void) {
     wrefresh(help_screen);
 }
 
-
+void exit_help(void) {
+    delwin(help_screen);
+}
 
 /*
  * Helper function to split up the screen
@@ -322,6 +324,7 @@ void do_command() {
     }
     else if (c == 'h') {
         // HELP SCREEN
+        show_help();
     }
     else {
         flash();
