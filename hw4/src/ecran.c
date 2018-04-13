@@ -30,6 +30,7 @@ char *output_file;
 volatile sig_atomic_t flag;
 volatile sig_atomic_t o_flag;
 volatile sig_atomic_t s_flag;
+volatile sig_atomic_t h_flag;
 
 /*
  * SIGCHLD Handler
@@ -195,15 +196,19 @@ static void finalize(void) {
  *
  */
 void show_help(void) {
+    h_flag = 1;
     help_screen = newwin(LINES - 1, COLS, 0, 0);
     nodelay(help_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(help_screen);
-    waddstr(help_screen, "This is the help screen.");
+    waddstr(help_screen, "This is the help screen.\n");
+    waddstr(help_screen, "This works similar to a regular terminal.\nHowever, it might not be as functional as the real one.");
     wrefresh(help_screen);
 }
 
 void exit_help(void) {
+    h_flag = 0;
     delwin(help_screen);
+
 }
 
 /*
@@ -255,6 +260,8 @@ void curses_fini(void) {
         delwin(status_line);
     if (sec_screen != NULL)
         delwin(sec_screen);
+    if (help_screen != NULL)
+        delwin(help_screen);
     endwin();
 }
 
@@ -270,6 +277,9 @@ void curses_fini(void) {
 void do_command() {
     // Quit command: terminates the program cleanly
     char c = wgetch(main_screen);
+    if (h_flag && c == 27) {
+        exit_help();
+    }
     if(c == 'q') {
 	   finalize();
     }
