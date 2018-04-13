@@ -144,6 +144,17 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    if (!o_flag && argc > 1) {
+        for (int j = 1; j < argc; j++) {
+                    char *c = argv[j];
+                    while (*c != '\0') {
+                        session_putc(sessions[0], *c);
+                        c++;
+                    }
+                    session_putc(sessions[0], ' ');
+                }
+                session_putc(sessions[0], '\n');
+    }
     /*if (outStream == NULL) {
         outStream = stderr;
     }*/
@@ -207,6 +218,7 @@ static void finalize(void) {
  */
 void exit_help(void) {
     h_flag = 0;
+    wclear(help_screen);
     delwin(help_screen);
 
 }
@@ -220,10 +232,9 @@ void show_help(void) {
     waddstr(help_screen, "This works similar to a regular terminal.\nHowever, it might not be as functional as the real one.");
     wrefresh(help_screen);
 
-    char c;
-    c = wgetch(help_screen);
-    while((c = wgetch(help_screen)) != 27) {
-
+    char c = wgetch(help_screen);;
+    while(c != 27) {
+        c = wgetch(help_screen);
     }
     exit_help();
 }
@@ -302,9 +313,9 @@ void curses_fini(void) {
 void do_command() {
     // Quit command: terminates the program cleanly
     char c = wgetch(main_screen);
-    if (h_flag && c == 27) {
+    /*if (h_flag && c == 27) {
         exit_help();
-    }
+    }*/
     if(c == 'q') {
 	   finalize();
     }
