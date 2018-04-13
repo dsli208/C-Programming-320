@@ -121,16 +121,26 @@ int main(int argc, char *argv[]) {
             debug("%s\n", "Hello world!");
 
             // Get the rest of the line to serve as your first command
-            char *path = getenv("SHELL");
+            /*char *path = getenv("SHELL");
             if(path == NULL)
                 path = "/bin/bash";
-
-            /*if ((i + 2) < argc - 1)
-                execvp(*(argv + i + 2), (argv + i + 2));*/
 
             if (*argv != NULL) {
                 set_status("Argument detected.  Executing...");
                 session_init(path, argv);
+            }*/
+
+            // NOW, check for the rest of the line
+            if (i + 3 < argc - 1) {
+                for (int j = i + 3; j < argc; j++) {
+                    char *c = argv[j];
+                    while (*c != '\0') {
+                        session_putc(sessions[0], *c);
+                        c++;
+                    }
+                    session_putc(sessions[0], ' ');
+                }
+                session_putc(sessions[0], '\n');
             }
         }
     }
@@ -195,6 +205,12 @@ static void finalize(void) {
  * Helper function to split up the screen
  *
  */
+void exit_help(void) {
+    h_flag = 0;
+    delwin(help_screen);
+
+}
+
 void show_help(void) {
     h_flag = 1;
     help_screen = newwin(LINES - 1, COLS, 0, 0);
@@ -203,12 +219,13 @@ void show_help(void) {
     waddstr(help_screen, "This is the help screen.\n");
     waddstr(help_screen, "This works similar to a regular terminal.\nHowever, it might not be as functional as the real one.");
     wrefresh(help_screen);
-}
 
-void exit_help(void) {
-    h_flag = 0;
-    delwin(help_screen);
+    char c;
+    c = wgetch(help_screen);
+    while((c = wgetch(help_screen)) != 27) {
 
+    }
+    exit_help();
 }
 
 /*
@@ -254,14 +271,22 @@ static void curses_init(void) {
  * screen contents.
  */
 void curses_fini(void) {
-    if (main_screen != NULL)
+    if (main_screen != NULL) {
+        wclear(main_screen);
         delwin(main_screen);
-    if (status_line != NULL)
+    }
+    if (status_line != NULL) {
+        wclear(status_line);
         delwin(status_line);
-    if (sec_screen != NULL)
+    }
+    if (sec_screen != NULL) {
+        wclear(sec_screen);
         delwin(sec_screen);
-    if (help_screen != NULL)
+    }
+    if (help_screen != NULL) {
+        wclear(help_screen);
         delwin(help_screen);
+    }
     endwin();
 }
 
