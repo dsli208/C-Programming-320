@@ -357,6 +357,7 @@ void do_command() {
         SESSION *new_session = session_init(path, argv);
         if (new_session == NULL) {
             set_status("Too many sessions or problem occurred in session creation.");
+            flash();
             return;
         }
         // NOW, SET THE SCREEN TO THE ACTUAL NEW SESSION
