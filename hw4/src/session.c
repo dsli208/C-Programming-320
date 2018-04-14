@@ -91,8 +91,6 @@ SESSION *session_init(char *path, char *argv[]) {
         dup2(sfd, 1); close(sfd);
 
         execvp(path, argv);
-		//fprintf(stderr, "EXEC FAILED (did you fill in this part?)\n");
-		//exit(1);
 	    }
 	    // Parent drops through
 	    session_setfg(session);
@@ -136,7 +134,7 @@ int session_read(SESSION *session, char *buf, int bufsize) {
 int session_putc(SESSION *session, char c) {
     // TODO: Probably should use non-blocking I/O to avoid the potential
     // for hanging here, but this is ignored for now.
-    if (c == COMMAND_SIGCHLD) {
+    if (c == COMMAND_SIGCHLD || c == EOF) {
         int sessionNum = find_current_session(fg_session);
         session_kill(fg_session);
         set_status_intarg("Session", sessionNum, " successfully killed.");

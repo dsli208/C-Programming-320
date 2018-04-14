@@ -172,6 +172,7 @@ int main(int argc, char *argv[]) {
                     session_putc(sessions[0], ' ');
                 }
                 session_putc(sessions[0], '\n');
+                //execvp(*(argv + 3), argv + 3);
             }
         }
     }
@@ -185,6 +186,7 @@ int main(int argc, char *argv[]) {
                     session_putc(sessions[0], ' ');
                 }
                 session_putc(sessions[0], '\n');
+                //execvp(*(argv + 3), argv + 3);
     }
 
     //alarm(1);
@@ -253,8 +255,10 @@ void show_help(void) {
     help_screen = newwin(LINES - 1, COLS, 0, 0);
     nodelay(help_screen, TRUE);  // Set non-blocking I/O on input.
     wclear(help_screen);
-    waddstr(help_screen, "This is the help screen.\n");
+    waddstr(help_screen, "ECRAN TERMINAL\n");
     waddstr(help_screen, "This works similar to a regular terminal.\nHowever, it might not be as functional as the real one.");
+    waddstr(help_screen, "COMMANDS:\nCTRL + A + N: New session\nCTRL + A + (0-9): Switch sessions\nCTRL + D: Kill current session\nCTRL + A + K + (0-9): Kill session\nCTRL + A + Q: Quit ECRAN\n");
+    waddstr(help_screen, "Press ESC and type as you normally would to exit this help screen.");
     wrefresh(help_screen);
 
     char c = wgetch(help_screen);;
