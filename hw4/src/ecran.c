@@ -56,7 +56,7 @@ void set_status_intarg(char *s1, int i, char *s2) {
     int n = strlen(s1) + 1 + strlen(s2);
     debug("%d %d\n", COLS, LINES);
     debug("%s%d\n", "Total string length: ", n);
-    while (n < COLS - 20) {
+    while (n < COLS - 40) {
         n++;
         waddch(status_line, ' ');
     }
@@ -69,6 +69,10 @@ void set_status_intarg(char *s1, int i, char *s2) {
         waddch(status_line, '1');
         waddch(status_line, '0');
     }
+
+    debug("%s", ctime(NULL));
+    waddstr(status_line, ctime(NULL));
+
     wrefresh(status_line);
 }
 
@@ -82,7 +86,7 @@ void set_status(char *status) {
         c++;
         i++;
     }*/
-    while (i < COLS - 20) {
+    while (i < COLS - 40) {
         i++;
         waddch(status_line, ' ');
     }
@@ -95,7 +99,8 @@ void set_status(char *status) {
         waddch(status_line, '0');
     }
 
-    //time_t now = time(0);
+    debug("%s", ctime(NULL));
+    waddstr(status_line, ctime(NULL));
 
     wrefresh(status_line);
 }
