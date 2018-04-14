@@ -27,6 +27,10 @@ static void finalize(void);
 char *optarg;
 char *output_file;
 
+char *status1;
+char *status2;
+int status_line_int;
+
 volatile sig_atomic_t flag;
 volatile sig_atomic_t o_flag;
 volatile sig_atomic_t s_flag;
@@ -129,10 +133,14 @@ int main(int argc, char *argv[]) {
     signal(SIGCHLD, sigchld_handler);
     signal(SIGALRM, sigalrm_handler);
 
-    alarm(1);
+    //alarm(1);
 
     initialize();
     initSessions();
+
+    status1 = (char*)malloc(100);
+    status2 = (char*)malloc(100);
+
     char option;
     for (int i = 0; i < argc; i++) {
         debug("%d\n", i);
@@ -189,7 +197,7 @@ int main(int argc, char *argv[]) {
         debug("%s\n", "Hello world");
     #endif
 
-    alarm(1);
+    //alarm(1);
     mainloop();
     // NOT REACHED
 }
@@ -229,6 +237,7 @@ static void finalize(void) {
         set_status("File stream closed.");
     }
 
+    free(status1); free(status2);
     curses_fini();
 
     exit(EXIT_SUCCESS);
@@ -402,7 +411,7 @@ void do_command() {
         flash();
     }
 	// OTHER COMMANDS TO BE IMPLEMENTED
-    alarm(1);
+    //alarm(1);
 }
 
 /*
@@ -414,8 +423,9 @@ void do_other_processing() {
     // TO BE FILLED IN
     // KILLING WAITING PROCESSES
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
-    alarm(1);
+    //alarm(1);
     set_status("");
+    wrefresh(main_screen);
 }
 
 /*

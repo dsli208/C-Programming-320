@@ -29,27 +29,6 @@ struct vscreen {
 };
 
 static void update_line(VSCREEN *vscreen, int l);
-/*
- * Create a help screen - EXTRA CREDIT FUNCTION
- */
-/*VSCREEN *help_vscreen_init() {
-    VSCREEN *help_vscreen = calloc(sizeof(VSCREEN), 1);
-    help_vscreen->num_lines = LINES - 1; // LINES or LINES - 1?
-    help_vscreen->num_cols = COLS;
-    help_vscreen->cur_line = 0;
-    help_vscreen->cur_col = 0;
-    help_vscreen->lines = calloc(sizeof(char *), help_vscreen->num_lines);
-    help_vscreen->line_changed = calloc(sizeof(char), help_vscreen->num_lines);
-    for(int i = 0; i < help_vscreen->num_lines; i++)
-    help_vscreen->lines[i] = calloc(sizeof(char), help_vscreen->num_cols);
-    return help_vscreen;
-}*/
-
-/*void help_screen_fini() {
-    if (help_vscreen != NULL) {
-        free(help_vscreen);
-    }
-}*/
 
 /*
  * Create a half size screen - EXTRA CREDIT FUNCTION
