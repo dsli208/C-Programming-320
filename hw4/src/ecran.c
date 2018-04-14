@@ -27,8 +27,8 @@ static void finalize(void);
 char *optarg;
 char *output_file;
 
-char *status1;
-char *status2;
+char status1[100];
+char status2[100];
 int status_line_int;
 
 volatile sig_atomic_t flag;
@@ -66,6 +66,9 @@ void set_status_intarg(char *s1, int i, char *s2) {
     waddstr(status_line, ctime(&t));
 
     // Copy s1 and s2 to their respective global vars
+    strcpy(status1, s1);
+    strcpy(status2, s2);
+    status_line_int = i;
 
     wrefresh(status_line);
 }
@@ -99,6 +102,9 @@ void set_status(char *status) {
     waddstr(status_line, ctime(&t));
 
     // Copy status to status1 and set status2 to NULL
+    strcpy(status1, status);
+    strcpy(status2, "");
+    status_line_int = -5;
 
     wrefresh(status_line);
 }
@@ -138,8 +144,8 @@ int main(int argc, char *argv[]) {
     initialize();
     initSessions();
 
-    status1 = (char*)malloc(100);
-    status2 = (char*)malloc(100);
+    //status1 = (char*)malloc(100);
+    //status2 = (char*)malloc(100);
 
     char option;
     for (int i = 0; i < argc; i++) {
@@ -237,7 +243,7 @@ static void finalize(void) {
         set_status("File stream closed.");
     }
 
-    free(status1); free(status2);
+    //free(status1); free(status2);
     curses_fini();
 
     exit(EXIT_SUCCESS);
@@ -424,7 +430,12 @@ void do_other_processing() {
     // KILLING WAITING PROCESSES
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
     //alarm(1);
-    set_status("");
+    if (status_line_int < 0) {
+        set_status(status1);
+    }
+    else {
+        set_status_intarg(status1, status_line_int, status2);
+    }
     wrefresh(main_screen);
 }
 
