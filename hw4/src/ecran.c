@@ -27,8 +27,8 @@ static void finalize(void);
 char *optarg;
 char *output_file;
 
-char status1[100];
-char status2[100];
+char status1[100] = { 0 };
+char status2[100] = { 0 };
 int status_line_int;
 
 volatile sig_atomic_t flag;
@@ -66,9 +66,12 @@ void set_status_intarg(char *s1, int i, char *s2) {
     waddstr(status_line, ctime(&t));
 
     // Copy s1 and s2 to their respective global vars
-    strcpy(status1, s1);
-    strcpy(status2, s2);
-    status_line_int = i;
+    if (strcmp(status1, s1) != 0)
+        strcpy(status1, s1);
+    if (strcmp(status2, s2) != 0)
+        strcpy(status2, s2);
+    if (i != status_line_int)
+        status_line_int = i;
 
     wrefresh(status_line);
 }
@@ -102,7 +105,8 @@ void set_status(char *status) {
     waddstr(status_line, ctime(&t));
 
     // Copy status to status1 and set status2 to NULL
-    strcpy(status1, status);
+    if (strcmp(status1, status) != 0)
+        strcpy(status1, status);
     strcpy(status2, "");
     status_line_int = -5;
 
@@ -144,8 +148,6 @@ int main(int argc, char *argv[]) {
     initialize();
     initSessions();
 
-    //status1 = (char*)malloc(100);
-    //status2 = (char*)malloc(100);
 
     char option;
     for (int i = 0; i < argc; i++) {
