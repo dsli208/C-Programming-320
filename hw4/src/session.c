@@ -136,6 +136,12 @@ int session_read(SESSION *session, char *buf, int bufsize) {
 int session_putc(SESSION *session, char c) {
     // TODO: Probably should use non-blocking I/O to avoid the potential
     // for hanging here, but this is ignored for now.
+    if (c == COMMAND_SIGCHLD) {
+        int sessionNum = find_current_session(fg_session);
+        session_kill(fg_session);
+        set_status_intarg("Session", sessionNum, " successfully killed.");
+    }
+
     return write(session->ptyfd, &c, 1);
 }
 
@@ -210,13 +216,4 @@ void session_fini(SESSION *session) {
     }
 
     terminate();
-
-    // OLD CODE FOR CREATING A SESSION
-    /*char *path = getenv("SHELL");
-    if(path == NULL)
-        path = "/bin/bash";
-    char *argv[2] = { " (ecran session)", NULL };
-    SESSION *new_session = session_init(path, argv);
-    session_setfg(new_session);
-    set_status("Session terminated successfully");*/
 }

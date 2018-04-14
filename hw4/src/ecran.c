@@ -156,22 +156,10 @@ int main(int argc, char *argv[]) {
             o_flag = 1;
             output_file = optarg;
             int fd = open(output_file, O_WRONLY | O_CREAT, 0777);
-            //outStream = fdopen(fd, "w");
-            //outStream = fopen(output_file, "w");
-            //fputc('s', outStream);
 
             dup2(fd, 2);
             debug("%s\n", "Hello world!");
-
-            // Get the rest of the line to serve as your first command
-            /*char *path = getenv("SHELL");
-            if(path == NULL)
-                path = "/bin/bash";
-
-            if (*argv != NULL) {
-                set_status("Argument detected.  Executing...");
-                session_init(path, argv);
-            }*/
+            fprintf(stderr, "This is a test.");
 
             // NOW, check for the rest of the line
             if (i + 3 < argc - 1) {
@@ -188,7 +176,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (!o_flag && argc > 1) {
-        for (int j = 1; j < argc; j++) {
+                for (int j = 1; j < argc; j++) {
                     char *c = argv[j];
                     while (*c != '\0') {
                         session_putc(sessions[0], *c);
@@ -198,12 +186,6 @@ int main(int argc, char *argv[]) {
                 }
                 session_putc(sessions[0], '\n');
     }
-    /*if (outStream == NULL) {
-        outStream = stderr;
-    }*/
-    #ifdef DEBUG
-        debug("%s\n", "Hello world");
-    #endif
 
     //alarm(1);
     mainloop();
@@ -389,7 +371,7 @@ void do_command() {
             set_status_intarg("Session", sessionNum, " does not exist.");
         }
     }
-    else if (c == 'k') {
+    else if (c == 'k' || c == EOF) {
         char c1 = wgetch(main_screen);
         if (c1 >= '0' && c1 <= '9') {
             int sessionNum = c1 - 48;
@@ -428,7 +410,6 @@ void do_command() {
  * to deal with sessions that have terminated.
  */
 void do_other_processing() {
-    // TO BE FILLED IN
     // KILLING WAITING PROCESSES
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
     //alarm(1);

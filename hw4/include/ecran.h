@@ -10,6 +10,7 @@
  * foreground session.
  */
 #define COMMAND_ESCAPE 0x1   // CTRL-A
+#define COMMAND_SIGCHLD 0x4 // CTRL-D
 
 int mainloop(void);
 void do_command(void);
