@@ -32,29 +32,6 @@ volatile sig_atomic_t o_flag;
 volatile sig_atomic_t s_flag;
 volatile sig_atomic_t h_flag;
 
-/*
- * SIGALRM Handler
- */
-
-void sigalrm_handler(int sig) {
-    // case for set_status
-    set_status("");
-}
-
-/*
- * SIGCHLD Handler
- */
-
-void sigchld_handler(int sig) {
-    // Do something?
-}
-
-/*char *get_enhanced_statusline() {
-    char s[18];
-    sprintf(s, "Active sessions: %d", activeSessions);
-    return s;
-}*/
-
 void set_status_intarg(char *s1, int i, char *s2) {
     wclear(status_line);
     waddstr(status_line, s1);
@@ -121,6 +98,29 @@ void set_status(char *status) {
 
     wrefresh(status_line);
 }
+
+/*
+ * SIGALRM Handler
+ */
+
+void sigalrm_handler(int sig) {
+    // case for set_status
+    set_status("");
+}
+
+/*
+ * SIGCHLD Handler
+ */
+
+void sigchld_handler(int sig) {
+    // Do something?
+}
+
+/*char *get_enhanced_statusline() {
+    char s[18];
+    sprintf(s, "Active sessions: %d", activeSessions);
+    return s;
+}*/
 
 int main(int argc, char *argv[]) {
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
         debug("%s\n", "Hello world");
     #endif
 
-
+    alarm(1);
     mainloop();
     // NOT REACHED
 }
@@ -243,6 +243,10 @@ void exit_help(void) {
     wclear(help_screen);
     delwin(help_screen);
 
+    // GET CURRENT SESSION AND UPDATE ALL THE LINES IN ITS VSCREEN
+    SESSION *curr_session = fg_session;
+    update_vscreen(curr_session->vscreen);
+    wrefresh(main_screen);
 }
 
 void show_help(void) {
@@ -398,6 +402,7 @@ void do_command() {
         flash();
     }
 	// OTHER COMMANDS TO BE IMPLEMENTED
+    alarm(1);
 }
 
 /*
@@ -410,6 +415,7 @@ void do_other_processing() {
     // KILLING WAITING PROCESSES
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
     alarm(1);
+    set_status("");
 }
 
 /*
