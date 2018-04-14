@@ -33,6 +33,15 @@ volatile sig_atomic_t s_flag;
 volatile sig_atomic_t h_flag;
 
 /*
+ * SIGALRM Handler
+ */
+
+void sigalrm_handler(int sig) {
+    // case for set_status
+    set_status("");
+}
+
+/*
  * SIGCHLD Handler
  */
 
@@ -70,8 +79,12 @@ void set_status_intarg(char *s1, int i, char *s2) {
         waddch(status_line, '0');
     }
 
-    debug("%s", ctime(NULL));
-    waddstr(status_line, ctime(NULL));
+    time_t t = time(NULL);
+
+    debug("%s", ctime(&t));
+    waddstr(status_line, ctime(&t));
+
+    // Copy s1 and s2 to their respective global vars
 
     wrefresh(status_line);
 }
@@ -99,8 +112,12 @@ void set_status(char *status) {
         waddch(status_line, '0');
     }
 
-    debug("%s", ctime(NULL));
-    waddstr(status_line, ctime(NULL));
+    time_t t = time(NULL);
+
+    debug("%s", ctime(&t));
+    waddstr(status_line, ctime(&t));
+
+    // Copy status to status1 and set status2 to NULL
 
     wrefresh(status_line);
 }
@@ -108,7 +125,12 @@ void set_status(char *status) {
 int main(int argc, char *argv[]) {
 
     o_flag = 0;
+
     signal(SIGCHLD, sigchld_handler);
+    signal(SIGALRM, sigalrm_handler);
+
+    alarm(1);
+
     initialize();
     initSessions();
     char option;
@@ -206,11 +228,6 @@ static void finalize(void) {
         //fclose(outStream);
         set_status("File stream closed.");
     }
-
-    //close(0);
-    //close(1);
-    //close(2);
-    //close(3);
 
     curses_fini();
 
@@ -345,9 +362,6 @@ void do_command() {
         if (newSession != NULL) {
             session_setfg(newSession);
             set_status_intarg("Successfully switched to session", sessionNum, "");
-            //char *s;
-            //sprintf(s, "New session set to session %d", sessionNum);
-            //set_status(s);
         }
         else {
             flash();
@@ -363,10 +377,13 @@ void do_command() {
                 session_kill(sessionToKill);
                 set_status_intarg("Session", sessionNum, " successfully killed.");
             }
-            else
+            else {
                 flash();
+                set_status_intarg("Session", sessionNum, " does not exist.");
+            }
         }
         else {
+            set_status("Invalid session number.");
             flash();
         }
     }
@@ -390,7 +407,9 @@ void do_command() {
  */
 void do_other_processing() {
     // TO BE FILLED IN
+    // KILLING WAITING PROCESSES
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
+    alarm(1);
 }
 
 /*
