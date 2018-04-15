@@ -135,6 +135,9 @@ int session_putc(SESSION *session, char c) {
     // TODO: Probably should use non-blocking I/O to avoid the potential
     // for hanging here, but this is ignored for now.
     if (c == COMMAND_SIGCHLD || c == EOF) {
+        if (fg_session == NULL) {
+            terminate();
+        }
         int sessionNum = find_current_session(fg_session);
         session_kill(fg_session);
         set_status_intarg("Session", sessionNum, " successfully killed.");
