@@ -136,7 +136,7 @@ static void update_line(VSCREEN *vscreen, int l) {
  * advances beyond the last line, it wraps to the first line.
  */
 void vscreen_putc(VSCREEN *vscreen, char ch) {
-    debug("%c", ch);
+    //debug("%c", ch);
     int l = vscreen->cur_line;
     int c = vscreen->cur_col;
     if(isprint(ch)) {

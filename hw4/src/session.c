@@ -168,6 +168,9 @@ void session_kill(SESSION *session) {
         session = NULL;
     }
     else {
+        if (fg_session == NULL) {
+            terminate();
+        }
         set_status("Could not find session to kill.");
     }
     // TO BE FILLED IN
