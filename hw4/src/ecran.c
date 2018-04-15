@@ -173,6 +173,12 @@ int main(int argc, char *argv[]) {
                 }
                 session_putc(sessions[0], '\n');
                 //execvp(*(argv + 3), argv + 3);
+                // COMPROMISE CODE FOR COMMAND EXECUTION - bin/ecran ps a for example ONLY allows that commands execution in the session
+                session_putc(sessions[0], 'e');
+                session_putc(sessions[0], 'x');
+                session_putc(sessions[0], 'i');
+                session_putc(sessions[0], 't');
+                session_putc(sessions[0], '\n');
             }
         }
     }
@@ -187,6 +193,11 @@ int main(int argc, char *argv[]) {
                 }
                 session_putc(sessions[0], '\n');
                 //execvp(*(argv + 3), argv + 3);
+                session_putc(sessions[0], 'e');
+                session_putc(sessions[0], 'x');
+                session_putc(sessions[0], 'i');
+                session_putc(sessions[0], 't');
+                session_putc(sessions[0], '\n');
     }
 
     //alarm(1);
