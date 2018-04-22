@@ -23,7 +23,7 @@ PRINT_STAMENTS := -DERROR -DSUCCESS -DWARN -DINFO
 
 STD := -std=gnu11
 TEST_LIB := -lcriterion
-LIBS := -lpthread
+LIBS := -L $(LIBD) -l:bavarde.a -lpthread
 
 CFLAGS += $(STD)
 
@@ -41,11 +41,11 @@ debug: all
 setup:
 	mkdir -p $(BIND) $(BLDD) $(LIBD)
 
-$(EXEC): $(MAIN) $(LIB)
-	$(CC) $(MAIN) $(LIB) -o $(BIND)/$(EXEC) $(LIBS)
+$(EXEC): $(MAIN) $(ALL_FUNCF)
+	$(CC) $(CFLAGS) $^ -o $(BIND)/$(EXEC) $(LIBS)
 
-$(TEST_EXEC): $(LIB)
-	$(CC) $(CFLAGS) $(INC) $(TEST_SRC) $(LIB) -o $(BIND)/$(TEST_EXEC) $(TEST_LIB) $(LIBS)
+$(TEST_EXEC): $(ALL_FUNCF)
+	$(CC) $(CFLAGS) $(INC) $(TEST_SRC) $^ -o $(BIND)/$(TEST_EXEC) $(TEST_LIB) $(LIBS)
 
 $(BLDD)/%.o: $(SRCD)/%.c
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
