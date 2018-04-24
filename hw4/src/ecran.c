@@ -428,6 +428,8 @@ void do_command() {
 void do_other_processing() {
     // KILLING WAITING PROCESSES
     pid_t reap_pid = waitpid((pid_t)-1, 0, WNOHANG);
+    if (reap_pid == -1)
+        exit(EXIT_FAILURE);
     //alarm(1);
     if (status_line_int < 0) {
         set_status(status1);

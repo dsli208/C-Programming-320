@@ -58,6 +58,8 @@ SESSION *session_init(char *path, char *argv[]) {
 	if(sessions[i] == NULL) {
 	    int mfd = posix_openpt(O_RDWR | O_NOCTTY);
 	    if(mfd == -1) {
+            set_status("Exit failure.");
+            exit(EXIT_FAILURE);
 		  return NULL; // No more ptys
         }
 	    unlockpt(mfd);
