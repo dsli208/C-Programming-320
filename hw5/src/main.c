@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/types.h>          /* See NOTES */
+#include <sys/socket.h>
+#include "csapp.h"
 #include "debug.h"
 #include "server.h"
 #include "directory.h"
@@ -11,6 +14,7 @@ static void terminate();
 
 THREAD_COUNTER *thread_counter;
 volatile int p_flag;
+volatile int h_flag;
 int port_num = -2;
 char *optarg;
 
@@ -22,20 +26,36 @@ int main(int argc, char* argv[]) {
     char option;
 
     char *port;
+    char *hostname;
+
     p_flag = 0;
     for (int i = 0; i < argc; i++) {
-        if ((option = getopt(argc, argv, "+p:")) != -1) {
+        option = getopt(argc, argv, "+p:h:q");
+        if (option == 'p' && !p_flag) {
             port = optarg;
             p_flag = 1;
             port_num = atoi(port);
-            break;
+            continue;
         }
+        else if (option == 'h' && !h_flag) {
+            hostname = optarg;
+            h_flag = 1;
+            (void)hostname;
+        }
+        // What to do for 'q'?
     }
+
     // on which the server should listen.
 
     // Perform required initializations of the thread counter and directory.
     thread_counter = tcnt_init();
     dir_init();
+
+    if (!p_flag) {
+        fprintf(stderr, "You MUST specify a PORT NUMBER.\n");
+
+        terminate();
+    }
 
     // TODO: Set up the server socket and enter a loop to accept connections
     // on this socket.  For each connection, a thread should be started to
@@ -43,9 +63,47 @@ int main(int argc, char* argv[]) {
     // a SIGHUP handler, so that receipt of SIGHUP will perform a clean
     // shutdown of the server.
 
+    // socket --> bind --> listen
+    // OR open_listenfd
+    int socket_descriptor;
+    struct sockaddr_in server, client;
+    (void)client;
+    /*if ((socket_descriptor = open_listenfd(port)) < 0) {
+        fprintf(stderr, "You have to finish specifying bind params "
+        "before the Bavarde server will function.\n");
+
+        terminate();
+    }*/
+
+    socket_descriptor = socket(AF_INET, SOCK_STREAM, 0); // FIX
+    if (socket_descriptor < 0) {
+        fprintf(stderr, "Could not create socket.\n");
+
+        terminate();
+    }
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port_num);
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (bind(socket_descriptor, (struct sockaddr*)&server, sizeof(server)) < 0) {
+        fprintf(stderr, "You have to finish specifying bind params "
+        "before the Bavarde server will function.\n");
+
+        terminate();
+    }
+    if (listen(socket_descriptor, 1024) < 0) {
+        fprintf(stderr, "You have to finish specifying listen params "
+        "before the Bavarde server will function.\n");
+
+        terminate();
+    }
     // loop - maybe put in a separate file?
     while(1) {
-
+        // ACCEPT
+        socklen_t client_len = sizeof(client);
+        int client_fd = accept(socket_descriptor, (struct sockaddr*)&client, &client_len);
+        (void)client_fd;
     }
 
     fprintf(stderr, "You have to finish implementing main() "
