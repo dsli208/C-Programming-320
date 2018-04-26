@@ -10,6 +10,8 @@
 #include "directory.h"
 #include "thread_counter.h"
 
+#define BUFFER_SIZE 1024
+
 static void terminate();
 
 THREAD_COUNTER *thread_counter;
@@ -92,7 +94,7 @@ int main(int argc, char* argv[]) {
 
         terminate();
     }
-    if (listen(socket_descriptor, 1024) < 0) {
+    if (listen(socket_descriptor, BUFFER_SIZE) < 0) {
         fprintf(stderr, "You have to finish specifying listen params "
         "before the Bavarde server will function.\n");
 
