@@ -67,7 +67,10 @@ int main(int argc, char* argv[]) {
 
     // socket --> bind --> listen
     // OR open_listenfd
+    int *connfdp = malloc(sizeof(int));
     int socket_descriptor;
+    pthread_t tid;
+    (void)tid;
     struct sockaddr_in server, client;
     (void)client;
     /*if ((socket_descriptor = open_listenfd(port)) < 0) {
@@ -104,8 +107,14 @@ int main(int argc, char* argv[]) {
     while(1) {
         // ACCEPT
         socklen_t client_len = sizeof(client);
-        int client_fd = accept(socket_descriptor, (struct sockaddr*)&client, &client_len);
-        (void)client_fd;
+        int client_fd;
+        if ((client_fd = accept(socket_descriptor, (struct sockaddr*)&client, &client_len)) < 0) {
+            fprintf(stderr, "Client FD error.\n");
+
+            terminate();
+        }
+
+        pthread_create(&tid, NULL, bvd_client_service, connfdp);
     }
 
     fprintf(stderr, "You have to finish implementing main() "
