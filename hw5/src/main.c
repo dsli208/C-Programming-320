@@ -65,65 +65,19 @@ int main(int argc, char* argv[]) {
     // a SIGHUP handler, so that receipt of SIGHUP will perform a clean
     // shutdown of the server.
 
-    // socket --> bind --> listen
-    // OR open_listenfd
-    int *connfdp = malloc(sizeof(int));
-    int socket_descriptor;
+    int listenfd, *connfdp;
+    socklen_t clientlen;
+    struct sockaddr_storage clientaddr;
     pthread_t tid;
-    (void)tid;
-    struct sockaddr_in server, client;
-    (void)client;
-    /*if ((socket_descriptor = open_listenfd(port)) < 0) {
-        fprintf(stderr, "You have to finish specifying bind params "
-        "before the Bavarde server will function.\n");
 
-        terminate();
-    }*/
+    listenfd = open_listenfd(port);
 
-    socket_descriptor = socket(AF_INET, SOCK_STREAM, 0); // FIX
-    if (socket_descriptor < 0) {
-        fprintf(stderr, "Could not create socket.\n");
-
-        terminate();
-    }
-
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port_num);
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (bind(socket_descriptor, (struct sockaddr*)&server, sizeof(server)) < 0) {
-        fprintf(stderr, "You have to finish specifying bind params "
-        "before the Bavarde server will function.\n");
-
-        terminate();
-    }
-    debug("Bind successful");
-    if (listen(socket_descriptor, BUFFER_SIZE) < 0) {
-        fprintf(stderr, "You have to finish specifying listen params "
-        "before the Bavarde server will function.\n");
-
-        terminate();
-    }
-    debug("Listen start successful.");
-    // loop - maybe put in a separate file?
     while(1) {
-        // ACCEPT
-        socklen_t client_len = sizeof(client);
-        int client_fd;
-        if ((client_fd = accept(socket_descriptor, (struct sockaddr*)&client, &client_len)) < 0) {
-            fprintf(stderr, "Client FD error.\n");
-
-            terminate();
-        }
-        debug("Client fd is %d", client_fd);
-
-        while (1) {
-            pthread_create(&tid, NULL, bvd_client_service, connfdp);
-            pthread_join(tid, NULL);
-            //int read = proto_recv_packet()
-            pthread_exit(NULL);
-            break;
-        }
+        clientlen = sizeof(struct sockaddr_storage);
+        connfdp = malloc(sizeof(int));
+        *connfdp = accept(listenfd, (SA*)&clientaddr, &clientlen);
+        pthread_create(&tid, NULL, bvd_client_service, connfdp);
+        //tcnt_incr(thread_counter);
     }
 
     fprintf(stderr, "You have to finish implementing main() "
@@ -150,11 +104,11 @@ void terminate(int sig) {
 }
 
 /* Thread routine */
-vofd *thread(void vargp) {
+/*vofd *thread(void vargp) {
     int connfd = *((int*)vargv);
     Pthread_detach(pthread_self());
     Free (vargp);
     echo (confd);
     Close(connfd);
     return NULL;
-}
+}*/
