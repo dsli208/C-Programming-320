@@ -114,7 +114,12 @@ int main(int argc, char* argv[]) {
             terminate();
         }
 
-        pthread_create(&tid, NULL, bvd_client_service, connfdp);
+        while (1) {
+            pthread_create(&tid, NULL, bvd_client_service, connfdp);
+            pthread_join(tid, NULL);
+            //int read = proto_recv_packet()
+            pthread_exit(NULL);
+        }
     }
 
     fprintf(stderr, "You have to finish implementing main() "

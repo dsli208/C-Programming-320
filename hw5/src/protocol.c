@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <time.h>
 
 #include "debug.h"
 #include "server.h"
@@ -25,11 +26,12 @@
  * On error, -1 is returned and errno is set.
  */
 int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
+    struct timespec t;
     hdr -> type = (uint8_t)htonl(hdr -> type);
     hdr -> payload_length = htonl(hdr -> payload_length);
     hdr -> msgid = htonl(hdr -> msgid);
-    hdr -> timestamp_sec = htonl(hdr -> timestamp_sec);
-    hdr -> timestamp_nsec = htonl(hdr -> timestamp_nsec);
+    hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
+    hdr -> timestamp_nsec = clock_gettime(CLOCK_MONOTONIC, &t);
 
     if (write(fd, hdr, sizeof(hdr)) < 0) {
         return -1;
@@ -59,6 +61,19 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
  * and errno is set.
  */
 int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
+    struct timespec t;
+    if (read(fd, *payload, sizeof(payload)) < 0)
+        return -1;
+    hdr -> type = (uint8_t)ntohl(hdr -> type);
+    hdr -> payload_length = ntohl(hdr -> payload_length);
+    hdr -> msgid = ntohl(hdr -> msgid);
+    hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
+    hdr -> timestamp_nsec = clock_gettime(CLOCK_MONOTONIC, &t);
 
-    return -1;
+    if (hdr -> payload_length > 0) {
+        if (read(fd, *payload, sizeof(payload)) < 0) {
+            return -1;
+        }
+    }
+    return 0;
 }
