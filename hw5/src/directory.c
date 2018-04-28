@@ -13,6 +13,33 @@
 #include "thread_counter.h"
 
 /*
+ * Initialize the directory.
+ */
+void dir_init(void) {
+
+}
+
+/*
+ * Shut down the directory.
+ * This marks the directory as "defunct" and shuts down all the client sockets,
+ * which triggers the eventual termination of all the server threads.
+ */
+void dir_shutdown(void) {
+
+}
+
+/*
+ * Finalize the directory.
+ *
+ * Precondition: the directory must previously have been shut down
+ * by a call to dir_shutdown().
+ */
+void dir_fini(void) {
+
+}
+
+
+/*
  * Register a handle in the directory.
  *   handle - the handle to register
  *   sockfd - file descriptor of client socket
