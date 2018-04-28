@@ -62,18 +62,35 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
  */
 int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
     struct timespec t;
-    if (read(fd, *payload, sizeof(payload)) < 0)
+    int read_return;
+    while ((read_return = read(fd, *payload, sizeof(payload))) > 0) {
+        read_return = read(fd, *payload, sizeof(payload));
+    }
+    if (read_return < 0)
         return -1;
+    else if (read_return == 0) {
+        //break; // Done reading
+    }
+
+    debug("First read done.");
+
     hdr -> type = (uint8_t)ntohl(hdr -> type);
     hdr -> payload_length = ntohl(hdr -> payload_length);
     hdr -> msgid = ntohl(hdr -> msgid);
     hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
     hdr -> timestamp_nsec = clock_gettime(CLOCK_MONOTONIC, &t);
 
+    debug("header converted");
+
     if (hdr -> payload_length > 0) {
-        if (read(fd, *payload, sizeof(payload)) < 0) {
+        int nest_read_return = read(fd, *payload, sizeof(payload));
+        if (nest_read_return < 0) {
             return -1;
         }
+        else if (nest_read_return == 0) {
+            //break;
+        }
     }
+    debug("packet received");
     return 0;
 }

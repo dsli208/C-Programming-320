@@ -97,12 +97,14 @@ int main(int argc, char* argv[]) {
 
         terminate();
     }
+    debug("Bind successful");
     if (listen(socket_descriptor, BUFFER_SIZE) < 0) {
         fprintf(stderr, "You have to finish specifying listen params "
         "before the Bavarde server will function.\n");
 
         terminate();
     }
+    debug("Listen start successful.");
     // loop - maybe put in a separate file?
     while(1) {
         // ACCEPT
@@ -113,12 +115,14 @@ int main(int argc, char* argv[]) {
 
             terminate();
         }
+        debug("Client fd is %d", client_fd);
 
         while (1) {
             pthread_create(&tid, NULL, bvd_client_service, connfdp);
             pthread_join(tid, NULL);
             //int read = proto_recv_packet()
             pthread_exit(NULL);
+            break;
         }
     }
 
@@ -143,4 +147,14 @@ void terminate(int sig) {
     tcnt_fini(thread_counter);
     dir_fini();
     exit(EXIT_SUCCESS);
+}
+
+/* Thread routine */
+vofd *thread(void vargp) {
+    int connfd = *((int*)vargv);
+    Pthread_detach(pthread_self());
+    Free (vargp);
+    echo (confd);
+    Close(connfd);
+    return NULL;
 }
