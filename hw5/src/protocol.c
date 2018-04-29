@@ -27,17 +27,24 @@
  */
 int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     struct timespec t;
-    hdr -> type = (uint8_t)htonl(hdr -> type);
+    //hdr -> type = (uint8_t)htonl(hdr -> type);
     hdr -> payload_length = htonl(hdr -> payload_length);
     hdr -> msgid = htonl(hdr -> msgid);
     hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
     hdr -> timestamp_nsec = clock_gettime(CLOCK_MONOTONIC, &t);
 
-    if (write(fd, hdr, sizeof(hdr)) < 0) {
+    int write_return = write(fd, hdr, sizeof(*hdr));
+    debug("Write returns: %d", write_return);
+    if (write_return < 0) {
         return -1;
     }
+    else if (write_return == 0) {
+        // break?
+    }
     if (hdr -> payload_length > 0) {
-        if (write(fd, payload, sizeof(payload)) < 0) {
+        int nest_write_return = write(fd, payload, hdr -> payload_length);
+        debug("Nest write returns: %d", nest_write_return);
+        if (nest_write_return < 0) {
             return -1;
         }
     }
@@ -61,12 +68,12 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
  * and errno is set.
  */
 int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
+    // STILL NEED TO HANDLE SHORT COUNT CASES
+
     struct timespec t;
     debug("Receiving packet");
-    int read_return = read(fd, *payload, sizeof(payload));
-    /*while ((read_return = read(fd, *payload, sizeof(payload))) > 0) {
-        read_return = read(fd, *payload, sizeof(payload));
-    }*/
+    int read_return = read(fd, hdr, sizeof(*hdr));
+    debug("Read returns: %d", read_return);
     if (read_return < 0)
         return -1;
     else if (read_return == 0) {
@@ -75,7 +82,7 @@ int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
 
     debug("First read done.");
 
-    hdr -> type = (uint8_t)ntohl(hdr -> type);
+    //hdr -> type = (uint8_t)ntohl(hdr -> type);
     hdr -> payload_length = ntohl(hdr -> payload_length);
     hdr -> msgid = ntohl(hdr -> msgid);
     hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
@@ -84,7 +91,8 @@ int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
     debug("header converted");
 
     if (hdr -> payload_length > 0) {
-        int nest_read_return = read(fd, *payload, sizeof(payload));
+        int nest_read_return = read(fd, payload, hdr -> payload_length);
+        debug("Payload read returns: %d", nest_read_return);
         if (nest_read_return < 0) {
             return -1;
         }
@@ -93,5 +101,6 @@ int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
         }
     }
     debug("packet received");
+
     return 0;
 }
