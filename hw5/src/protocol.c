@@ -25,7 +25,7 @@
  * On success, 0 is returned.
  * On error, -1 is returned and errno is set.
  */
-/*int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
+int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     struct timespec t;
     hdr -> type = (uint8_t)htonl(hdr -> type);
     hdr -> payload_length = htonl(hdr -> payload_length);
@@ -43,7 +43,7 @@
     }
 
     return 0;
-}*/
+}
 
 /*
  * Receive a packet, blocking until one is available.
@@ -60,12 +60,13 @@
  * On error, -1 is returned, payload and length are left unchanged,
  * and errno is set.
  */
-/*int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
+int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
     struct timespec t;
-    int read_return;
-    while ((read_return = read(fd, *payload, sizeof(payload))) > 0) {
+    debug("Receiving packet");
+    int read_return = read(fd, *payload, sizeof(payload));
+    /*while ((read_return = read(fd, *payload, sizeof(payload))) > 0) {
         read_return = read(fd, *payload, sizeof(payload));
-    }
+    }*/
     if (read_return < 0)
         return -1;
     else if (read_return == 0) {
@@ -93,4 +94,4 @@
     }
     debug("packet received");
     return 0;
-}*/
+}
