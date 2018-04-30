@@ -42,18 +42,23 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     int write_return = write(fd, hdr, sizeof(*hdr));
     debug("Write returns: %d", write_return);
 
+    uint32_t hdr_size = sizeof(*hdr);
 
-    if (write_return < 0) {
-        return -1;
-    }
-    else if (write_return == 0) {
-        // break?
+    while (write_return) {
+        if (write_return < 0) {
+            return -1;
+        }
+        else if (write_return == 0) {
+            // break?
+        }
+        hdr_size -= write_return;
+        write_return = write(fd, hdr, hdr_size);
     }
 
-    uint32_t pay_len = hdr -> payload_length;
-    if (pay_len > 0) {
+    if (hdr -> payload_length > 0) {
+        uint32_t pay_len = hdr -> payload_length;
         int nest_write_return = write(fd, payload, pay_len);
-        while (nest_write_return && (pay_len >= 0)) {
+        while (nest_write_return) {
             debug("Nest write returns: %d", nest_write_return);
             if (nest_write_return < 0) {
                 return -1;
@@ -89,14 +94,20 @@ int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
 
     struct timespec t;
     (void)t;
+    size_t hdr_size = sizeof(*hdr);
     debug("Receiving packet");
-    debug("size of header is %lu", sizeof(*hdr));
-    int read_return = read(fd, hdr, sizeof(*hdr));
+    debug("size of header is %lu", hdr_size);
+    int read_return = read(fd, hdr, hdr_size);
     debug("Read returns: %d", read_return);
-    if (read_return < 0)
-        return -1;
-    else if (read_return == 0) {
-        //break; // Done reading
+
+    while (read_return) {
+        if (read_return < 0)
+            return -1;
+        else if (read_return == 0) {
+            //break; // Done reading
+        }
+        hdr_size -= read_return;
+        read_return = read(fd, hdr, hdr_size);
     }
 
     debug("First read done.");
