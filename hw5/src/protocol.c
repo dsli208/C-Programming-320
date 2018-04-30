@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <arpa/inet.h>
 
 #include "debug.h"
 #include "server.h"
@@ -27,11 +28,13 @@
  */
 int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     struct timespec t;
+    (void)t;
+    debug("Starting write");
     //hdr -> type = (uint8_t)htonl(hdr -> type);
     hdr -> payload_length = htonl(hdr -> payload_length);
     hdr -> msgid = htonl(hdr -> msgid);
-    hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
-    hdr -> timestamp_nsec = clock_gettime(CLOCK_MONOTONIC, &t);
+    hdr -> timestamp_sec = htonl(hdr -> timestamp_sec);//clock_gettime(CLOCK_MONOTONIC, &t);
+    hdr -> timestamp_nsec = htonl(hdr -> timestamp_nsec);//clock_gettime(CLOCK_MONOTONIC, &t);
 
     int write_return = write(fd, hdr, sizeof(*hdr));
     debug("Write returns: %d", write_return);
@@ -68,10 +71,14 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
  * and errno is set.
  */
 int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
+    // IO ERROR - STRUCT DIFFERENCES - NTOHL or HTONL?
     // STILL NEED TO HANDLE SHORT COUNT CASES
+    //hdr = malloc(sizeof(bvd_packet_header));
 
     struct timespec t;
+    (void)t;
     debug("Receiving packet");
+    debug("size of header is %lu", sizeof(*hdr));
     int read_return = read(fd, hdr, sizeof(*hdr));
     debug("Read returns: %d", read_return);
     if (read_return < 0)
@@ -82,22 +89,30 @@ int proto_recv_packet(int fd, bvd_packet_header *hdr, void **payload) {
 
     debug("First read done.");
 
+    debug("Contents of hdr: %x %x %x %x %x", hdr -> type, hdr -> payload_length, hdr -> msgid, hdr -> timestamp_sec, hdr -> timestamp_nsec);
+
     //hdr -> type = (uint8_t)ntohl(hdr -> type);
     hdr -> payload_length = ntohl(hdr -> payload_length);
     hdr -> msgid = ntohl(hdr -> msgid);
-    hdr -> timestamp_sec = clock_gettime(CLOCK_MONOTONIC, &t);
-    hdr -> timestamp_nsec = clock_gettime(CLOCK_MONOTONIC, &t);
+    hdr -> timestamp_sec = ntohl(hdr -> timestamp_sec);//clock_gettime(CLOCK_REALTIME, &t);
+    hdr -> timestamp_nsec = ntohl(hdr -> timestamp_nsec);//clock_gettime(CLOCK_REALTIME, &t);
 
+    debug("Contents of hdr: %x %x %x %x %x", hdr -> type, hdr -> payload_length, hdr -> msgid, hdr -> timestamp_sec, hdr -> timestamp_nsec);
     debug("header converted");
 
     if (hdr -> payload_length > 0) {
-        int nest_read_return = read(fd, payload, hdr -> payload_length);
+        void *p = calloc(1, hdr -> payload_length);
+        *payload = p;
+        int nest_read_return = read(fd, *payload, hdr -> payload_length);
         debug("Payload read returns: %d", nest_read_return);
-        if (nest_read_return < 0) {
-            return -1;
-        }
-        else if (nest_read_return == 0) {
-            //break;
+        uint32_t p_length_remaining = hdr -> payload_length;
+        while (nest_read_return) {
+            debug("Payload read returns: %d", nest_read_return);
+            if (nest_read_return < 0) {
+                return -1;
+            }
+            p_length_remaining -= nest_read_return;
+            nest_read_return = read(fd, *payload, p_length_remaining);
         }
     }
     debug("packet received");
