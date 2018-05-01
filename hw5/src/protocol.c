@@ -59,7 +59,9 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     }
 
     if (hdr -> payload_length > 0) {
-        payload = calloc(1, hdr -> payload_length);
+        //debug("payload before calloc: %s", (char *)payload);
+        //payload = calloc(1, hdr -> payload_length);
+        //debug("payload after calloc: %s", (char *)payload);
         //uint32_t pay_len = hdr -> payload_length;
         // The line below causes an infinite loop
         int nest_write_return = write(fd, payload, pay_len);
