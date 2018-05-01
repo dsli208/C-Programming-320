@@ -27,11 +27,13 @@
  * On error, -1 is returned and errno is set.
  */
 int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
+    //hdr = malloc(sizeof(bvd_packet_header));
     struct timespec t;
     (void)t;
     debug("Starting write");
 
     debug("Contents of hdr: %x %x %x %x %x", hdr -> type, hdr -> payload_length, hdr -> msgid, hdr -> timestamp_sec, hdr -> timestamp_nsec);
+    uint32_t pay_len = hdr -> payload_length;
     //hdr -> type = (uint8_t)htonl(hdr -> type);
     hdr -> payload_length = htonl(hdr -> payload_length);
     hdr -> msgid = htonl(hdr -> msgid);
@@ -39,6 +41,7 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     hdr -> timestamp_nsec = htonl(hdr -> timestamp_nsec);//clock_gettime(CLOCK_MONOTONIC, &t);
     debug("Contents of hdr: %x %x %x %x %x", hdr -> type, hdr -> payload_length, hdr -> msgid, hdr -> timestamp_sec, hdr -> timestamp_nsec);
 
+    // Writing to header????
     int write_return = write(fd, hdr, sizeof(*hdr));
     debug("Write returns: %d", write_return);
 
@@ -56,7 +59,9 @@ int proto_send_packet(int fd, bvd_packet_header *hdr, void *payload) {
     }
 
     if (hdr -> payload_length > 0) {
-        uint32_t pay_len = hdr -> payload_length;
+        payload = calloc(1, hdr -> payload_length);
+        //uint32_t pay_len = hdr -> payload_length;
+        // The line below causes an infinite loop
         int nest_write_return = write(fd, payload, pay_len);
         while (nest_write_return) {
             debug("Nest write returns: %d", nest_write_return);
