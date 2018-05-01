@@ -33,6 +33,9 @@ struct thread_counter {
 
 THREAD_COUNTER *tcnt_init() {
     debug("Starting thread counter.");
+    sem_t mutex;
+    sem_init(&mutex, 0, 1);
+    sem_wait(&mutex);
 
     THREAD_COUNTER *tc = malloc(sizeof(thread_counter));
     tc -> num_threads = 0;
@@ -40,6 +43,8 @@ THREAD_COUNTER *tcnt_init() {
     if (tc != NULL) {
         debug("Thread counter successfully started");
     }
+    sem_post(&mutex);
+
     return tc;
 }
 
@@ -47,22 +52,38 @@ THREAD_COUNTER *tcnt_init() {
  * Finalize a thread counter.
  */
 void tcnt_fini(THREAD_COUNTER *tc) {
+    sem_t mutex;
+    sem_init(&mutex, 0, 1);
+    sem_wait(&mutex);
+
     if (tc != NULL) {
         free(tc);
         tc = NULL;
         debug("Thread counter finished and freed.");
     }
+
+    sem_post(&mutex);
+
 }
 
 /*
  * Increment a thread counter.
  */
 void tcnt_incr(THREAD_COUNTER *tc) {
+    sem_t mutex;
+    sem_init(&mutex, 0, 1);
+    sem_wait(&mutex);
+
     debug("Incrementing from %d to %d", tc -> num_threads, tc -> num_threads + 1);
+
     if (tc != NULL) {
         tc -> num_threads += 1;
     }
+
     debug("Threads is now %d", tc -> num_threads);
+
+    sem_post(&mutex);
+
 }
 
 /*
@@ -70,6 +91,11 @@ void tcnt_incr(THREAD_COUNTER *tc) {
  * if the thread count has dropped to zero.
  */
 void tcnt_decr(THREAD_COUNTER *tc) {
+
+    sem_t mutex;
+    sem_init(&mutex, 0, 1);
+    sem_wait(&mutex);
+
     if (tc != NULL) {
         if (tc -> num_threads - 1 <= 0) {
             // FILL IN THIS
@@ -80,6 +106,9 @@ void tcnt_decr(THREAD_COUNTER *tc) {
             debug("Threads is now %d", tc -> num_threads);
         }
     }
+
+    sem_post(&mutex);
+
 }
 
 /*
