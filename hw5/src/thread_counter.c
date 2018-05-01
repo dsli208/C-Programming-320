@@ -118,7 +118,7 @@ void tcnt_decr(THREAD_COUNTER *tc) {
  */
 void tcnt_wait_for_zero(THREAD_COUNTER *tc) {
     sem_t mutex;
-    sem_init(&mutex, 0, 1);
+    sem_init(&mutex, 0, 0);
     sem_wait(&mutex);
-    sem_post(&mutex);
+    return;
 }

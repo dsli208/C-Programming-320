@@ -12,11 +12,64 @@
 #include "protocol.h"
 #include "thread_counter.h"
 
+// Directory data structure - doubly linked list
+typedef struct directory_info_block {
+    char *handle;
+    int sockfd;
+    MAILBOX *mailbox;
+} directory_info_block;
+
+typedef struct directory_node {
+    struct directory_info_block *info;
+    struct directory_node *next;
+    struct directory_node *prev;
+} directory_node;
+
+// Head and tail of the linked list
+directory_node *directory_head;
+directory_node *directory_tail;
+
+// Empty directory?
+int empty_directory() {
+    if (directory_head == NULL) {
+        return 0;
+    }
+    return 1;
+}
+
+// Insert a new node
+void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
+    directory_info_block *info = malloc(sizeof(directory_info_block));
+
+    if (directory_head == NULL) { // First node in the list
+        info -> handle = handle;
+        info -> sockfd = sockfd;
+        info -> mailbox = mailbox;
+        //directory_node *new_node = malloc(sizeof(directory_node));
+        directory_head -> info = info;
+    }
+    else { // Malloc a new one
+        // Setting the new node in the linked list
+        directory_node *new_node = (directory_node*)(malloc(sizeof(directory_node)));
+        directory_tail -> next = new_node;
+        new_node -> prev = directory_tail;
+        directory_tail = new_node;
+
+        // Set the new node details
+        info -> handle = handle;
+        info -> sockfd = sockfd;
+        info -> mailbox = mailbox;
+
+        // Set the new node itself
+        directory_tail -> info = info;
+    }
+}
+
 /*
  * Initialize the directory.
  */
 void dir_init(void) {
-
+    directory_tail = directory_head = malloc(sizeof(directory_node));
 }
 
 /*
@@ -48,10 +101,13 @@ void dir_fini(void) {
  * Returns NULL if handle was already registered or if the directory is defunct.
  */
 MAILBOX *dir_register(char *handle, int sockfd) {
-    mb_init(handle);
+    // Insert a new node for the new handle in the directory
+    MAILBOX *new_mailbox = mb_init(handle);
 
-    // FINISH
-    return NULL;
+    insert_new_node(handle, sockfd, new_mailbox);
+
+    // FINISHED???
+    return new_mailbox;
 }
 
 
@@ -72,6 +128,11 @@ void dir_unregister(char *handle) {
  * to decrease the reference count when the pointer is ultimately discarded.
  */
 MAILBOX *dir_lookup(char *handle) {
+    // Iterate through the linked list until we reach the tail
+
+    // For each node, look at the handle
+
+    // If the handle matches, return the MAILBOX* in the struct
     return NULL;
 }
 
