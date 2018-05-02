@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     }
 
     fprintf(stderr, "You have to finish implementing main() "
-	    "before the Bavarde server will function.\n");
+        "before the Bavarde server will function.\n");
 
     terminate();
 }
