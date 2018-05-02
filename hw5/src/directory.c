@@ -5,12 +5,15 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <string.h>
 
 #include "debug.h"
 #include "server.h"
 #include "directory.h"
 #include "protocol.h"
 #include "thread_counter.h"
+
+// FINISH THIS, ELSE THIS WILL CAUSE PROBLEMS WHEN RUNNING THE SERVER
 
 // Directory data structure - doubly linked list
 typedef struct directory_info_block {
@@ -129,10 +132,23 @@ void dir_unregister(char *handle) {
  */
 MAILBOX *dir_lookup(char *handle) {
     // Iterate through the linked list until we reach the tail
+    directory_node *cursor = directory_head;
 
-    // For each node, look at the handle
+    while (cursor != NULL) {
+        // For each node, look at the handle
+        directory_info_block *info = cursor -> info;
+
+        // If we get a match, return the mailbox from that block
+        if (strcmp(info -> handle, handle) == 0) {
+            return info -> mailbox;
+        }
+
+        // Otherwise, move into the next node
+        cursor = cursor -> next;
+    }
 
     // If the handle matches, return the MAILBOX* in the struct
+    // Else, return NULL
     return NULL;
 }
 
@@ -143,5 +159,16 @@ MAILBOX *dir_lookup(char *handle) {
  * that it contains.
  */
 char **dir_all_handles(void) {
-    return NULL;
+    // FIX THIS
+    char **all_handles = malloc(sizeof(char**));
+    directory_node *cursor = directory_head;
+
+    while (cursor != NULL) {
+        // Copy each handle to char**
+        directory_info_block *info = cursor -> info;
+        *all_handles = strcpy(*all_handles, info -> handle);
+        all_handles++;
+        cursor = cursor -> next;
+    }
+    return all_handles;
 }

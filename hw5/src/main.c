@@ -102,13 +102,3 @@ void terminate(int sig) {
     dir_fini();
     exit(EXIT_SUCCESS);
 }
-
-/* Thread routine */
-/*vofd *thread(void vargp) {
-    int connfd = *((int*)vargv);
-    Pthread_detach(pthread_self());
-    Free (vargp);
-    echo (confd);
-    Close(connfd);
-    return NULL;
-}*/
