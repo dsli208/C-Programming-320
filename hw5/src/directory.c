@@ -15,6 +15,7 @@
 
 // FINISH THIS, ELSE THIS WILL CAUSE PROBLEMS WHEN RUNNING THE SERVER
 
+int directory_size;
 // Directory data structure - doubly linked list
 typedef struct directory_info_block {
     char *handle;
@@ -43,9 +44,10 @@ int empty_directory() {
 // Insert a new node
 void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
     directory_info_block *info = malloc(sizeof(directory_info_block));
+    info -> handle = malloc(sizeof(char*));
 
-    if (directory_head == NULL) { // First node in the list
-        info -> handle = handle;
+    if (directory_head -> info == NULL) { // First node in the list
+        strcpy(info-> handle, handle);
         info -> sockfd = sockfd;
         info -> mailbox = mailbox;
         //directory_node *new_node = malloc(sizeof(directory_node));
@@ -59,7 +61,7 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
         directory_tail = new_node;
 
         // Set the new node details
-        info -> handle = handle;
+        strcpy(info -> handle, handle);
         info -> sockfd = sockfd;
         info -> mailbox = mailbox;
 
@@ -73,6 +75,7 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
  */
 void dir_init(void) {
     directory_tail = directory_head = malloc(sizeof(directory_node));
+    directory_size = 0;
 }
 
 /*
@@ -108,6 +111,8 @@ MAILBOX *dir_register(char *handle, int sockfd) {
     MAILBOX *new_mailbox = mb_init(handle);
 
     insert_new_node(handle, sockfd, new_mailbox);
+
+    directory_size++;
 
     // FINISHED???
     return new_mailbox;
@@ -160,14 +165,20 @@ MAILBOX *dir_lookup(char *handle) {
  */
 char **dir_all_handles(void) {
     // FIX THIS
-    char **all_handles = malloc(sizeof(char**));
+    char **all_handles = (char**)calloc(directory_size, sizeof(char*));
+    char **all_handles_p = all_handles;
     directory_node *cursor = directory_head;
 
     while (cursor != NULL) {
         // Copy each handle to char**
         directory_info_block *info = cursor -> info;
-        *all_handles = strcpy(*all_handles, info -> handle);
-        all_handles++;
+        *all_handles_p = malloc((strlen(info->handle) + 1) * sizeof(char));
+        strcpy(*all_handles_p, info -> handle);
+        // Null terminate the string
+        char *null_modify = ((*all_handles_p) + strlen(info->handle));
+        *null_modify = '\0';
+
+        all_handles_p++;
         cursor = cursor -> next;
     }
     return all_handles;

@@ -13,6 +13,7 @@
 #include "protocol.h"
 #include "thread_counter.h"
 
+sem_t mutex;
 /*
  * A thread counter keeps a count of the number of threads that are
  * currently running.  Each time a thread starts, it increments the
@@ -26,14 +27,12 @@
  * thread count to drop to zero before exiting the program.
  */
 
-
 struct thread_counter {
     int num_threads;
 };
 
 THREAD_COUNTER *tcnt_init() {
     debug("Starting thread counter.");
-    sem_t mutex;
     sem_init(&mutex, 0, 1);
     sem_wait(&mutex);
 
@@ -43,7 +42,6 @@ THREAD_COUNTER *tcnt_init() {
     if (tc != NULL) {
         debug("Thread counter successfully started");
     }
-    sem_post(&mutex);
 
     return tc;
 }
@@ -51,9 +49,7 @@ THREAD_COUNTER *tcnt_init() {
 /*
  * Finalize a thread counter.
  */
-void tcnt_fini(THREAD_COUNTER *tc) {
-    sem_t mutex;
-    sem_init(&mutex, 0, 1);
+void tcnt_fini(THREAD_COUNTER *tc) {\
     sem_wait(&mutex);
 
     if (tc != NULL) {
@@ -63,15 +59,13 @@ void tcnt_fini(THREAD_COUNTER *tc) {
     }
 
     sem_post(&mutex);
-
 }
 
 /*
  * Increment a thread counter.
  */
 void tcnt_incr(THREAD_COUNTER *tc) {
-    sem_t mutex;
-    sem_init(&mutex, 0, 1);
+
     sem_wait(&mutex);
 
     debug("Incrementing from %d to %d", tc -> num_threads, tc -> num_threads + 1);
@@ -92,13 +86,10 @@ void tcnt_incr(THREAD_COUNTER *tc) {
  */
 void tcnt_decr(THREAD_COUNTER *tc) {
 
-    sem_t mutex;
-    sem_init(&mutex, 0, 1);
-    sem_wait(&mutex);
 
     if (tc != NULL) {
         if (tc -> num_threads - 1 <= 0) {
-            // FILL IN THIS
+            sem_post(&mutex);
         }
         else {
             debug("Decrementing from %d to %d", tc -> num_threads, tc -> num_threads - 1);
@@ -106,8 +97,6 @@ void tcnt_decr(THREAD_COUNTER *tc) {
             debug("Threads is now %d", tc -> num_threads);
         }
     }
-
-    sem_post(&mutex);
 
 }
 
