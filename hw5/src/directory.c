@@ -38,10 +38,10 @@ directory_node *directory_tail;
 
 // Empty directory?
 int empty_directory() {
-    if (directory_head == NULL) {
-        return 0;
+    if (!directory_size) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 void remove_node(directory_node *node) {
@@ -170,30 +170,6 @@ void dir_fini(void) {
 }
 
 
-/*
- * Register a handle in the directory.
- *   handle - the handle to register
- *   sockfd - file descriptor of client socket
- *
- * Returns a new mailbox, if handle was not previously registered.
- * Returns NULL if handle was already registered or if the directory is defunct.
- */
-
-MAILBOX *dir_register(char *handle, int sockfd) {
-    sem_wait(&mutex);
-    // Insert a new node for the new handle in the directory
-    MAILBOX *new_mailbox = mb_init(handle);
-
-    insert_new_node(handle, sockfd, new_mailbox);
-
-    directory_size++;
-
-    // FINISHED???
-    mb_ref(new_mailbox);
-    sem_post(&mutex);
-    return new_mailbox;
-}
-
 // Helper for dir_unregister
 directory_node *dir_unregister_lookup(char *handle) {
 
@@ -260,9 +236,15 @@ MAILBOX *dir_lookup(char *handle) {
         // For each node, look at the handle
         directory_info_block *info = cursor -> info;
 
+        if (info == NULL) {
+            break;
+        }
+
         // If we get a match, return the mailbox from that block
         if (strcmp(info -> handle, handle) == 0) {
+            debug("Mailbox %s found", info -> handle);
             mb_ref(info -> mailbox);
+            sem_post(&mutex);
             return info -> mailbox;
         }
 
@@ -274,6 +256,34 @@ MAILBOX *dir_lookup(char *handle) {
     // If the handle matches, return the MAILBOX* in the struct
     // Else, return NULL
     return NULL;
+}
+
+/*
+ * Register a handle in the directory.
+ *   handle - the handle to register
+ *   sockfd - file descriptor of client socket
+ *
+ * Returns a new mailbox, if handle was not previously registered.
+ * Returns NULL if handle was already registered or if the directory is defunct.
+ */
+
+MAILBOX *dir_register(char *handle, int sockfd) {
+    if (!empty_directory() && dir_lookup(handle) != NULL) {
+        debug("Handle already exists");
+        return NULL;
+    }
+    sem_wait(&mutex);
+    // Insert a new node for the new handle in the directory
+    MAILBOX *new_mailbox = mb_init(handle);
+
+    insert_new_node(handle, sockfd, new_mailbox);
+
+    directory_size++;
+
+    // FINISHED???
+    mb_ref(new_mailbox);
+    sem_post(&mutex);
+    return new_mailbox;
 }
 
 /*
