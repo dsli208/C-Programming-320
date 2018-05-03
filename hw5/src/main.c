@@ -22,7 +22,10 @@ char *optarg;
 
 int main(int argc, char* argv[]) {
     // First, install the sigaction() handler for SIGHUP
-    sigaction(SIGHUP, NULL, NULL);
+    struct sigaction new_action;
+    new_action.sa_handler = terminate;
+
+    sigaction(SIGHUP, &new_action, NULL);
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
     char option;

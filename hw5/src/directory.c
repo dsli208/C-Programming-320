@@ -14,6 +14,7 @@
 #include "thread_counter.h"
 
 // FINISH THIS, ELSE THIS WILL CAUSE PROBLEMS WHEN RUNNING THE SERVER
+volatile int shutdown_flag;
 
 int directory_size;
 // Directory data structure - doubly linked list
@@ -46,13 +47,16 @@ void remove_node(directory_node *node) {
     directory_node *prev = node -> prev;
     directory_node *next = node -> next;
 
-    prev -> next = node -> next;
-    next -> prev = node -> prev;
+    if (prev != NULL)
+        prev -> next = node -> next;
+
+    if (next != NULL)
+        next -> prev = node -> prev;
 
     // Free everything in memory associated with the node
     directory_info_block *info = node -> info;
     free(info -> handle);
-    free(info -> mailbox);
+    //free(info -> mailbox);
 
     free(info);
     free(node);
@@ -104,6 +108,7 @@ void dir_init(void) {
     directory_tail = directory_head = malloc(sizeof(directory_node));
     directory_head -> info = NULL;
     directory_size = 0;
+    shutdown_flag = 0;
 }
 
 /*
@@ -113,7 +118,20 @@ void dir_init(void) {
  */
 
 void dir_shutdown(void) {
+    directory_node *cursor = directory_head;
 
+    while (cursor != NULL) {
+        // For each node, look at the handle
+        directory_info_block *info = cursor -> info;
+
+        // Shutdown the fd
+        debug("Shutting down socket %d", info -> sockfd);
+        shutdown(info -> sockfd, SHUT_RDWR);
+
+        // Otherwise, move into the next node
+        cursor = cursor -> next;
+    }
+    debug("Directory successfully shutdown");
 }
 
 /*
@@ -123,7 +141,23 @@ void dir_shutdown(void) {
  * by a call to dir_shutdown().
  */
 void dir_fini(void) {
+    directory_node *cursor = directory_head;
 
+    while (cursor != NULL) {
+        // Free the components
+        directory_info_block *remove_info = cursor -> info;
+
+        mb_unref(remove_info -> mailbox);
+
+        directory_size--;
+
+        // Not NULL --> remove the node
+        remove_node(cursor);
+
+        // Otherwise, move into the next node
+        cursor = cursor -> next;
+    }
+    debug("Directory successfully shutdown");
 }
 
 
@@ -156,7 +190,7 @@ directory_node *dir_unregister_lookup(char *handle) {
         // For each node, look at the handle
         directory_info_block *info = cursor -> info;
 
-        // If we get a match, return the mailbox from that block
+        // If we get a match, return the node
         if (strcmp(info -> handle, handle) == 0) {
             return cursor;
         }
@@ -182,13 +216,15 @@ void dir_unregister(char *handle) {
     // Not NULL --> unregister mailbox
 
     directory_info_block *remove_info = node_to_remove -> info;
-
+    //shutdown(remove_info -> sockfd, SHUT_RDWR);
     mb_unref(remove_info -> mailbox);
 
     directory_size--;
 
     // Not NULL --> remove the node
     remove_node(node_to_remove);
+
+    debug("Directory successfully unregistered.");
 
 }
 
@@ -231,21 +267,33 @@ MAILBOX *dir_lookup(char *handle) {
 char **dir_all_handles(void) {
     // FIX THIS
     debug("Directory size is %d", directory_size);
-    char **all_handles = (char**)calloc(directory_size, sizeof(char*));
+    char **all_handles = (char**)calloc(directory_size + 1, sizeof(char*));
     char **all_handles_p = all_handles;
     directory_node *cursor = directory_head;
-
+    debug("Header listing started.");
     while (cursor != NULL) {
         // Copy each handle to char**
         directory_info_block *info = cursor -> info;
         *all_handles_p = malloc((strlen(info->handle) + 1) * sizeof(char));
+
+        debug("This handle is %s", info -> handle);
+
         strcpy(*all_handles_p, info -> handle);
+
+        debug("strcpy complete");
         // Null terminate the string
         char *null_modify = ((*all_handles_p) + strlen(info->handle));
         *null_modify = '\0';
 
         all_handles_p++;
+
+        if (cursor -> next != NULL) {
+            debug("Non-null next");
+        }
+
         cursor = cursor -> next;
     }
+
+    debug("List complete.");
     return all_handles;
 }

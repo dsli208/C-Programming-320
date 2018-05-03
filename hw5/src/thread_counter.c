@@ -30,6 +30,7 @@
 struct thread_counter {
     int num_threads;
     sem_t mutex;
+    sem_t wait_lock;
 };
 
 THREAD_COUNTER *tcnt_init() {
@@ -90,7 +91,7 @@ void tcnt_decr(THREAD_COUNTER *tc) {
 
     if (tc != NULL) {
         if (tc -> num_threads - 1 <= 0) {
-            sem_post(&(tc -> mutex));
+            sem_post(&(tc -> wait_lock));
         }
         else {
             debug("Decrementing from %d to %d", tc -> num_threads, tc -> num_threads - 1);
@@ -109,8 +110,7 @@ void tcnt_decr(THREAD_COUNTER *tc) {
  * function will return.
  */
 void tcnt_wait_for_zero(THREAD_COUNTER *tc) {
-    sem_t mutex;
-    sem_init(&mutex, 0, 0);
-    sem_wait(&mutex);
+    sem_init(&(tc -> wait_lock), 0, 0);
+    sem_wait(&(tc -> wait_lock));
     return;
 }
