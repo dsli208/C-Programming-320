@@ -91,6 +91,7 @@ void tcnt_decr(THREAD_COUNTER *tc) {
 
     if (tc != NULL) {
         if (tc -> num_threads - 1 <= 0) {
+            tc -> num_threads -= 1;
             sem_post(&(tc -> wait_lock));
         }
         else {

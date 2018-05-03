@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <time.h>
 #include <string.h>
+#include <semaphore.h>
 
 #include "debug.h"
 #include "server.h"
@@ -30,6 +31,7 @@ typedef struct directory_node {
     struct directory_node *prev;
 } directory_node;
 
+sem_t mutex;
 // Head and tail of the linked list
 directory_node *directory_head;
 directory_node *directory_tail;
@@ -64,6 +66,7 @@ void remove_node(directory_node *node) {
 
 // Insert a new node
 void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
+    //sem_wait(&mutex);
     directory_info_block *info = malloc(sizeof(directory_info_block));
     info -> handle = malloc(sizeof(char*));
 
@@ -99,6 +102,7 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
 
         debug("The current tail handle is %s", directory_tail -> info -> handle);
     }
+    //sem_post(&mutex);
 }
 
 /*
@@ -109,6 +113,7 @@ void dir_init(void) {
     directory_head -> info = NULL;
     directory_size = 0;
     shutdown_flag = 0;
+    sem_init(&mutex, 0, 1);
 }
 
 /*
@@ -118,6 +123,7 @@ void dir_init(void) {
  */
 
 void dir_shutdown(void) {
+    sem_wait(&mutex);
     directory_node *cursor = directory_head;
 
     while (cursor != NULL) {
@@ -132,6 +138,7 @@ void dir_shutdown(void) {
         cursor = cursor -> next;
     }
     debug("Directory successfully shutdown");
+    sem_post(&mutex);
 }
 
 /*
@@ -141,6 +148,7 @@ void dir_shutdown(void) {
  * by a call to dir_shutdown().
  */
 void dir_fini(void) {
+    sem_wait(&mutex);
     directory_node *cursor = directory_head;
 
     while (cursor != NULL) {
@@ -158,6 +166,7 @@ void dir_fini(void) {
         cursor = cursor -> next;
     }
     debug("Directory successfully shutdown");
+    sem_post(&mutex);
 }
 
 
@@ -171,6 +180,7 @@ void dir_fini(void) {
  */
 
 MAILBOX *dir_register(char *handle, int sockfd) {
+    sem_wait(&mutex);
     // Insert a new node for the new handle in the directory
     MAILBOX *new_mailbox = mb_init(handle);
 
@@ -179,11 +189,14 @@ MAILBOX *dir_register(char *handle, int sockfd) {
     directory_size++;
 
     // FINISHED???
+    mb_ref(new_mailbox);
+    sem_post(&mutex);
     return new_mailbox;
 }
 
 // Helper for dir_unregister
 directory_node *dir_unregister_lookup(char *handle) {
+
     directory_node *cursor = directory_head;
 
     while (cursor != NULL) {
@@ -206,6 +219,7 @@ directory_node *dir_unregister_lookup(char *handle) {
  * The associated mailbox is removed from the directory and shut down.
  */
 void dir_unregister(char *handle) {
+    sem_wait(&mutex);
     // Look for the handle
     directory_node *node_to_remove = dir_unregister_lookup(handle);
 
@@ -218,6 +232,7 @@ void dir_unregister(char *handle) {
     directory_info_block *remove_info = node_to_remove -> info;
     //shutdown(remove_info -> sockfd, SHUT_RDWR);
     mb_unref(remove_info -> mailbox);
+    mb_shutdown(remove_info -> mailbox);
 
     directory_size--;
 
@@ -225,7 +240,7 @@ void dir_unregister(char *handle) {
     remove_node(node_to_remove);
 
     debug("Directory successfully unregistered.");
-
+    sem_post(&mutex);
 }
 
 /*
@@ -238,6 +253,7 @@ void dir_unregister(char *handle) {
  */
 MAILBOX *dir_lookup(char *handle) {
     // Iterate through the linked list until we reach the tail
+    sem_wait(&mutex);
     directory_node *cursor = directory_head;
 
     while (cursor != NULL) {
@@ -246,12 +262,14 @@ MAILBOX *dir_lookup(char *handle) {
 
         // If we get a match, return the mailbox from that block
         if (strcmp(info -> handle, handle) == 0) {
+            mb_ref(info -> mailbox);
             return info -> mailbox;
         }
 
         // Otherwise, move into the next node
         cursor = cursor -> next;
     }
+    sem_post(&mutex);
 
     // If the handle matches, return the MAILBOX* in the struct
     // Else, return NULL
@@ -265,7 +283,7 @@ MAILBOX *dir_lookup(char *handle) {
  * that it contains.
  */
 char **dir_all_handles(void) {
-    // FIX THIS
+    sem_wait(&mutex);
     debug("Directory size is %d", directory_size);
     char **all_handles = (char**)calloc(directory_size + 1, sizeof(char*));
     char **all_handles_p = all_handles;
@@ -295,5 +313,6 @@ char **dir_all_handles(void) {
     }
 
     debug("List complete.");
+    sem_post(&mutex);
     return all_handles;
 }
