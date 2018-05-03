@@ -50,7 +50,7 @@ THREAD_COUNTER *tcnt_init() {
  * Finalize a thread counter.
  */
 // FINISH
-void tcnt_fini(THREAD_COUNTER *tc) {\
+void tcnt_fini(THREAD_COUNTER *tc) {
     sem_wait(&(tc -> mutex));
 
     if (tc != NULL) {
@@ -90,7 +90,7 @@ void tcnt_decr(THREAD_COUNTER *tc) {
 
     if (tc != NULL) {
         if (tc -> num_threads - 1 <= 0) {
-            //sem_post(&mutex);
+            sem_post(&(tc -> mutex));
         }
         else {
             debug("Decrementing from %d to %d", tc -> num_threads, tc -> num_threads - 1);

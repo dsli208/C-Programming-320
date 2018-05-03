@@ -41,6 +41,23 @@ int empty_directory() {
     return 1;
 }
 
+void remove_node(directory_node *node) {
+    // Rearrange the links
+    directory_node *prev = node -> prev;
+    directory_node *next = node -> next;
+
+    prev -> next = node -> next;
+    next -> prev = node -> prev;
+
+    // Free everything in memory associated with the node
+    directory_info_block *info = node -> info;
+    free(info -> handle);
+    free(info -> mailbox);
+
+    free(info);
+    free(node);
+}
+
 // Insert a new node
 void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
     directory_info_block *info = malloc(sizeof(directory_info_block));
@@ -52,12 +69,20 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
         info -> mailbox = mailbox;
         //directory_node *new_node = malloc(sizeof(directory_node));
         directory_head -> info = info;
+
+        directory_head -> next = NULL;
+        directory_head -> prev = NULL;
+        debug("The current head handle is %s", directory_head -> info -> handle);
+        debug("The current tail handle is %s", directory_tail -> info -> handle);
     }
     else { // Malloc a new one
         // Setting the new node in the linked list
         directory_node *new_node = (directory_node*)(malloc(sizeof(directory_node)));
+        debug("The current head handle is %s", directory_head -> info -> handle);
+        debug("The current tail handle is %s", directory_tail -> info -> handle);
         directory_tail -> next = new_node;
         new_node -> prev = directory_tail;
+        new_node -> next = NULL;
         directory_tail = new_node;
 
         // Set the new node details
@@ -67,6 +92,8 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
 
         // Set the new node itself
         directory_tail -> info = info;
+
+        debug("The current tail handle is %s", directory_tail -> info -> handle);
     }
 }
 
@@ -75,6 +102,7 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
  */
 void dir_init(void) {
     directory_tail = directory_head = malloc(sizeof(directory_node));
+    directory_head -> info = NULL;
     directory_size = 0;
 }
 
@@ -83,6 +111,7 @@ void dir_init(void) {
  * This marks the directory as "defunct" and shuts down all the client sockets,
  * which triggers the eventual termination of all the server threads.
  */
+
 void dir_shutdown(void) {
 
 }
@@ -106,6 +135,7 @@ void dir_fini(void) {
  * Returns a new mailbox, if handle was not previously registered.
  * Returns NULL if handle was already registered or if the directory is defunct.
  */
+
 MAILBOX *dir_register(char *handle, int sockfd) {
     // Insert a new node for the new handle in the directory
     MAILBOX *new_mailbox = mb_init(handle);
@@ -118,12 +148,47 @@ MAILBOX *dir_register(char *handle, int sockfd) {
     return new_mailbox;
 }
 
+// Helper for dir_unregister
+directory_node *dir_unregister_lookup(char *handle) {
+    directory_node *cursor = directory_head;
 
+    while (cursor != NULL) {
+        // For each node, look at the handle
+        directory_info_block *info = cursor -> info;
+
+        // If we get a match, return the mailbox from that block
+        if (strcmp(info -> handle, handle) == 0) {
+            return cursor;
+        }
+
+        // Otherwise, move into the next node
+        cursor = cursor -> next;
+    }
+
+    return NULL;
+}
 /*
  * Unregister a handle in the directory.
  * The associated mailbox is removed from the directory and shut down.
  */
 void dir_unregister(char *handle) {
+    // Look for the handle
+    directory_node *node_to_remove = dir_unregister_lookup(handle);
+
+    if (node_to_remove == NULL) {
+        return;
+    }
+
+    // Not NULL --> unregister mailbox
+
+    directory_info_block *remove_info = node_to_remove -> info;
+
+    mb_unref(remove_info -> mailbox);
+
+    directory_size--;
+
+    // Not NULL --> remove the node
+    remove_node(node_to_remove);
 
 }
 
@@ -165,6 +230,7 @@ MAILBOX *dir_lookup(char *handle) {
  */
 char **dir_all_handles(void) {
     // FIX THIS
+    debug("Directory size is %d", directory_size);
     char **all_handles = (char**)calloc(directory_size, sizeof(char*));
     char **all_handles_p = all_handles;
     directory_node *cursor = directory_head;
