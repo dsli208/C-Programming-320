@@ -81,9 +81,9 @@ void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
  * that exist to the mailbox.
  */
 void mb_ref(MAILBOX *mb) {
-    sem_wait(&(new_mailbox -> mutex));
+    sem_wait(&(mb -> mutex));
     mb -> reference_count += 1;
-    sem_post(&(new_mailbox -> mutex));
+    sem_post(&(mb -> mutex));
 }
 
 /*
@@ -94,13 +94,13 @@ void mb_ref(MAILBOX *mb) {
  * the mailbox will be finalized.
  */
 void mb_unref(MAILBOX *mb) {
-    sem_wait(&(new_mailbox -> mutex));
+    sem_wait(&(mb -> mutex));
     mb -> reference_count -= 1;
 
     if (mb -> reference_count <= 0) {
         // mailbox finalized
     }
-    sem_post(&(new_mailbox -> mutex));
+    sem_post(&(mb -> mutex));
 }
 
 /*
@@ -119,9 +119,9 @@ void mb_shutdown(MAILBOX *mb) {
  * Get the handle associated with a mailbox.
  */
 char *mb_get_handle(MAILBOX *mb) {
-    sem_wait(&(new_mailbox -> mutex));
+    sem_wait(&(mb -> mutex));
     char *handle = mb -> handle;
-    sem_post(&(new_mailbox -> mutex));
+    sem_post(&(mb -> mutex));
     return handle;
 }
 
@@ -143,7 +143,7 @@ char *mb_get_handle(MAILBOX *mb) {
  * caller must discard this pointer which it no longer "owns".
  */
 void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int length) {
-    sem_wait(&(new_mailbox -> mutex));
+    sem_wait(&(mb -> mutex));
     MAILBOX_ENTRY *new_entry = malloc(sizeof(MAILBOX_ENTRY));
     new_entry -> type = MESSAGE_ENTRY_TYPE;
 
@@ -161,7 +161,7 @@ void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int lengt
 
     // Add it to the entries queue
     add_mb_entry(mb, new_entry);
-    sem_post(&(new_mailbox -> mutex));
+    sem_post(&(mb -> mutex));
 }
 
 /*
@@ -177,7 +177,7 @@ void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int lengt
  * this notice from the mailbox.
  */
 void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int length) {
-    sem_wait(&(new_mailbox -> mutex));
+    sem_wait(&(mb -> mutex));
     MAILBOX_ENTRY *new_entry = malloc(sizeof(MAILBOX_ENTRY));
     new_entry -> type = NOTICE_ENTRY_TYPE;
 
@@ -195,7 +195,7 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
 
     // Add it to the entries queue
     add_mb_entry(mb, new_entry);
-    sem_post(&(new_mailbox -> mutex));
+    sem_post(&(mb -> mutex));
 }
 
 /*
@@ -210,20 +210,20 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
  * that service should be terminated.
  */
 MAILBOX_ENTRY *mb_next_entry(MAILBOX *mb) {
-    sem_wait(&(new_mailbox -> mutex));
+    sem_wait(&(mb -> mutex));
     if (mb -> head == NULL) {
         return NULL;
     }
     else if (mb -> head == mb -> tail) {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
         mb -> head = mb -> tail = NULL;
-        sem_post(&(new_mailbox -> mutex));
+        sem_post(&(mb -> mutex));
         return mb_entry_block -> entry;
     }
     else {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
         mb -> head = (mb -> head) -> next;
-        sem_post(&(new_mailbox -> mutex));
+        sem_post(&(mb -> mutex));
         return mb_entry_block -> entry;
     }
 }
