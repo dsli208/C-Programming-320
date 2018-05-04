@@ -15,8 +15,8 @@
 
 typedef struct mailbox_entry_block {
     MAILBOX_ENTRY *entry;
-    struct ENTRY_BLOCK *next;
-    struct ENTRY_BLOCK *prev;
+    struct mailbox_entry_block *next;
+    struct mailbox_entry_block *prev;
 } ENTRY_BLOCK;
 
 typedef struct mailbox {
@@ -45,7 +45,7 @@ void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
         new_block -> next = NULL;
         new_block -> prev = mb -> tail;
 
-        mb -> tail -> next = new_block;
+        (mb -> tail) -> next = new_block;
         mb -> tail = new_block;
     }
 }
@@ -67,7 +67,7 @@ MAILBOX *mb_init(char *handle) {
 /*
  * Set the discard hook for a mailbox.
  */
-void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *) {
+void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
 
 }
 
@@ -206,7 +206,7 @@ MAILBOX_ENTRY *mb_next_entry(MAILBOX *mb) {
     }
     else {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
-        mb -> head = mb -> head -> next;
+        mb -> head = (mb -> head) -> next;
         return mb_entry_block -> entry;
     }
 }
