@@ -68,6 +68,7 @@ void discard_hook(MAILBOX_ENTRY *entry) {
 
 // Mailbox helper functions
 void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
+    debug("Adding new entry");
     if (mb -> head == NULL && mb -> tail == NULL) { // Empty list, consider changing && to ||?
         // Construct first node
         mb -> head = malloc(sizeof(ENTRY_BLOCK));
@@ -85,6 +86,7 @@ void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
         (mb -> tail) -> next = new_block;
         mb -> tail = new_block;
     }
+    debug("Entry added");
 }
 
 /*
@@ -106,9 +108,11 @@ MAILBOX *mb_init(char *handle) {
  * Set the discard hook for a mailbox.
  */
 void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
+    debug("Setting discard hook");
     sem_wait(&(mb -> mutex));
     mb -> hook = hook;
     sem_post(&(mb -> mutex));
+    debug("Discard hook set");
 }
 
 /*
@@ -118,9 +122,11 @@ void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
  * that exist to the mailbox.
  */
 void mb_ref(MAILBOX *mb) {
+    debug("Referencing");
     sem_wait(&(mb -> mutex));
     mb -> reference_count += 1;
     sem_post(&(mb -> mutex));
+    debug("Referenced");
 }
 
 /*
@@ -131,13 +137,17 @@ void mb_ref(MAILBOX *mb) {
  * the mailbox will be finalized.
  */
 void mb_unref(MAILBOX *mb) {
+    debug("Unreferencing");
     sem_wait(&(mb -> mutex));
     mb -> reference_count -= 1;
 
     if (mb -> reference_count <= 0) {
+        sem_post(&(mb -> mutex));
+        //mb_shutdown(mb);
         // mailbox finalized
     }
     sem_post(&(mb -> mutex));
+    debug("Unreferenced");
 }
 
 /*
@@ -154,6 +164,7 @@ void mb_shutdown(MAILBOX *mb) {
     defunct_flag = 1;
     // Discard all entries
     ENTRY_BLOCK *entry_block = mb -> head;
+    //discard_hook(entry_block -> entry);
     while (entry_block != NULL) {
         discard_hook(entry_block -> entry);
         //free(entry_block -> entry -> body);
@@ -173,9 +184,9 @@ void mb_shutdown(MAILBOX *mb) {
  * Get the handle associated with a mailbox.
  */
 char *mb_get_handle(MAILBOX *mb) {
-    sem_wait(&(mb -> mutex));
+    //sem_wait(&(mb -> mutex));
     char *handle = mb -> handle;
-    sem_post(&(mb -> mutex));
+    //sem_post(&(mb -> mutex));
     return handle;
 }
 
@@ -197,7 +208,8 @@ char *mb_get_handle(MAILBOX *mb) {
  * caller must discard this pointer which it no longer "owns".
  */
 void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int length) {
-    sem_wait(&(mb -> mutex));
+    debug("Adding message");
+    //sem_wait(&(mb -> mutex));
     MAILBOX_ENTRY *new_entry = malloc(sizeof(MAILBOX_ENTRY));
     new_entry -> type = MESSAGE_ENTRY_TYPE;
 
@@ -215,7 +227,8 @@ void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int lengt
 
     // Add it to the entries queue
     add_mb_entry(mb, new_entry);
-    sem_post(&(mb -> mutex));
+    //sem_post(&(mb -> mutex));
+    debug("Message added");
 }
 
 /*
@@ -231,7 +244,8 @@ void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int lengt
  * this notice from the mailbox.
  */
 void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int length) {
-    sem_wait(&(mb -> mutex));
+    debug("Adding notice.");
+    //sem_wait(&(mb -> mutex));
     MAILBOX_ENTRY *new_entry = malloc(sizeof(MAILBOX_ENTRY));
     new_entry -> type = NOTICE_ENTRY_TYPE;
 
@@ -249,7 +263,8 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
 
     // Add it to the entries queue
     add_mb_entry(mb, new_entry);
-    sem_post(&(mb -> mutex));
+    //sem_post(&(mb -> mutex));
+    debug ("Notice added");
 }
 
 /*
@@ -264,20 +279,25 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
  * that service should be terminated.
  */
 MAILBOX_ENTRY *mb_next_entry(MAILBOX *mb) {
+    debug("Retrieving next entry");
     sem_wait(&(mb -> mutex));
-    if (!defunct_flag && mb -> head == NULL) {
+    if (defunct_flag && mb -> head == NULL) {
+        sem_post(&(mb -> mutex));
+        debug("next entry retrieved");
         return NULL;
     }
     else if (mb -> head == mb -> tail) {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
         mb -> head = mb -> tail = NULL;
         sem_post(&(mb -> mutex));
+        debug("next entry retrieved");
         return mb_entry_block -> entry;
     }
     else {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
         mb -> head = (mb -> head) -> next;
         sem_post(&(mb -> mutex));
+        debug("next entry retrieved");
         return mb_entry_block -> entry;
     }
 }
