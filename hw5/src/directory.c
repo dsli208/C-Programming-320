@@ -316,6 +316,7 @@ char **dir_all_handles(void) {
     char **all_handles_p = all_handles;
     directory_node *cursor = directory_head;
     debug("Header listing started.");
+    int i = 0;
     while (cursor != NULL) {
         // Copy each handle to char**
         directory_info_block *info = cursor -> info;
@@ -331,6 +332,7 @@ char **dir_all_handles(void) {
         *null_modify = '\0';
 
         all_handles_p++;
+        i++;
 
         if (cursor -> next != NULL) {
             debug("Non-null next");
@@ -339,7 +341,7 @@ char **dir_all_handles(void) {
         cursor = cursor -> next;
     }
 
-    debug("List complete.");
+    debug("List complete. i is %d", i);
     sem_post(&mutex);
     return all_handles;
 }

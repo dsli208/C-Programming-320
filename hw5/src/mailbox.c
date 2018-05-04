@@ -13,6 +13,10 @@
 #include "directory.h"
 #include "protocol.h"
 
+volatile int defunct_flag;
+
+
+
 typedef struct mailbox_entry_block {
     MAILBOX_ENTRY *entry;
     struct mailbox_entry_block *next;
@@ -29,7 +33,38 @@ typedef struct mailbox {
     // Entry queue
     ENTRY_BLOCK *head;
     ENTRY_BLOCK *tail;
+    // Hook
+    MAILBOX_DISCARD_HOOK *hook;
 } MAILBOX;
+
+/*
+ * A mailbox provides the ability for its client to set a hook to be
+ * called when an undelivered entry in the mailbox is discarded on
+ * mailbox finalization.  For example, the hook might arrange for the
+ * sender of an undelivered message to receive a bounce notification.
+ * The discard hook is not responsible for actually deallocating the
+ * mailbox entry; that is handled by the mailbox finalization procedure.
+ * There is one special case that the discard hook must handle, and that
+ * is the case that the "from" field of a message is NULL.  This will only
+ * occur in a mailbox entry passed to discard hook, and it indicates that
+ * the sender of the message was in fact the mailbox that is now being
+ * finalized.  Since that mailbox can no longer be used, it does not make
+ * sense to do anything further with it (and in fact trying to do so would
+ * result in a deadlock because the mailbox is locked), so it has been
+ * replaced by NULL.
+ *
+ * The following is the type of discard hook function.
+ */
+//typedef void (MAILBOX_DISCARD_HOOK)(MAILBOX_ENTRY *);
+void discard_hook(MAILBOX_ENTRY *entry) {
+    if (entry -> type == MESSAGE_ENTRY_TYPE) {
+        MESSAGE message = entry -> content.message;
+        MAILBOX *bounce_mb = message.from;
+        mb_add_notice(bounce_mb, BOUNCE_NOTICE_TYPE, message.msgid, entry -> body, entry -> length);
+        mb_unref(bounce_mb); // Correct???
+    }
+}
+
 
 // Mailbox helper functions
 void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
@@ -71,7 +106,9 @@ MAILBOX *mb_init(char *handle) {
  * Set the discard hook for a mailbox.
  */
 void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
-
+    sem_wait(&(mb -> mutex));
+    mb -> hook = hook;
+    sem_post(&(mb -> mutex));
 }
 
 /*
@@ -112,7 +149,24 @@ void mb_unref(MAILBOX *mb) {
  * entries that remain in it will be discarded.
  */
 void mb_shutdown(MAILBOX *mb) {
+    //sem_wait(&(mb -> mutex));
+    // Mark as defunct
+    defunct_flag = 1;
+    // Discard all entries
+    ENTRY_BLOCK *entry_block = mb -> head;
+    while (entry_block != NULL) {
+        discard_hook(entry_block -> entry);
+        //free(entry_block -> entry -> body);
+        //free(entry_block -> entry);
+        ENTRY_BLOCK *next_entry_block = entry_block -> next;
+        //free(entry_block);
+        entry_block = next_entry_block;
+    }
 
+    // Free handle and hook (CHANGE IF THE HOOK HAS OTHER POINTERS IN IT)
+    //free(mb -> handle);
+    //free(mb -> hook);
+    //sem_post(&(mb -> mutex));
 }
 
 /*
@@ -211,7 +265,7 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
  */
 MAILBOX_ENTRY *mb_next_entry(MAILBOX *mb) {
     sem_wait(&(mb -> mutex));
-    if (mb -> head == NULL) {
+    if (!defunct_flag && mb -> head == NULL) {
         return NULL;
     }
     else if (mb -> head == mb -> tail) {
