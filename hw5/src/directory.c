@@ -14,7 +14,6 @@
 #include "protocol.h"
 #include "thread_counter.h"
 
-// FINISH THIS, ELSE THIS WILL CAUSE PROBLEMS WHEN RUNNING THE SERVER
 volatile int shutdown_flag;
 
 int directory_size;
@@ -30,6 +29,7 @@ typedef struct directory_node {
     struct directory_node *next;
     struct directory_node *prev;
 } directory_node;
+
 
 sem_t mutex;
 // Head and tail of the linked list
@@ -54,6 +54,19 @@ void remove_node(directory_node *node) {
 
     if (next != NULL)
         next -> prev = node -> prev;
+
+    if (node == directory_head) {
+        if (directory_head == directory_tail || directory_head -> next == NULL) {
+            directory_head = directory_tail = NULL;
+        }
+        else {
+            directory_head = directory_head -> next;
+        }
+    }
+    else if (node == directory_tail) {
+        directory_tail = directory_tail -> prev;
+    }
+
 
     // Free everything in memory associated with the node
     directory_info_block *info = node -> info;
@@ -109,6 +122,7 @@ void insert_new_node(char *handle, int sockfd, MAILBOX *mailbox) {
  * Initialize the directory.
  */
 void dir_init(void) {
+
     directory_tail = directory_head = malloc(sizeof(directory_node));
     directory_head -> info = NULL;
     directory_size = 0;
@@ -148,25 +162,27 @@ void dir_shutdown(void) {
  * by a call to dir_shutdown().
  */
 void dir_fini(void) {
-    sem_wait(&mutex);
-    directory_node *cursor = directory_head;
+    if (shutdown_flag) {
+        sem_wait(&mutex);
+        directory_node *cursor = directory_head;
 
-    while (cursor != NULL) {
-        // Free the components
-        directory_info_block *remove_info = cursor -> info;
+        while (cursor != NULL) {
+            // Free the components
+            directory_info_block *remove_info = cursor -> info;
 
-        mb_unref(remove_info -> mailbox);
+            mb_unref(remove_info -> mailbox);
 
-        directory_size--;
+            directory_size--;
 
-        // Not NULL --> remove the node
-        remove_node(cursor);
+            // Not NULL --> remove the node
+            remove_node(cursor);
 
-        // Otherwise, move into the next node
-        cursor = cursor -> next;
+            // Otherwise, move into the next node
+            cursor = cursor -> next;
+        }
+        debug("Directory successfully shutdown");
+        sem_post(&mutex);
     }
-    debug("Directory successfully shutdown");
-    sem_post(&mutex);
 }
 
 
@@ -203,6 +219,7 @@ void dir_unregister(char *handle) {
         return;
     }
 
+    debug("Directory %s found", handle);
     // Not NULL --> unregister mailbox
 
     directory_info_block *remove_info = node_to_remove -> info;

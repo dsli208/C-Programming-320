@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
     // First, install the sigaction() handler for SIGHUP
     struct sigaction new_action;
     new_action.sa_handler = terminate;
+    //new_action.sa_mask = sigmask(SIGHUP);
 
     sigaction(SIGHUP, &new_action, NULL);
     // Option processing should be performed here.
