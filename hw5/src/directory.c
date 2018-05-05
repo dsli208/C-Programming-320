@@ -13,6 +13,7 @@
 #include "directory.h"
 #include "protocol.h"
 #include "thread_counter.h"
+#include "mailbox.h"
 
 volatile int shutdown_flag;
 
@@ -214,8 +215,9 @@ void dir_unregister(char *handle) {
     sem_wait(&mutex);
     // Look for the handle
     directory_node *node_to_remove = dir_unregister_lookup(handle);
-
+    //debug("DIR_UNREGISTER mailbox handle %s", mb_get_handle(node_to_remove -> info -> mailbox));
     if (node_to_remove == NULL) {
+        sem_post(&mutex);
         return;
     }
 
@@ -292,7 +294,8 @@ MAILBOX *dir_register(char *handle, int sockfd) {
     sem_wait(&mutex);
     // Insert a new node for the new handle in the directory
     MAILBOX *new_mailbox = mb_init(handle);
-
+    debug("Handle is %s", handle);
+    debug("new mailbox handle is %s", mb_get_handle(new_mailbox));
     insert_new_node(handle, sockfd, new_mailbox);
 
     directory_size++;

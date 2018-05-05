@@ -13,9 +13,8 @@
 #include "directory.h"
 #include "protocol.h"
 
-volatile int defunct_flag;
 
-
+// V at shutdown, add_message, add_notice
 
 typedef struct mailbox_entry_block {
     MAILBOX_ENTRY *entry;
@@ -24,6 +23,7 @@ typedef struct mailbox_entry_block {
 } ENTRY_BLOCK;
 
 typedef struct mailbox {
+    int defunct_flag;
     // Mutex
     sem_t mutex;
     // Reference count
@@ -61,14 +61,16 @@ void discard_hook(MAILBOX_ENTRY *entry) {
         MESSAGE message = entry -> content.message;
         MAILBOX *bounce_mb = message.from;
         mb_add_notice(bounce_mb, BOUNCE_NOTICE_TYPE, message.msgid, entry -> body, entry -> length);
-        mb_unref(bounce_mb); // Correct???
+        //mb_unref(bounce_mb); // Correct???
     }
 }
 
 
 // Mailbox helper functions
 void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
+    //sem_wait(&(mb -> mutex));
     debug("Adding new entry");
+    debug("Mb entry called on mailbox whose handle is %s", mb -> handle);
     if (mb -> head == NULL && mb -> tail == NULL) { // Empty list, consider changing && to ||?
         // Construct first node
         mb -> head = malloc(sizeof(ENTRY_BLOCK));
@@ -76,6 +78,7 @@ void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
         mb -> head -> next = NULL;
         mb -> head -> prev = NULL;
         mb -> tail = mb -> head;
+        debug("Has the mailbox been altered? Its handle is %s", mb -> handle);
     }
     else {
         ENTRY_BLOCK *new_block = malloc(sizeof(ENTRY_BLOCK));
@@ -85,7 +88,9 @@ void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
 
         (mb -> tail) -> next = new_block;
         mb -> tail = new_block;
+        debug("Has the mailbox been altered? Its handle is %s", mb -> handle);
     }
+    //sem_post(&(mb -> mutex));
     debug("Entry added");
 }
 
@@ -95,9 +100,11 @@ void add_mb_entry(MAILBOX *mb, MAILBOX_ENTRY *new_mailbox_entry) { // CHECK
  */
 MAILBOX *mb_init(char *handle) {
     MAILBOX *new_mailbox = malloc(sizeof(MAILBOX));
-    sem_init(&(new_mailbox -> mutex), 0, 1);
+    sem_init(&(new_mailbox -> mutex), 0, 0);
+    new_mailbox -> defunct_flag = 0;
     new_mailbox -> reference_count = 1;
-    new_mailbox -> handle = handle;
+    new_mailbox -> handle = strdup(handle);
+    debug("Mailbox handle set to %s", new_mailbox -> handle);
     new_mailbox -> head = NULL;
     new_mailbox -> tail = NULL;
 
@@ -109,9 +116,9 @@ MAILBOX *mb_init(char *handle) {
  */
 void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
     debug("Setting discard hook");
-    sem_wait(&(mb -> mutex));
+    //sem_wait(&(mb -> mutex));
     mb -> hook = hook;
-    sem_post(&(mb -> mutex));
+    //sem_post(&(mb -> mutex));
     debug("Discard hook set");
 }
 
@@ -123,9 +130,9 @@ void mb_set_discard_hook(MAILBOX *mb, MAILBOX_DISCARD_HOOK *hook) {
  */
 void mb_ref(MAILBOX *mb) {
     debug("Referencing");
-    sem_wait(&(mb -> mutex));
+    //sem_wait(&(mb -> mutex));
     mb -> reference_count += 1;
-    sem_post(&(mb -> mutex));
+    //sem_post(&(mb -> mutex));
     debug("Referenced");
 }
 
@@ -138,15 +145,14 @@ void mb_ref(MAILBOX *mb) {
  */
 void mb_unref(MAILBOX *mb) {
     debug("Unreferencing");
-    sem_wait(&(mb -> mutex));
+    //sem_wait(&(mb -> mutex));
     mb -> reference_count -= 1;
 
     if (mb -> reference_count <= 0) {
-        sem_post(&(mb -> mutex));
+        //sem_post(&(mb -> mutex));
         //mb_shutdown(mb);
         // mailbox finalized
     }
-    sem_post(&(mb -> mutex));
     debug("Unreferenced");
 }
 
@@ -159,25 +165,14 @@ void mb_unref(MAILBOX *mb) {
  * entries that remain in it will be discarded.
  */
 void mb_shutdown(MAILBOX *mb) {
-    //sem_wait(&(mb -> mutex));
     // Mark as defunct
-    defunct_flag = 1;
+    mb -> defunct_flag = 1;
     // Discard all entries
-    ENTRY_BLOCK *entry_block = mb -> head;
-    //discard_hook(entry_block -> entry);
-    while (entry_block != NULL) {
-        discard_hook(entry_block -> entry);
-        //free(entry_block -> entry -> body);
-        //free(entry_block -> entry);
-        ENTRY_BLOCK *next_entry_block = entry_block -> next;
-        //free(entry_block);
-        entry_block = next_entry_block;
-    }
 
     // Free handle and hook (CHANGE IF THE HOOK HAS OTHER POINTERS IN IT)
     //free(mb -> handle);
     //free(mb -> hook);
-    //sem_post(&(mb -> mutex));
+    sem_post(&(mb -> mutex));
 }
 
 /*
@@ -186,6 +181,7 @@ void mb_shutdown(MAILBOX *mb) {
 char *mb_get_handle(MAILBOX *mb) {
     //sem_wait(&(mb -> mutex));
     char *handle = mb -> handle;
+    //strcpy(handle, mb -> handle);
     //sem_post(&(mb -> mutex));
     return handle;
 }
@@ -208,7 +204,7 @@ char *mb_get_handle(MAILBOX *mb) {
  * caller must discard this pointer which it no longer "owns".
  */
 void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int length) {
-    debug("Adding message");
+    debug("Adding message.  Handle is %s", mb -> handle);
     //sem_wait(&(mb -> mutex));
     MAILBOX_ENTRY *new_entry = malloc(sizeof(MAILBOX_ENTRY));
     new_entry -> type = MESSAGE_ENTRY_TYPE;
@@ -227,8 +223,9 @@ void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int lengt
 
     // Add it to the entries queue
     add_mb_entry(mb, new_entry);
-    //sem_post(&(mb -> mutex));
-    debug("Message added");
+
+    sem_post(&(mb -> mutex));
+    debug("Message added to mb with handle %s", mb -> handle);
 }
 
 /*
@@ -244,7 +241,7 @@ void mb_add_message(MAILBOX *mb, int msgid, MAILBOX *from, void *body, int lengt
  * this notice from the mailbox.
  */
 void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int length) {
-    debug("Adding notice.");
+    debug("Adding notice. Header is %s", mb -> handle);
     //sem_wait(&(mb -> mutex));
     MAILBOX_ENTRY *new_entry = malloc(sizeof(MAILBOX_ENTRY));
     new_entry -> type = NOTICE_ENTRY_TYPE;
@@ -263,8 +260,9 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
 
     // Add it to the entries queue
     add_mb_entry(mb, new_entry);
-    //sem_post(&(mb -> mutex));
-    debug ("Notice added");
+
+    sem_post(&(mb -> mutex));
+    debug ("Notice added.  Header is %s", mb -> handle);
 }
 
 /*
@@ -279,25 +277,37 @@ void mb_add_notice(MAILBOX *mb, NOTICE_TYPE ntype, int msgid, void *body, int le
  * that service should be terminated.
  */
 MAILBOX_ENTRY *mb_next_entry(MAILBOX *mb) {
-    debug("Retrieving next entry");
+    debug("Retrieving next entry for mailbox with handle %s", mb -> handle);
     sem_wait(&(mb -> mutex));
-    if (defunct_flag && mb -> head == NULL) {
-        sem_post(&(mb -> mutex));
-        debug("next entry retrieved");
+    if ((mb -> defunct_flag != 0) && mb -> head == NULL) {
+        //sem_post(&(mb -> mutex));
+        debug("next entry retrieved --> NULL");
         return NULL;
     }
     else if (mb -> head == mb -> tail) {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
         mb -> head = mb -> tail = NULL;
-        sem_post(&(mb -> mutex));
-        debug("next entry retrieved");
-        return mb_entry_block -> entry;
+        //sem_post(&(mb -> mutex));
+        debug("next entry retrieved and list is empty");
+        MAILBOX_ENTRY *mb_entry = mb_entry_block -> entry;
+        if (mb_entry -> type == MESSAGE_ENTRY_TYPE) {
+            MESSAGE message = mb_entry -> content.message;
+            mb_unref(message.from);
+            debug("Has the mailbox been altered? Its handle is %s", mb -> handle);
+        }
+        return mb_entry;
     }
     else {
         ENTRY_BLOCK *mb_entry_block = mb -> head;
         mb -> head = (mb -> head) -> next;
-        sem_post(&(mb -> mutex));
+        //sem_post(&(mb -> mutex));
         debug("next entry retrieved");
-        return mb_entry_block -> entry;
+        MAILBOX_ENTRY *mb_entry = mb_entry_block -> entry;
+        if (mb_entry -> type == MESSAGE_ENTRY_TYPE) {
+            MESSAGE message = mb_entry -> content.message;
+            mb_unref(message.from);
+            debug("Has the mailbox been altered? Its handle is %s", mb -> handle);
+        }
+        return mb_entry;
     }
 }
