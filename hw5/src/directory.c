@@ -227,7 +227,7 @@ void dir_unregister(char *handle) {
     // Not NULL --> unregister mailbox
 
     directory_info_block *remove_info = node_to_remove -> info;
-    //shutdown(remove_info -> sockfd, SHUT_RDWR);
+    shutdown(remove_info -> sockfd, SHUT_RDWR);
     mb_unref(remove_info -> mailbox);
     mb_shutdown(remove_info -> mailbox);
 
@@ -235,6 +235,12 @@ void dir_unregister(char *handle) {
 
     // Not NULL --> remove the node
     remove_node(node_to_remove);
+
+    // Resolution of logout then login again bug
+    if (directory_size == 0) {
+        directory_head = malloc(sizeof(directory_node));
+        directory_tail = directory_head;
+    }
 
     debug("Directory successfully unregistered.");
     sem_post(&mutex);
