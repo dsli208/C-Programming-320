@@ -97,7 +97,8 @@ void tcnt_decr(THREAD_COUNTER *tc) {
     if (tc != NULL) {
         if (tc -> num_threads - 1 <= 0) {
             tc -> num_threads -= 1;
-            sem_post(&(tc -> wait_lock));
+            if (terminate)
+                sem_post(&(tc -> wait_lock));
         }
         else {
             debug("Decrementing from %d to %d", tc -> num_threads, tc -> num_threads - 1);
