@@ -146,8 +146,10 @@ void dir_shutdown(void) {
         directory_info_block *info = cursor -> info;
 
         // Shutdown the fd
-        debug("Shutting down socket %d", info -> sockfd);
-        shutdown(info -> sockfd, SHUT_RDWR);
+        if (info != NULL) {
+            debug("Shutting down socket %d", info -> sockfd);
+            shutdown(info -> sockfd, SHUT_RDWR);
+        }
 
         // Otherwise, move into the next node
         cursor = cursor -> next;

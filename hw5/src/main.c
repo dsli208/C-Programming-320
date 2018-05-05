@@ -101,7 +101,7 @@ void terminate(int sig) {
     debug("Waiting for service threads to terminate...");
     tcnt_wait_for_zero(thread_counter);
     debug("All service threads terminated.");
-
+    //sem_post(&(thread_counter -> mutex));
     tcnt_fini(thread_counter);
     dir_fini();
     exit(EXIT_SUCCESS);

@@ -13,6 +13,7 @@
 #include "protocol.h"
 #include "thread_counter.h"
 
+volatile int terminate = 0;
 
 /*
  * A thread counter keeps a count of the number of threads that are
@@ -27,6 +28,7 @@
  * thread count to drop to zero before exiting the program.
  */
 
+
 struct thread_counter {
     int num_threads;
     sem_t mutex;
@@ -38,6 +40,7 @@ THREAD_COUNTER *tcnt_init() {
 
     THREAD_COUNTER *tc = malloc(sizeof(thread_counter));
     sem_init(&(tc ->mutex), 0, 1);
+    sem_init(&(tc -> wait_lock), 0, 0);
     tc -> num_threads = 0;
 
     if (tc != NULL) {
@@ -52,15 +55,17 @@ THREAD_COUNTER *tcnt_init() {
  */
 // FINISH
 void tcnt_fini(THREAD_COUNTER *tc) {
-    sem_wait(&(tc -> mutex));
-
+    terminate = 1;
     if (tc != NULL) {
+        sem_wait(&(tc -> mutex));
+
         free(tc);
-        tc = NULL;
         debug("Thread counter finished and freed.");
+        sem_post(&(tc -> mutex));
+        tc = NULL;
     }
 
-    sem_post(&(tc -> mutex));
+
 }
 
 /*
@@ -111,7 +116,11 @@ void tcnt_decr(THREAD_COUNTER *tc) {
  * function will return.
  */
 void tcnt_wait_for_zero(THREAD_COUNTER *tc) {
-    sem_init(&(tc -> wait_lock), 0, 0);
-    sem_wait(&(tc -> wait_lock));
+    debug("Starting to terminate");
+
+    debug("Initiated semaphore");
+    if (!terminate)
+        sem_wait(&(tc -> wait_lock));
+    debug("Started waiting the semaphore");
     return;
 }
