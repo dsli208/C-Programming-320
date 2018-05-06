@@ -150,7 +150,7 @@ void mb_unref(MAILBOX *mb) {
 
     if (mb -> reference_count <= 0) {
         //sem_post(&(mb -> mutex));
-        //mb_shutdown(mb);
+        mb_shutdown(mb);
         // mailbox finalized
     }
     debug("Unreferenced");
