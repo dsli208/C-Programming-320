@@ -1,0 +1,74 @@
+This is a test.rc/ecran.c:main:126 [0mHello world!
+
+[1;35mDEBUG: src/ecran.c:main:116 [0m1
+
+[1;35mDEBUG: src/ecran.c:main:116 [0m2
+
+[1;35mDEBUG: src/ecran.c:main:167 [0mHello world
+
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0ms
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mt
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mu
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0md
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0me
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mn
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mt
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m@
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mC
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mS
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mE
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m3
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m2
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m0
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m-
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mV
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mi
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mr
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mt
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mu
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0ma
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0ml
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mB
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mo
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mx
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m 
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m~
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m/
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0md
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0ms
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0ml
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mi
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m/
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mh
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0mw
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m4
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m 
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m$
+[1;35mDEBUG: src/vscreen.c:vscreen_putc:160 [0m 
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
+[1;35mDEBUG: src/ecran.c:set_status:102 [0m(null)
